@@ -1,0 +1,93 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "test_scene_map.tmx",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "C:/Users/chris/Development/untitled-game/assets/gfx/map.tmx": {
+            "scale": 4,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 40.125,
+                "y": 40
+            }
+        },
+        "C:/Users/chris/Development/untitled-game/assets/gfx/tiledmap_001.tsx": {
+            "scaleInDock": 1
+        },
+        "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/scene1_map.tmx": {
+            "scale": 2.0813058035714285,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 447.5555674719146,
+                "y": 447.7958012708797
+            }
+        },
+        "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/scene1_tileset.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/test_scene_tileset.tsx": {
+            "scaleInDock": 5.5,
+            "scaleInEditor": 4
+        },
+        "scene1_tileset.tsx": {
+            "scaleInDock": 1
+        },
+        "test_scene_map.json": {
+            "scale": 1.9593749999999999,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 396.29984051036695,
+                "y": 400.38277511961724
+            }
+        },
+        "test_scene_map.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 895.9999999999999,
+                "y": 2496
+            }
+        },
+        "test_scene_tileset.json": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "test_scene_tileset.tsx": {
+            "scaleInDock": 0.33,
+            "scaleInEditor": 4
+        }
+    },
+    "lastUsedTilesetExportFilter": "JSON tileset files (*.json)",
+    "map.lastUsedExportFilter": "JSON map files (*.json)",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 32,
+    "map.tileWidth": 32,
+    "openFiles": [
+        "test_scene_tileset.json",
+        "test_scene_map.tmx"
+    ],
+    "project": "strat.tiled-project",
+    "property.type": "int",
+    "recentFiles": [
+        "test_scene_tileset.json",
+        "test_scene_map.tmx",
+        "test_scene_tileset.tsx",
+        "test_scene_map.json",
+        "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/test_scene_tileset.tsx",
+        "C:/Users/chris/Development/untitled-game/assets/gfx/map.tmx",
+        "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/scene1_map.tmx",
+        "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/scene1_tileset.tsx"
+    ],
+    "tileset.lastUsedFilter": "Tiled tileset files (*.tsx *.xml)",
+    "tileset.lastUsedFormat": "json",
+    "tileset.tileSize": {
+        "height": 32,
+        "width": 32
+    }
+}

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace StratMono
 {
@@ -7,8 +8,13 @@ namespace StratMono
         [STAThread]
         static void Main()
         {
-            using var game = new Game1();
+            AttachConsole(-1);
+            
+            using var game = new StratMonoGame();
             game.Run();
         }
+        
+        [DllImport("kernel32.dll")]
+        static extern bool AttachConsole(int dwProcessId);
     }
 }

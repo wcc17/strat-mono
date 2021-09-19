@@ -50,8 +50,8 @@
             "scale": 0.75,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 895.9999999999999,
-                "y": 2496
+                "x": 894.6666666666667,
+                "y": 2494.666666666667
             }
         },
         "test_scene_tileset.json": {
@@ -63,7 +63,9 @@
             "scaleInEditor": 4
         }
     },
-    "lastUsedTilesetExportFilter": "JSON tileset files (*.json)",
+    "last.exportedFilePath": "C:/Users/chris/Development/strat-mono/StratMono/Content/assets/tiles",
+    "last.externalTilesetPath": "C:/Users/chris/Development/strat-mono/StratMono/Content/assets/tiles",
+    "lastUsedTilesetExportFilter": "Tiled tileset files (*.tsx *.xml)",
     "map.lastUsedExportFilter": "JSON map files (*.json)",
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 32,

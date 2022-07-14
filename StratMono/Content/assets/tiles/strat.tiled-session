@@ -48,10 +48,10 @@
         },
         "test_scene_map.tmx": {
             "scale": 0.75,
-            "selectedLayer": 2,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 894.6666666666667,
-                "y": 2494.666666666667
+                "x": 1196,
+                "y": 1320
             }
         },
         "test_scene_tileset.json": {
@@ -71,14 +71,13 @@
     "map.tileHeight": 32,
     "map.tileWidth": 32,
     "openFiles": [
-        "test_scene_tileset.json",
         "test_scene_map.tmx"
     ],
     "project": "strat.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "test_scene_tileset.json",
         "test_scene_map.tmx",
+        "test_scene_tileset.json",
         "test_scene_tileset.tsx",
         "test_scene_map.json",
         "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/test_scene_tileset.tsx",

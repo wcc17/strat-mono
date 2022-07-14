@@ -10,6 +10,7 @@ namespace StratMono.Scenes
 {
     public class LevelScene : Scene
     {
+
         public override void Initialize()
         {
             // default to 1280x720 with no SceneResolutionPolicy
@@ -28,6 +29,10 @@ namespace StratMono.Scenes
             characterEntity.AddComponent(new MoveComponent());
             characterEntity.AddComponent(createSpriteAnimatorForCharacter(atlas, characterName));
             characterEntity.Position = Screen.Center;
+
+            var cameraEntity = CreateEntity("camera");
+            cameraEntity.AddComponent(new MoveComponent());
+            Camera = cameraEntity.AddComponent(new CameraComponent());
         }
 
         private SpriteAnimator createSpriteAnimatorForCharacter(SpriteAtlas atlas, string characterName)

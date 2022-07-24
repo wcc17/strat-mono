@@ -5,7 +5,7 @@ using Nez;
 
 namespace StratMono.Components
 {
-    public class MoveComponent : Component, IUpdatable
+    public class MoveDirectionComponent : Component, IUpdatable
     {
         public Vector2 MoveDirection = new Vector2(0, 0);
         

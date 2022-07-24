@@ -7,17 +7,17 @@ namespace StratMono.Components
     public class CharacterComponent : Component, IUpdatable
     {
         private SpriteAnimator _spriteAnimatorComponent;
-        private MoveComponent _moveComponent;
 
         public override void OnAddedToEntity()
         {
             _spriteAnimatorComponent = Entity.GetComponent<SpriteAnimator>();
-            _moveComponent = Entity.GetComponent<MoveComponent>();
+            this.AddComponent(new MoveDirectionComponent());
         }
         
         public void Update()
         {
-            var moveDirection = _moveComponent.MoveDirection;
+            var moveComponent = Entity.GetComponent<MoveDirectionComponent>();
+            var moveDirection = moveComponent.MoveDirection;
             string animationToPlay = null;
             
             if (moveDirection.X > 0)

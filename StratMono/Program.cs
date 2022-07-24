@@ -11,6 +11,7 @@ namespace StratMono
             AttachConsole(-1);
             
             using var game = new StratMonoGame();
+            game.IsFixedTimeStep = true;
             game.Run();
         }
         

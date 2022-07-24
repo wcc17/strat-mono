@@ -6,7 +6,6 @@ namespace StratMono.Components
 {
     public class BoundedMovingCamera : Camera, IUpdatable
     {
-        private MoveDirectionComponent _moveComponent;
         private RectangleF _levelBounds;
         private int _cameraMoveSpeed = 50;
 
@@ -17,7 +16,7 @@ namespace StratMono.Components
 
         public override void OnAddedToEntity()
         {
-            _moveComponent = Entity.AddComponent(new MoveDirectionComponent());
+            Entity.AddComponent(new MoveDirectionComponent());
         }
         
         public void Update()
@@ -28,22 +27,24 @@ namespace StratMono.Components
 
         private void handleMovement()
         {
-            if (_moveComponent.MoveDirection.X > 0)
+            var moveComponent = Entity.GetComponent<MoveDirectionComponent>();
+
+            if (moveComponent.MoveDirection.X > 0)
             {
                 Position = new Vector2(Position.X + _cameraMoveSpeed, Position.Y);
             }
 
-            if (_moveComponent.MoveDirection.X < 0)
+            if (moveComponent.MoveDirection.X < 0)
             {
                 Position = new Vector2(Position.X - _cameraMoveSpeed, Position.Y);
             }
 
-            if (_moveComponent.MoveDirection.Y > 0)
+            if (moveComponent.MoveDirection.Y > 0)
             {
                 Position = new Vector2(Position.X, Position.Y + _cameraMoveSpeed);
             }
 
-            if (_moveComponent.MoveDirection.Y < 0)
+            if (moveComponent.MoveDirection.Y < 0)
             {
                 Position = new Vector2(Position.X, Position.Y - _cameraMoveSpeed);
             }

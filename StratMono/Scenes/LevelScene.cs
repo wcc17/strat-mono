@@ -1,13 +1,15 @@
-﻿using System.Linq;
+﻿using System;
 using Microsoft.Xna.Framework;
 using Nez;
-using Nez.Sprites;
 using StratMono.Components;
 
 namespace StratMono.Scenes
 {
     public class LevelScene : Scene
     {
+        private const string TiledMapEntityName = "tiled-map";
+        private const string CameraEntityName = "camera";
+
         public override void Initialize()
         {
             //TODO: move out of scene?
@@ -24,20 +26,36 @@ namespace StratMono.Scenes
 
         private void createTiledMap()
         {
-            var tiledMapEntity = CreateEntity("tiled-map");
+            var tiledMapEntity = CreateEntity(TiledMapEntityName);
             var tiledMap = Content.LoadTiledMap("Content/assets/tiles/test_scene_map.tmx");
             var tiledMapRenderer = new TiledMapRenderer(tiledMap);
+
+            Console.WriteLine(tiledMap.TileHeight);
+            Console.WriteLine(tiledMap.TileWidth);
+            Console.WriteLine(tiledMap.MaxTileHeight);
+            Console.WriteLine(tiledMap.MaxTileWidth);
+
+            var tileWidth = tiledMap.TileWidth;
+            var tileHeight = tiledMap.TileHeight;
+            var gridTileWidth = tileWidth * 2;
+            var gridTileHeight = tileHeight * 2;
+
+            var mapWidthInGridTiles = tiledMap.WorldWidth / gridTileWidth;
+            var mapHeightInGridTiles = tiledMap.WorldHeight / gridTileHeight;
+
+            Console.WriteLine(mapWidthInGridTiles);
+            Console.WriteLine(mapHeightInGridTiles);
 
             tiledMapEntity.AddComponent(tiledMapRenderer);
         }
 
         private void createCamera()
         {
-            var tiledMapEntity = FindEntity("tiled-map");
+            var tiledMapEntity = FindEntity(TiledMapEntityName);
             var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
             var tiledMap = tiledMapRenderer.TiledMap;
 
-            var cameraEntity = CreateEntity("camera");
+            var cameraEntity = CreateEntity(CameraEntityName);
             var levelBounds = new RectangleF(Vector2.Zero, new Vector2(tiledMap.WorldWidth, tiledMap.WorldHeight));
             Camera = cameraEntity.AddComponent(new BoundedMovingCamera(levelBounds));
         }
@@ -45,32 +63,10 @@ namespace StratMono.Scenes
         private void createCharacter()
         {
             var atlas = Content.LoadSpriteAtlas("Content/roots.atlas");
-            var characterName = "player";
 
-            var characterEntity = CreateEntity(characterName);
-            characterEntity.AddComponent(new CharacterComponent());
-            characterEntity.AddComponent(createSpriteAnimatorForCharacter(atlas, characterName));
+            var characterEntity = new Character("character", atlas);
+            AddEntity(characterEntity);
             characterEntity.Position = Screen.Center;
         }
-
-        private SpriteAnimator createSpriteAnimatorForCharacter(SpriteAtlas atlas, string characterName)
-        {
-            var playerAnimationNames = atlas.AnimationNames
-                .Where(animationName => animationName.Contains(characterName))
-                .ToList();
-
-            SpriteAnimator animator = new SpriteAnimator(); 
-            foreach (var playerAnimationName in playerAnimationNames)
-            {
-                var animationName = playerAnimationName.Replace(characterName + "_", "");
-                animator.AddAnimation(
-                    animationName,
-                    atlas.GetAnimation(playerAnimationName)
-                );
-            }
-
-            return animator;
-        }
-        
     }
 }

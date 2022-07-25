@@ -2,24 +2,12 @@
 using System.Linq;
 using Nez;
 using Nez.Sprites;
+using Microsoft.Xna.Framework;
 
 namespace StratMono.Components
 {
     public class Character : Entity
     {
-        private readonly SpriteAtlas _spriteAtlas;
-
-        public Character(SpriteAtlas atlas)
-        {
-            _spriteAtlas = atlas;
-        }
-
-        public override void OnAddedToScene()
-        {
-            AddComponent(createSpriteAnimatorForCharacter(_spriteAtlas, "player"));
-            AddComponent(new MoveDirectionComponent());
-        }
-        
         public override void Update()
         {
             base.Update();
@@ -62,7 +50,7 @@ namespace StratMono.Components
             }
         }
 
-        private SpriteAnimator createSpriteAnimatorForCharacter(SpriteAtlas atlas, string characterName)
+        public SpriteAnimator CreateSpriteAnimatorForCharacter(SpriteAtlas atlas, string characterName)
         {
             var playerAnimationNames = atlas.AnimationNames
                 .Where(animationName => animationName.Contains(characterName))
@@ -79,6 +67,20 @@ namespace StratMono.Components
             }
 
             return animator;
+        }
+
+        public Vector2 SetCharacterPosition(Vector2 position)
+        {
+            if (HasComponent<SpriteAnimator>())
+            {
+                var spriteAnimator = GetComponent<SpriteAnimator>();
+                Position = new Vector2(position.X - (spriteAnimator.Width / 2), position.Y - (spriteAnimator.Height / 2));
+            } else
+            {
+                Position = position;
+            }
+
+            return position;
         }
     }
 }

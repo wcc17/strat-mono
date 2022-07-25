@@ -57,9 +57,16 @@ namespace StratMono.Scenes
         {
             var atlas = Content.LoadSpriteAtlas("Content/roots.atlas");
 
-            var characterEntity = new Character(atlas);
-            characterEntity.Position = Screen.Center;
-            AddEntity(characterEntity);
+            var characterEntity = new Character();
+            characterEntity.AddComponent(characterEntity.CreateSpriteAnimatorForCharacter(atlas, "player"));
+            addCharacterToGrid(characterEntity, 10, 12);
+        }
+
+        private Character addCharacterToGrid(Character character, int x, int y)
+        {
+            AddEntity(character);
+            _grid.AddCharacterToGridTile(character, x, y);
+            return character;
         }
     }
 }

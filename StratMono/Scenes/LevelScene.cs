@@ -11,8 +11,11 @@ namespace StratMono.Scenes
     {
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
+        private const string CursorEntityName = "cursor";
+
         private const string CharacterSpriteName = "player";
         private const string CursorSpriteName = "tile_cursor";
+
         private SpriteAtlas _spriteAtlas;
         private Grid _grid;
 
@@ -31,11 +34,21 @@ namespace StratMono.Scenes
             createCamera();
             createGrid();
             createCharacter();
+            createGridCursor();
+        }
 
-            var cursorEntity = new GridEntity();
-            cursorEntity.AddComponent(createSpriteAnimator(CursorSpriteName));
-            cursorEntity.AddComponent(new GridCursorMovement());
-            addToGrid(cursorEntity, 5, 13);
+        public override void Update()
+        {
+            base.Update();
+
+            var gridEntities = EntitiesOfType<GridEntity>();
+            
+            //TODO: determine which grid tile they're closest to and snap them to it
+            foreach (var gridEntity in gridEntities)
+            {
+                Vector2 gridTile = _grid.GetNearestGridTile(gridEntity.Position);
+                _grid.AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
+            }
         }
 
         private void createTiledMap()
@@ -71,6 +84,15 @@ namespace StratMono.Scenes
             characterEntity.AddComponent(createSpriteAnimator(CharacterSpriteName));
             characterEntity.AddComponent(new GridEntityMovement());
             addToGrid(characterEntity, 10, 12);
+        }
+
+        private void createGridCursor()
+        {
+            var cursorEntity = new GridEntity(CursorEntityName);
+            cursorEntity.AddComponent(createSpriteAnimator(CursorSpriteName));
+            cursorEntity.AddComponent(new GridCursorMovement());
+            cursorEntity.AddComponent(new MouseMovement());
+            addToGrid(cursorEntity, 5, 13);
         }
 
         private GridEntity addToGrid(GridEntity character, int x, int y)

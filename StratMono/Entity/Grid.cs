@@ -8,7 +8,6 @@ namespace StratMono.Components
     public class Grid
     {
         public GridTile[,] GridTiles { get; }
-
         private int _gridTileWidth, _gridTileHeight;
 
         public Grid(int tileWidth, int tileHeight, int worldWidth, int worldHeight)
@@ -33,13 +32,22 @@ namespace StratMono.Components
         {
             //TODO: check if something is already here
             //TODO: check if this is a boundary 
-            //TODO: probably not the best idea to rely on the sprite animator being there?
 
-            GridTiles[x, y].OccupyingEntity = gridEntity;
+            //TODO: need to figure out how to remove old OccupyingEntity
+            //GridTiles[x, y].OccupyingEntity = gridEntity;
+
             var worldPosition = new Vector2(_gridTileWidth * x, _gridTileHeight * y);
             gridEntity.SetPosition(worldPosition);
 
             return gridEntity;
+        }
+
+        public Vector2 GetNearestGridTile(Vector2 position)
+        {
+            var x = Math.Ceiling(position.X / _gridTileWidth);
+            var y = Math.Ceiling(position.Y / _gridTileHeight);
+
+            return new Vector2((int)x, (int)y);
         }
     }
 

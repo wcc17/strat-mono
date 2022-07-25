@@ -11,7 +11,6 @@ namespace StratMono.Components
         
         private VirtualIntegerAxis _xAxisInput;
         private VirtualIntegerAxis _yAxisInput;
-
         public override void OnAddedToEntity()
         {
             // horizontal input from dpad, left stick or keyboard left/right

@@ -6,16 +6,13 @@ using Nez.Sprites;
 
 namespace StratMono.Components
 {
-    public class GridCursorMovement : Component, IUpdatable
+    public class GridCursorMovement : Component
     {
         public override void OnAddedToEntity()
         {
             base.OnAddedToEntity();
             SpriteAnimator spriteAnimator = Entity.GetComponent<SpriteAnimator>();
             spriteAnimator.Play("default", SpriteAnimator.LoopMode.PingPong);
-        }
-        public void Update()
-        {
         }
     }
 }

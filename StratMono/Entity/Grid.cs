@@ -29,23 +29,23 @@ namespace StratMono.Components
             }
         }
 
-        public Entity AddCharacterToGridTile(Character character, int x, int y)
+        public GridEntity AddToGridTile(GridEntity gridEntity, int x, int y)
         {
             //TODO: check if something is already here
             //TODO: check if this is a boundary 
             //TODO: probably not the best idea to rely on the sprite animator being there?
 
-            GridTiles[x, y].OccupyingCharacter = character;
+            GridTiles[x, y].OccupyingEntity = gridEntity;
             var worldPosition = new Vector2(_gridTileWidth * x, _gridTileHeight * y);
-            character.SetCharacterPosition(worldPosition);
+            gridEntity.SetPosition(worldPosition);
 
-            return character;
+            return gridEntity;
         }
     }
 
     public class GridTile
     {
-        public Entity OccupyingCharacter { get; set; }
+        public GridEntity OccupyingEntity { get; set; }
 
         public GridTile()
         {

@@ -101,6 +101,6 @@ player_walk_right
 player_walk_up
 	8
 	21,22,23
-tile_cursor_
+tile_cursor_default
 	8
 	24,25

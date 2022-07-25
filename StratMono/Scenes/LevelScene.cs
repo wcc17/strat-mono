@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
+using Nez.Sprites;
 using StratMono.Components;
 
 namespace StratMono.Scenes
@@ -9,6 +11,9 @@ namespace StratMono.Scenes
     {
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
+        private const string CharacterSpriteName = "player";
+        private const string CursorSpriteName = "tile_cursor";
+        private SpriteAtlas _spriteAtlas;
         private Grid _grid;
 
         public override void Initialize()
@@ -20,10 +25,17 @@ namespace StratMono.Scenes
             SetDesignResolution(1920, 1080, SceneResolutionPolicy.None);
             Screen.SetSize(1920, 1080);
 
+            _spriteAtlas = Content.LoadSpriteAtlas("Content/roots.atlas");
+
             createTiledMap();
             createCamera();
             createGrid();
             createCharacter();
+
+            var cursorEntity = new GridEntity();
+            cursorEntity.AddComponent(createSpriteAnimator(CursorSpriteName));
+            cursorEntity.AddComponent(new GridCursorMovement());
+            addToGrid(cursorEntity, 5, 13);
         }
 
         private void createTiledMap()
@@ -55,19 +67,36 @@ namespace StratMono.Scenes
 
         private void createCharacter()
         {
-            var atlas = Content.LoadSpriteAtlas("Content/roots.atlas");
-
-            var characterEntity = new Character();
-            characterEntity.AddComponent(characterEntity.CreateSpriteAnimatorForCharacter(atlas, "player"));
-            characterEntity.AddComponent(new AiMovement());
-            addCharacterToGrid(characterEntity, 10, 12);
+            var characterEntity = new GridEntity();
+            characterEntity.AddComponent(createSpriteAnimator(CharacterSpriteName));
+            characterEntity.AddComponent(new GridEntityMovement());
+            addToGrid(characterEntity, 10, 12);
         }
 
-        private Character addCharacterToGrid(Character character, int x, int y)
+        private GridEntity addToGrid(GridEntity character, int x, int y)
         {
             AddEntity(character);
-            _grid.AddCharacterToGridTile(character, x, y);
+            _grid.AddToGridTile(character, x, y);
             return character;
+        }
+
+        public SpriteAnimator createSpriteAnimator(string spriteName)
+        {
+            var animationNames = _spriteAtlas.AnimationNames
+                .Where(animationName => animationName.Contains(spriteName))
+                .ToList();
+
+            SpriteAnimator animator = new SpriteAnimator();
+            foreach (var animationName in animationNames)
+            {
+                var name = animationName.Replace(spriteName + "_", "");
+                animator.AddAnimation(
+                    name,
+                    _spriteAtlas.GetAnimation(animationName)
+                );
+            }
+
+            return animator;
         }
     }
 }

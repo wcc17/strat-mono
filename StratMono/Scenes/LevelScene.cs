@@ -9,6 +9,7 @@ namespace StratMono.Scenes
     {
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
+        private Grid _grid;
 
         public override void Initialize()
         {
@@ -21,6 +22,7 @@ namespace StratMono.Scenes
 
             createTiledMap();
             createCamera();
+            createGrid();
             createCharacter();
         }
 
@@ -29,23 +31,6 @@ namespace StratMono.Scenes
             var tiledMapEntity = CreateEntity(TiledMapEntityName);
             var tiledMap = Content.LoadTiledMap("Content/assets/tiles/test_scene_map.tmx");
             var tiledMapRenderer = new TiledMapRenderer(tiledMap);
-
-            Console.WriteLine(tiledMap.TileHeight);
-            Console.WriteLine(tiledMap.TileWidth);
-            Console.WriteLine(tiledMap.MaxTileHeight);
-            Console.WriteLine(tiledMap.MaxTileWidth);
-
-            var tileWidth = tiledMap.TileWidth;
-            var tileHeight = tiledMap.TileHeight;
-            var gridTileWidth = tileWidth * 2;
-            var gridTileHeight = tileHeight * 2;
-
-            var mapWidthInGridTiles = tiledMap.WorldWidth / gridTileWidth;
-            var mapHeightInGridTiles = tiledMap.WorldHeight / gridTileHeight;
-
-            Console.WriteLine(mapWidthInGridTiles);
-            Console.WriteLine(mapHeightInGridTiles);
-
             tiledMapEntity.AddComponent(tiledMapRenderer);
         }
 
@@ -60,13 +45,21 @@ namespace StratMono.Scenes
             Camera = cameraEntity.AddComponent(new BoundedMovingCamera(levelBounds));
         }
 
+        private void createGrid()
+        {
+            var tiledMapEntity = FindEntity(TiledMapEntityName);
+            var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
+            var tiledMap = tiledMapRenderer.TiledMap;
+            _grid = new Grid(tiledMap.TileWidth, tiledMap.TileHeight, tiledMap.WorldWidth, tiledMap.WorldHeight);
+        }
+
         private void createCharacter()
         {
             var atlas = Content.LoadSpriteAtlas("Content/roots.atlas");
 
-            var characterEntity = new Character("character", atlas);
-            AddEntity(characterEntity);
+            var characterEntity = new Character(atlas);
             characterEntity.Position = Screen.Center;
+            AddEntity(characterEntity);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace StratMono.Components
     public class BoundedMovingCamera : Camera, IUpdatable
     {
         private RectangleF _levelBounds;
-        private int _cameraMoveSpeed = 50;
+        private int _cameraMoveSpeed = 10;
 
         public BoundedMovingCamera(RectangleF levelBounds)
         {

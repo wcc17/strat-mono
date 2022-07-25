@@ -7,9 +7,9 @@ namespace StratMono.Components
 {
     public class Character : Entity
     {
-        private SpriteAtlas _spriteAtlas;
+        private readonly SpriteAtlas _spriteAtlas;
 
-        public Character(string entityName, SpriteAtlas atlas) : base(entityName) 
+        public Character(SpriteAtlas atlas)
         {
             _spriteAtlas = atlas;
         }
@@ -50,7 +50,6 @@ namespace StratMono.Components
             {
                 if (spriteAnimator.CurrentAnimation == null)
                 {
-                    Console.WriteLine("no current animation");
                     return;
                 }
 

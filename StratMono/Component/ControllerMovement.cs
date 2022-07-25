@@ -5,12 +5,13 @@ using Nez;
 
 namespace StratMono.Components
 {
-    public class MoveDirectionComponent : Component, IUpdatable
+    public class ControllerMovement : Component, IUpdatable
     {
         public Vector2 MoveDirection = new Vector2(0, 0);
         
         private VirtualIntegerAxis _xAxisInput;
         private VirtualIntegerAxis _yAxisInput;
+
         public override void OnAddedToEntity()
         {
             // horizontal input from dpad, left stick or keyboard left/right

@@ -12,8 +12,8 @@ namespace StratMono.Components
         {
             base.Update();
 
-            var moveComponent = GetComponent<MoveDirectionComponent>();
-            var moveDirection = moveComponent.MoveDirection;
+            var movement = GetComponent<AiMovement>();
+            var moveDirection = movement.MoveDirection;
 
             string animationToPlay = null;
             if (moveDirection.X > 0)

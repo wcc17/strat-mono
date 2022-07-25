@@ -59,6 +59,7 @@ namespace StratMono.Scenes
 
             var characterEntity = new Character();
             characterEntity.AddComponent(characterEntity.CreateSpriteAnimatorForCharacter(atlas, "player"));
+            characterEntity.AddComponent(new AiMovement());
             addCharacterToGrid(characterEntity, 10, 12);
         }
 

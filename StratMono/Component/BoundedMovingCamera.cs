@@ -16,7 +16,7 @@ namespace StratMono.Components
 
         public override void OnAddedToEntity()
         {
-            Entity.AddComponent(new MoveDirectionComponent());
+            Entity.AddComponent(new ControllerMovement());
         }
         
         public void Update()
@@ -27,24 +27,24 @@ namespace StratMono.Components
 
         private void handleMovement()
         {
-            var moveComponent = Entity.GetComponent<MoveDirectionComponent>();
+            var controllerMovement = Entity.GetComponent<ControllerMovement>();
 
-            if (moveComponent.MoveDirection.X > 0)
+            if (controllerMovement.MoveDirection.X > 0)
             {
                 Position = new Vector2(Position.X + _cameraMoveSpeed, Position.Y);
             }
 
-            if (moveComponent.MoveDirection.X < 0)
+            if (controllerMovement.MoveDirection.X < 0)
             {
                 Position = new Vector2(Position.X - _cameraMoveSpeed, Position.Y);
             }
 
-            if (moveComponent.MoveDirection.Y > 0)
+            if (controllerMovement.MoveDirection.Y > 0)
             {
                 Position = new Vector2(Position.X, Position.Y + _cameraMoveSpeed);
             }
 
-            if (moveComponent.MoveDirection.Y < 0)
+            if (controllerMovement.MoveDirection.Y < 0)
             {
                 Position = new Vector2(Position.X, Position.Y - _cameraMoveSpeed);
             }

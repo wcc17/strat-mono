@@ -1,7 +1,6 @@
 ﻿using System;
 using Nez;
 using Microsoft.Xna.Framework;
-using StratMono.Event;
 
 namespace StratMono.Components
 {
@@ -49,12 +48,6 @@ namespace StratMono.Components
             {
                 Position = new Vector2(Position.X, Position.Y - _cameraMoveSpeed);
             }
-
-            var cameraGameEvent = new CameraGameEvent()
-            {
-                cameraPosition = Position
-            };
-            GameEventEmitter.Emitter.Emit(GameEventType.CameraPositionChanged, cameraGameEvent);
         }
 
         private void handleBounds()

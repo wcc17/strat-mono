@@ -8,6 +8,7 @@ namespace StratMono.Components
     {
         public GridTile[,] GridTiles { get; }
         private int _gridTileWidth, _gridTileHeight;
+        private Dictionary<string, Point> entityToGridTileMap = new Dictionary<string, Point>();
 
         public GridSystem(int tileWidth, int tileHeight, int worldWidth, int worldHeight)
         {
@@ -29,11 +30,13 @@ namespace StratMono.Components
 
         public GridEntity AddToGridTile(GridEntity gridEntity, int x, int y)
         {
-            //TODO: check if something is already here
-            //TODO: check if this is a boundary 
+            if (gridEntity.Name == "cursor")
+            {
+                //TODO: this behaves differently?
+            }
 
-            //TODO: need to figure out how to remove old OccupyingEntity
-            //GridTiles[x, y].OccupyingEntity = gridEntity;
+            entityToGridTileMap.Add(gridEntity.Name, new Point(x, y));
+            GridTiles[x, y].OccupyingEntity = gridEntity;
 
             var worldPosition = new Vector2(_gridTileWidth * x, _gridTileHeight * y);
             gridEntity.SetPosition(worldPosition);
@@ -55,7 +58,18 @@ namespace StratMono.Components
             foreach (var gridEntity in gridEntities)
             {
                 Vector2 gridTile = GetNearestGridTile(gridEntity.Position);
+                RemoveFromGridTile(gridEntity.Name);
                 AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
+            }
+        }
+
+        public void RemoveFromGridTile(string name)
+        {
+            if (entityToGridTileMap.ContainsKey(name))
+            {
+                Point oldGridTileCoords = entityToGridTileMap[name];
+                entityToGridTileMap.Remove(name);
+                GridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].OccupyingEntity = null;
             }
         }
     }

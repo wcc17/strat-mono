@@ -1,9 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
 using StratMono.Components;
+using StratMono.Entities;
+using StratMono.System;
 
 namespace StratMono.Scenes
 {
@@ -88,11 +89,11 @@ namespace StratMono.Scenes
             addToGrid(cursorEntity, 5, 13);
         }
 
-        private GridEntity addToGrid(GridEntity character, int x, int y)
+        private GridEntity addToGrid(GridEntity entity, int x, int y)
         {
-            AddEntity(character);
-            _gridSystem.AddToGridTile(character, x, y);
-            return character;
+            AddEntity(entity);
+            _gridSystem.AddToGridTile(entity, x, y);
+            return entity;
         }
 
         public SpriteAnimator createSpriteAnimator(string spriteName)

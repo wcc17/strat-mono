@@ -14,4 +14,4 @@ for %%f in (./raw/*) do (
 )
 
 cd ../
-mono C:\Users\chris\Development\Nez\Nez.SpriteAtlasPacker\PrebuiltExecutable\SpriteAtlasPacker.exe -image:roots.png -map:roots.atlas ./assets/sprites
+mono C:\Users\chris\Development\Nez\Nez.SpriteAtlasPacker\PrebuiltExecutable\SpriteAtlasPacker.exe -image:roots.png -map:roots.atlas -originX:0 -originY:0 ./assets/sprites

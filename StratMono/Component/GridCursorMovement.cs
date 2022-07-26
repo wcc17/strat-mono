@@ -1,7 +1,4 @@
-﻿using System;
-using System.Numerics;
-using Microsoft.Xna.Framework.Input;
-using Nez;
+﻿using Nez;
 using Nez.Sprites;
 
 namespace StratMono.Components

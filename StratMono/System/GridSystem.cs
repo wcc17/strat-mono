@@ -1,16 +1,15 @@
 ﻿using System;
-using Nez;
+using System.Collections.Generic;
 using Microsoft.Xna.Framework;
-using Nez.Sprites;
 
 namespace StratMono.Components
 {
-    public class Grid
+    public class GridSystem
     {
         public GridTile[,] GridTiles { get; }
         private int _gridTileWidth, _gridTileHeight;
 
-        public Grid(int tileWidth, int tileHeight, int worldWidth, int worldHeight)
+        public GridSystem(int tileWidth, int tileHeight, int worldWidth, int worldHeight)
         {
             _gridTileWidth = tileWidth * 2;
             _gridTileHeight = tileHeight * 2;
@@ -48,6 +47,16 @@ namespace StratMono.Components
             var y = Math.Ceiling(position.Y / _gridTileHeight);
 
             return new Vector2((int)x, (int)y);
+        }
+
+        public void SnapEntitiesToGrid(List<GridEntity> gridEntities)
+        {
+            //TODO: determine which grid tile they're closest to and snap them to it
+            foreach (var gridEntity in gridEntities)
+            {
+                Vector2 gridTile = GetNearestGridTile(gridEntity.Position);
+                AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
+            }
         }
     }
 

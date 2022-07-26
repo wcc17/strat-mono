@@ -17,7 +17,7 @@ namespace StratMono.Scenes
         private const string CursorSpriteName = "tile_cursor";
 
         private SpriteAtlas _spriteAtlas;
-        private Grid _grid;
+        private GridSystem _gridSystem;
 
         public override void Initialize()
         {
@@ -41,14 +41,7 @@ namespace StratMono.Scenes
         {
             base.Update();
 
-            var gridEntities = EntitiesOfType<GridEntity>();
-            
-            //TODO: determine which grid tile they're closest to and snap them to it
-            foreach (var gridEntity in gridEntities)
-            {
-                Vector2 gridTile = _grid.GetNearestGridTile(gridEntity.Position);
-                _grid.AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
-            }
+            _gridSystem.SnapEntitiesToGrid(EntitiesOfType<GridEntity>());
         }
 
         private void createTiledMap()
@@ -75,7 +68,7 @@ namespace StratMono.Scenes
             var tiledMapEntity = FindEntity(TiledMapEntityName);
             var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
             var tiledMap = tiledMapRenderer.TiledMap;
-            _grid = new Grid(tiledMap.TileWidth, tiledMap.TileHeight, tiledMap.WorldWidth, tiledMap.WorldHeight);
+            _gridSystem = new GridSystem(tiledMap.TileWidth, tiledMap.TileHeight, tiledMap.WorldWidth, tiledMap.WorldHeight);
         }
 
         private void createCharacter()
@@ -98,7 +91,7 @@ namespace StratMono.Scenes
         private GridEntity addToGrid(GridEntity character, int x, int y)
         {
             AddEntity(character);
-            _grid.AddToGridTile(character, x, y);
+            _gridSystem.AddToGridTile(character, x, y);
             return character;
         }
 

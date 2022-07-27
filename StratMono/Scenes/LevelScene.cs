@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
@@ -46,6 +47,12 @@ namespace StratMono.Scenes
             base.Update();
 
             _gridSystem.SnapEntitiesToGrid(EntitiesOfType<GridEntity>());
+
+            if (Input.LeftMouseButtonPressed)
+            {
+                _gridSystem.SelectCurrentTile(Input.MousePosition);
+            }
+            Console.WriteLine(_gridSystem.selectedTile);
         }
 
         private void createTiledMap()

@@ -13,6 +13,9 @@ namespace StratMono.System
         private int _mapWidthInGridTiles, _mapHeightInGridTiles;
         private Dictionary<string, Point> entityToGridTileMap = new Dictionary<string, Point>();
 
+        private readonly Vector2 NoSelectedTile = new Vector2(-1, -1);
+        public Vector2 selectedTile = new Vector2(-1, -1);
+
         public GridSystem(
             Point tileDimensions,
             Point worldDimensions,
@@ -72,6 +75,21 @@ namespace StratMono.System
                 Point oldGridTileCoords = entityToGridTileMap[name];
                 entityToGridTileMap.Remove(name);
                 GridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].RemoveFromTile(name);
+            }
+        }
+
+        public void SelectCurrentTile(Vector2 currentMousePosition)
+        {
+            Vector2 nearestGridTile = GetNearestGridTile(currentMousePosition);
+            if (selectedTile.Equals(NoSelectedTile)) // if no tile is currently selected
+            {
+                selectedTile = nearestGridTile;
+            } else if (!selectedTile.Equals(nearestGridTile)) //if selected tile doesn't equal the new selected tile
+            {
+                selectedTile = nearestGridTile;
+            } else
+            {
+                selectedTile = NoSelectedTile;
             }
         }
 

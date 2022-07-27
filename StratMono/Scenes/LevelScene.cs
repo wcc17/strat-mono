@@ -17,6 +17,9 @@ namespace StratMono.Scenes
         private const string CharacterSpriteName = "player";
         private const string CursorSpriteName = "tile_cursor";
 
+        private const string TiledMapBoundsLayerName = "bounds";
+        private const string TiledMapMoveCostLayerName = "move_cost";
+
         private SpriteAtlas _spriteAtlas;
         private GridSystem _gridSystem;
 
@@ -69,7 +72,11 @@ namespace StratMono.Scenes
             var tiledMapEntity = FindEntity(TiledMapEntityName);
             var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
             var tiledMap = tiledMapRenderer.TiledMap;
-            _gridSystem = new GridSystem(tiledMap.TileWidth, tiledMap.TileHeight, tiledMap.WorldWidth, tiledMap.WorldHeight);
+            _gridSystem = new GridSystem(
+                new Point(tiledMap.TileWidth, tiledMap.TileHeight),
+                new Point(tiledMap.WorldWidth, tiledMap.WorldHeight),
+                tiledMapEntity.GetComponent<TiledMapRenderer>().TiledMap.GetObjectGroup("bounds"),
+                tiledMapEntity.GetComponent<TiledMapRenderer>().TiledMap.GetObjectGroup("move_cost"));
         }
 
         private void createCharacter()

@@ -31,7 +31,7 @@ namespace StratMono.System
         public GridEntity AddToGridTile(GridEntity gridEntity, int x, int y)
         {
             entityToGridTileMap.Add(gridEntity.Name, new Point(x, y));
-            GridTiles[x, y].OccupyingEntity = gridEntity;
+            GridTiles[x, y].AddToTile(gridEntity);
 
             var worldPosition = new Vector2(_gridTileWidth * x, _gridTileHeight * y);
             gridEntity.Position = worldPosition;
@@ -71,7 +71,7 @@ namespace StratMono.System
             {
                 Point oldGridTileCoords = entityToGridTileMap[name];
                 entityToGridTileMap.Remove(name);
-                GridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].OccupyingEntity = null;
+                GridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].RemoveFromTile(name);
             }
         }
 
@@ -125,7 +125,7 @@ namespace StratMono.System
 
     public class GridTile
     {
-        public GridEntity OccupyingEntity { get; set; }
+        public Dictionary<string, GridEntity> OccupyingEntities = new Dictionary<string, GridEntity>();
         public int moveCost;
         public bool isAccessible;
 
@@ -133,6 +133,19 @@ namespace StratMono.System
         {
             isAccessible = true;
             moveCost = 1;
+        }
+
+        public void AddToTile(GridEntity gridEntity)
+        {
+            OccupyingEntities.Add(gridEntity.Name, gridEntity);
+        }
+
+        public void RemoveFromTile(string gridEntityName)
+        {
+            if (OccupyingEntities.ContainsKey(gridEntityName))
+            {
+                OccupyingEntities.Remove(gridEntityName);
+            }
         }
     }
 }

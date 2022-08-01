@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework;
 using StratMono.Entities;
 using Nez.Tiled;
 using Nez;
+using StratMono.Components;
 
 namespace StratMono.System
 {
@@ -32,9 +33,9 @@ namespace StratMono.System
             setupGridTiles(boundsObjectGroup, moveCostObjectGroup);
         }
 
-        public void Update(Entity cursorEntity, List<GridEntity> gridEntities)
+        public void Update(Entity cursorEntity, List<GridEntity> gridEntities, BoundedMovingCamera camera)
         {
-            handleInput(cursorEntity.Position);
+            handleInput(cursorEntity.Position, camera);
             snapEntitiesToGrid(gridEntities);
         }
 
@@ -49,14 +50,13 @@ namespace StratMono.System
             return gridEntity;
         }
 
-        private void handleInput(Vector2 currentCursorPosition)
+        private void handleInput(Vector2 currentCursorPosition, BoundedMovingCamera camera)
         {
             if (Input.LeftMouseButtonPressed 
                 || Input.GamePads[0].IsRightTriggerPressed()
                 || Input.GamePads[0].IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A))
             {
-                selectCurrentTile(currentCursorPosition);
-                Console.WriteLine(selectedTile);
+                selectCurrentTile(currentCursorPosition, camera);
             }
         }
 
@@ -76,6 +76,11 @@ namespace StratMono.System
             return new Vector2((int)x, (int)y);
         }
 
+        private Vector2 getGridTilePosition(Vector2 gridTile)
+        {
+            return new Vector2(gridTile.X * _gridTileWidth, gridTile.Y * _gridTileHeight);
+        }
+
         private void removeFromGridTile(string name)
         {
             if (entityToGridTileMap.ContainsKey(name))
@@ -86,15 +91,20 @@ namespace StratMono.System
             }
         }
 
-        private void selectCurrentTile(Vector2 currentCursorPosition)
+        private void selectCurrentTile(Vector2 currentCursorPosition, BoundedMovingCamera camera)
         {
             Vector2 nearestGridTile = getNearestGridTile(currentCursorPosition);
-            if (selectedTile.Equals(NoSelectedTile)) // if no tile is currently selected
+
+            // if no tile is currently selected or if the selected tile is different from the current
+            if (selectedTile.Equals(NoSelectedTile) || !selectedTile.Equals(nearestGridTile))
             {
                 selectedTile = nearestGridTile;
-            } else if (!selectedTile.Equals(nearestGridTile)) //if selected tile doesn't equal the new selected tile
-            {
-                selectedTile = nearestGridTile;
+
+                // move the camera so that the selected tile is in the middle of the screen
+                var selectedTilePosition = getGridTilePosition(selectedTile);
+                camera.MoveGoal = new Vector2(
+                    selectedTilePosition.X + (_gridTileWidth / 2),
+                    selectedTilePosition.Y + (_gridTileHeight / 2));
             } else
             {
                 selectedTile = NoSelectedTile;

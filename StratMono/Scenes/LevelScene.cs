@@ -51,8 +51,13 @@ namespace StratMono.Scenes
             updateInputMode();
 
             var cursorEntity = FindEntity(CursorEntityName);
-            _tileCursorSystem.Update(cursorEntity, Camera);
-            _gridSystem.Update(cursorEntity, EntitiesOfType<GridEntity>());
+            _tileCursorSystem.Update(
+                cursorEntity, 
+                Camera);
+            _gridSystem.Update(
+                cursorEntity, 
+                EntitiesOfType<GridEntity>(), 
+                (BoundedMovingCamera) Camera);
         }
 
         private void createTiledMap()

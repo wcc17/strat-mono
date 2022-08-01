@@ -46,12 +46,18 @@ namespace StratMono.Scenes
         {
             base.Update();
 
-            _gridSystem.SnapEntitiesToGrid(EntitiesOfType<GridEntity>());
-
             if (Input.LeftMouseButtonPressed)
             {
                 _gridSystem.SelectCurrentTile(Input.MousePosition);
             }
+
+            // TODO: system?
+            var cursorEntity = FindEntity(CursorEntityName);
+            cursorEntity.Position = new Vector2(
+                Input.MousePosition.X + (Camera.Position.X - Screen.Width / 2),
+                Input.MousePosition.Y + (Camera.Position.Y - Screen.Height / 2));
+
+            _gridSystem.SnapEntitiesToGrid(EntitiesOfType<GridEntity>());
         }
 
         private void createTiledMap()
@@ -89,16 +95,17 @@ namespace StratMono.Scenes
         {
             var characterEntity = new GridEntity();
             characterEntity.AddComponent(createSpriteAnimator(CharacterSpriteName));
-            characterEntity.AddComponent(new GridEntityMovement());
+            characterEntity.AddComponent(new CharacterMovement());
             addToGrid(characterEntity, 10, 12);
         }
 
         private void createGridCursor()
         {
             var cursorEntity = new GridEntity(CursorEntityName);
-            cursorEntity.AddComponent(createSpriteAnimator(CursorSpriteName));
-            cursorEntity.AddComponent(new GridCursorMovement());
-            cursorEntity.AddComponent(new MouseMovement());
+            var spriteAnimator = createSpriteAnimator(CursorSpriteName);
+            spriteAnimator.Play("default", SpriteAnimator.LoopMode.PingPong);
+
+            cursorEntity.AddComponent(spriteAnimator);
             addToGrid(cursorEntity, 5, 13);
         }
 

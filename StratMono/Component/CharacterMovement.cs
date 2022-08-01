@@ -6,7 +6,7 @@ using Nez.Sprites;
 
 namespace StratMono.Components
 {
-    public class GridEntityMovement : Component, IUpdatable
+    public class CharacterMovement : Component, IUpdatable
     {
         public void Update()
         {

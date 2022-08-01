@@ -21,6 +21,7 @@ namespace StratMono
             Scene = new LevelScene();
 
             //Graphics.Instance.Batcher.ShouldRoundDestinations = false;
+
             // This fixed the weird issue where 1 pixel borders/whatever were being cut out and not shown
             Batcher.UseFnaHalfPixelMatrix = true;
         }

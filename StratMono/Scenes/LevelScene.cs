@@ -14,6 +14,14 @@ namespace StratMono.Scenes
 {
     public class LevelScene : Scene
     {
+        enum UpdateOrder : int
+        {
+            TileMap = 0,
+            TileHighlight = 1,
+            Character = 2,
+            Cursor = 3,
+        }
+
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
         private const string CursorEntityName = "cursor";
@@ -47,37 +55,22 @@ namespace StratMono.Scenes
             createCharacter();
             createGridCursorEntity();
 
-            var width = 64;
-            var height = 64;
-            Texture2D texture = new Texture2D(Core.GraphicsDevice, width, height);
-            Color[] colors = new Color[64 * 64];
-            for (var x = 0; x < width; x++)
-            {
-                colors[(x * width)] = Color.Red;
-                colors[(x * width) + height - 1] = Color.Red;
+            int opacity = 200;
+            Color blueFill = new Color(99, 155, 255, opacity);
+            Color blueOutline = new Color(91, 110, 225, opacity);
+            GridEntity shapeEntity1 = new GridEntity("shape1");
+            shapeEntity1.AddComponent(createRectangleOutlineSprite(64, 64, blueOutline, 3));
+            shapeEntity1.AddComponent(createRectangleSprite(64, 64, blueFill));
+            shapeEntity1.SetUpdateOrder((int) UpdateOrder.TileHighlight);
+            addToGrid(shapeEntity1, 6, 6);
 
-                for (var y = 0; y < height; y++)
-                {
-                    if (x == 0)
-                    {
-                        colors[(x * width) + y] = Color.Red;
-                    }
-
-                    if (x == width - 1)
-                    {
-                        colors[(x * width) + y] = Color.Red;
-                    }
-                }
-            }
-
-            texture.SetData(colors);
-            Sprite sprite = new Sprite(texture, 0, 0, 64, 64);
-            sprite.Origin = new Vector2(0, 0);
-            SpriteRenderer shape = new SpriteRenderer(sprite);
-            GridEntity shapeEntity = new GridEntity("shape");
-            shapeEntity.AddComponent(shape);
-            addToGrid(shapeEntity, 6, 6);
-            Console.WriteLine(shapeEntity.Position);
+            Color redFill = new Color(217, 87, 99, opacity);
+            Color redOutline = new Color(172, 50, 50, opacity);
+            GridEntity shapeEntity2 = new GridEntity("shape2");
+            shapeEntity2.AddComponent(createRectangleOutlineSprite(64, 64, redOutline, 3));
+            shapeEntity2.AddComponent(createRectangleSprite(64, 64, redFill));
+            shapeEntity2.SetUpdateOrder((int)UpdateOrder.TileHighlight);
+            addToGrid(shapeEntity2, 7, 6);
         }
 
         public override void Update()
@@ -108,6 +101,7 @@ namespace StratMono.Scenes
             var tiledMap = Content.LoadTiledMap("Content/assets/tiles/test_scene_map.tmx");
             var tiledMapRenderer = new TiledMapRenderer(tiledMap);
             tiledMapEntity.AddComponent(tiledMapRenderer);
+            tiledMapEntity.SetUpdateOrder((int)UpdateOrder.TileMap);
         }
 
         private void createCamera()
@@ -136,10 +130,22 @@ namespace StratMono.Scenes
 
         private void createCharacter()
         {
-            var characterEntity = new GridEntity();
-            characterEntity.AddComponent(createSpriteAnimator(CharacterSpriteName));
-            characterEntity.AddComponent(new CharacterMovement());
-            addToGrid(characterEntity, 10, 12);
+            var tiledMapEntity = FindEntity(TiledMapEntityName);
+            var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
+            var tiledMap = tiledMapRenderer.TiledMap;
+
+            for (var i = 0; i < 100; i++)
+            {
+                var characterEntity = new GridEntity();
+                characterEntity.AddComponent(createSpriteAnimator(CharacterSpriteName));
+                characterEntity.AddComponent(new CharacterMovement());
+                characterEntity.SetUpdateOrder((int)UpdateOrder.Character);
+
+                int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64);
+                int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64);
+                addToGrid(characterEntity, x, y);
+
+            }
         }
 
         private void createGridCursorEntity()
@@ -148,6 +154,7 @@ namespace StratMono.Scenes
             var spriteAnimator = createSpriteAnimator(CursorSpriteName);
             spriteAnimator.Play("default", SpriteAnimator.LoopMode.PingPong);
             cursorEntity.AddComponent(spriteAnimator);
+            cursorEntity.SetUpdateOrder((int)UpdateOrder.Cursor);
             addToGrid(cursorEntity, 5, 13);
         }
 
@@ -205,6 +212,51 @@ namespace StratMono.Scenes
                     InputMode.CurrentInputMode = InputModeType.Controller;
                 }
             }
+        }
+
+        private SpriteRenderer createRectangleOutlineSprite(int width, int height, Color color, int lineWidth)
+        {
+            Texture2D texture = new Texture2D(Core.GraphicsDevice, width, height);
+            Color[] colors = new Color[width * height];
+            for (var x = 0; x < width; x++)
+            {
+                for (var z = 0; z < lineWidth; z++)
+                {
+                    colors[(x * width) + z] = color;
+                    colors[(x * width) + height - 1 - z] = color;
+                }
+
+                for (var y = 0; y < height; y++)
+                {
+                    if (x >= 0 && x < lineWidth)
+                    {
+                        colors[(x * width) + y] = color;
+                    }
+
+                    if (x <= width - 1 && x >= width - 1 - lineWidth)
+                    {
+                        colors[(x * width) + y] = color;
+                    }
+                }
+            }
+            texture.SetData(colors);
+
+            Sprite sprite = new Sprite(texture, 0, 0, width, height);
+            sprite.Origin = new Vector2(0, 0);
+            SpriteRenderer shape = new SpriteRenderer(sprite);
+            return shape;
+        }
+
+        private SpriteRenderer createRectangleSprite(int width, int height, Color color)
+        {
+            Texture2D texture = new Texture2D(Core.GraphicsDevice, 1, 1);
+            Color[] colors = new Color[] { color };
+            texture.SetData(colors);
+
+            Sprite sprite = new Sprite(texture, 0, 0, width, height);
+            sprite.Origin = new Vector2(0, 0);
+            SpriteRenderer shape = new SpriteRenderer(sprite);
+            return shape;
         }
     }
 }

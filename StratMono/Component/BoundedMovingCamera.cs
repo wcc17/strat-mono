@@ -1,59 +1,75 @@
-﻿using Nez;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Nez;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 
-namespace StratMono.Components
+namespace StratMono.Scenes
 {
-    public class BoundedMovingCamera : Camera, IUpdatable
+    class BoundedMovingCamera : Camera, IUpdatable
     {
-        private RectangleF _levelBounds;
-        private int _cameraMoveSpeed = 10;
+        private readonly int _cameraMoveSpeed = 10;
 
-        public BoundedMovingCamera(RectangleF levelBounds)
+        private readonly Rectangle _levelBounds;
+        private VirtualIntegerAxis _cameraMovementXAxisInput;
+        private VirtualIntegerAxis _cameraMovementYAxisInput;
+        public Vector2 _cameraMovementDirection = new Vector2(0, 0);
+
+        public BoundedMovingCamera(Rectangle levelBounds) : base()
         {
             _levelBounds = levelBounds;
+
+            // horizontal input from dpad, left stick or keyboard left/right
+            _cameraMovementXAxisInput = new VirtualIntegerAxis();
+            _cameraMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadDpadLeftRight());
+            _cameraMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadLeftStickX());
+            _cameraMovementXAxisInput.Nodes.Add(
+                new VirtualAxis.KeyboardKeys(VirtualInput.OverlapBehavior.TakeNewer, Keys.A, Keys.D));
+
+            // vertical input from dpad, left stick or keyboard up/down
+            _cameraMovementYAxisInput = new VirtualIntegerAxis();
+            _cameraMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadDpadUpDown());
+            _cameraMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadLeftStickY());
+            _cameraMovementYAxisInput.Nodes.Add(
+                new VirtualAxis.KeyboardKeys(VirtualInput.OverlapBehavior.TakeNewer, Keys.W, Keys.S));
         }
 
-        public override void OnAddedToEntity()
-        {
-            Entity.AddComponent(new ControllerMovement());
-        }
-        
         public void Update()
         {
-            handleMovement();
-            handleBounds();
+            updatePosition();
+            adjustPositionForBounds();
         }
 
-        private void handleMovement()
+        private void updatePosition()
         {
-            var controllerMovement = Entity.GetComponent<ControllerMovement>();
+            _cameraMovementDirection.X = _cameraMovementXAxisInput.Value;
+            _cameraMovementDirection.Y = _cameraMovementYAxisInput.Value;
 
-            if (controllerMovement.MoveDirection.X > 0)
+            if (_cameraMovementDirection.X > 0)
             {
                 Position = new Vector2(Position.X + _cameraMoveSpeed, Position.Y);
             }
 
-            if (controllerMovement.MoveDirection.X < 0)
+            if (_cameraMovementDirection.X < 0)
             {
                 Position = new Vector2(Position.X - _cameraMoveSpeed, Position.Y);
             }
 
-            if (controllerMovement.MoveDirection.Y > 0)
+            if (_cameraMovementDirection.Y > 0)
             {
                 Position = new Vector2(Position.X, Position.Y + _cameraMoveSpeed);
             }
 
-            if (controllerMovement.MoveDirection.Y < 0)
+            if (_cameraMovementDirection.Y < 0)
             {
                 Position = new Vector2(Position.X, Position.Y - _cameraMoveSpeed);
             }
         }
 
-        private void handleBounds()
+        private void adjustPositionForBounds()
         {
-            // actual Camera bounds. "_levelBounds" is the entire map we want to keep the rectangle inside. Position is the center of the camera (bounds.width/2, bounds.height,2)
-            var bounds = this.Bounds;
-
+            var bounds = Bounds;
             if (bounds.X < _levelBounds.Left)
             {
                 Position = new Vector2(bounds.Width / 2, Position.Y);

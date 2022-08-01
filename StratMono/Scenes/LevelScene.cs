@@ -52,7 +52,6 @@ namespace StratMono.Scenes
             {
                 _gridSystem.SelectCurrentTile(Input.MousePosition);
             }
-            Console.WriteLine(_gridSystem.selectedTile);
         }
 
         private void createTiledMap()

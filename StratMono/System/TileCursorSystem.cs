@@ -85,6 +85,7 @@ namespace StratMono.System
                 {
                     _disableCursorControllerMovement = true;
 
+                    // TODO: replace with https://github.com/prime31/Nez/blob/master/FAQs/Nez-Core.md#timermanager
                     _timer = new Timer(50);
                     _timer.Enabled = true;
                     _timer.Elapsed += (source, e) =>

@@ -12,6 +12,7 @@ namespace StratMono
             
             using var game = new StratMonoGame();
             game.IsFixedTimeStep = true;
+            game.TargetElapsedTime = TimeSpan.FromSeconds(1f / 60);
             game.Run();
         }
         

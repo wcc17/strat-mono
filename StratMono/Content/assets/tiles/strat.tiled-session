@@ -47,11 +47,11 @@
             }
         },
         "test_scene_map.tmx": {
-            "scale": 1,
+            "scale": 8,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 435,
-                "y": 408.5
+                "x": 73.125,
+                "y": 59.375
             }
         },
         "test_scene_tileset.json": {

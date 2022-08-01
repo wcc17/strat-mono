@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Sprites;
+using Nez.Textures;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.System;
@@ -31,8 +33,10 @@ namespace StratMono.Scenes
             var defaultRenderer = new DefaultRenderer();
             this.AddRenderer(defaultRenderer);
 
-            SetDesignResolution(1920, 1080, SceneResolutionPolicy.None);
+
+            //SetDesignResolution(1920, 1080, SceneResolutionPolicy.ShowAllPixelPerfect);
             Screen.SetSize(1920, 1080);
+            Screen.IsFullscreen = true;
 
             _spriteAtlas = Content.LoadSpriteAtlas("Content/roots.atlas");
             _tileCursorSystem = new TileCursorSystem();
@@ -42,6 +46,38 @@ namespace StratMono.Scenes
             createGrid();
             createCharacter();
             createGridCursorEntity();
+
+            var width = 64;
+            var height = 64;
+            Texture2D texture = new Texture2D(Core.GraphicsDevice, width, height);
+            Color[] colors = new Color[64 * 64];
+            for (var x = 0; x < width; x++)
+            {
+                colors[(x * width)] = Color.Red;
+                colors[(x * width) + height - 1] = Color.Red;
+
+                for (var y = 0; y < height; y++)
+                {
+                    if (x == 0)
+                    {
+                        colors[(x * width) + y] = Color.Red;
+                    }
+
+                    if (x == width - 1)
+                    {
+                        colors[(x * width) + y] = Color.Red;
+                    }
+                }
+            }
+
+            texture.SetData(colors);
+            Sprite sprite = new Sprite(texture, 0, 0, 64, 64);
+            sprite.Origin = new Vector2(0, 0);
+            SpriteRenderer shape = new SpriteRenderer(sprite);
+            GridEntity shapeEntity = new GridEntity("shape");
+            shapeEntity.AddComponent(shape);
+            addToGrid(shapeEntity, 6, 6);
+            Console.WriteLine(shapeEntity.Position);
         }
 
         public override void Update()
@@ -55,9 +91,15 @@ namespace StratMono.Scenes
                 cursorEntity, 
                 Camera);
             _gridSystem.Update(
-                cursorEntity, 
-                EntitiesOfType<GridEntity>(), 
-                (BoundedMovingCamera) Camera);
+                cursorEntity,
+                EntitiesOfType<GridEntity>(),
+                (BoundedMovingCamera)Camera);
+
+            Console.WriteLine(cursorEntity.Position);
+            Console.WriteLine(cursorEntity.LocalPosition);
+            Console.WriteLine(cursorEntity.GetComponent<SpriteAnimator>().Bounds);
+            Console.WriteLine(cursorEntity.GetComponent<SpriteAnimator>());
+            Console.WriteLine();
         }
 
         private void createTiledMap()
@@ -77,6 +119,7 @@ namespace StratMono.Scenes
             var cameraEntity = CreateEntity(CameraEntityName);
             var levelBounds = new RectangleF(Vector2.Zero, new Vector2(tiledMap.WorldWidth, tiledMap.WorldHeight));
             Camera = cameraEntity.AddComponent(new BoundedMovingCamera(levelBounds));
+            //Camera.ZoomIn(5);
         }
 
         private void createGrid()
@@ -104,7 +147,6 @@ namespace StratMono.Scenes
             var cursorEntity = new GridEntity(CursorEntityName);
             var spriteAnimator = createSpriteAnimator(CursorSpriteName);
             spriteAnimator.Play("default", SpriteAnimator.LoopMode.PingPong);
-
             cursorEntity.AddComponent(spriteAnimator);
             addToGrid(cursorEntity, 5, 13);
         }

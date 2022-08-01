@@ -5,7 +5,7 @@ using Nez;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 
-namespace StratMono.Scenes
+namespace StratMono.Components
 {
     class BoundedMovingCamera : Camera, IUpdatable
     {

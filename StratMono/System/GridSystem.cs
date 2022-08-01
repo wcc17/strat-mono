@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StratMono.Entities;
 using Nez.Tiled;
+using Nez;
 
 namespace StratMono.System
 {
@@ -31,6 +32,12 @@ namespace StratMono.System
             setupGridTiles(boundsObjectGroup, moveCostObjectGroup);
         }
 
+        public void Update(Entity cursorEntity, List<GridEntity> gridEntities)
+        {
+            handleInput(cursorEntity.Position);
+            snapEntitiesToGrid(gridEntities);
+        }
+
         public GridEntity AddToGridTile(GridEntity gridEntity, int x, int y)
         {
             entityToGridTileMap.Add(gridEntity.Name, new Point(x, y));
@@ -42,7 +49,18 @@ namespace StratMono.System
             return gridEntity;
         }
 
-        public Vector2 GetNearestGridTile(Vector2 position)
+        private void handleInput(Vector2 currentCursorPosition)
+        {
+            if (Input.LeftMouseButtonPressed 
+                || Input.GamePads[0].IsRightTriggerPressed()
+                || Input.GamePads[0].IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A))
+            {
+                selectCurrentTile(currentCursorPosition);
+                Console.WriteLine(selectedTile);
+            }
+        }
+
+        private Vector2 getNearestGridTile(Vector2 position)
         {
             var x = Math.Floor(position.X / _gridTileWidth);
             var y = Math.Floor(position.Y / _gridTileHeight);
@@ -58,17 +76,7 @@ namespace StratMono.System
             return new Vector2((int)x, (int)y);
         }
 
-        public void SnapEntitiesToGrid(List<GridEntity> gridEntities)
-        {
-            foreach (var gridEntity in gridEntities)
-            {
-                Vector2 gridTile = GetNearestGridTile(gridEntity.Position);
-                RemoveFromGridTile(gridEntity.Name);
-                AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
-            }
-        }
-
-        public void RemoveFromGridTile(string name)
+        private void removeFromGridTile(string name)
         {
             if (entityToGridTileMap.ContainsKey(name))
             {
@@ -78,9 +86,9 @@ namespace StratMono.System
             }
         }
 
-        public void SelectCurrentTile(Vector2 currentMousePosition)
+        private void selectCurrentTile(Vector2 currentCursorPosition)
         {
-            Vector2 nearestGridTile = GetNearestGridTile(currentMousePosition);
+            Vector2 nearestGridTile = getNearestGridTile(currentCursorPosition);
             if (selectedTile.Equals(NoSelectedTile)) // if no tile is currently selected
             {
                 selectedTile = nearestGridTile;
@@ -90,6 +98,16 @@ namespace StratMono.System
             } else
             {
                 selectedTile = NoSelectedTile;
+            }
+        }
+
+        private void snapEntitiesToGrid(List<GridEntity> gridEntities)
+        {
+            foreach (var gridEntity in gridEntities)
+            {
+                Vector2 gridTile = getNearestGridTile(gridEntity.Position);
+                removeFromGridTile(gridEntity.Name);
+                AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
             }
         }
 

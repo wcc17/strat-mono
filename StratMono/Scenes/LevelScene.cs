@@ -6,7 +6,7 @@ using Nez.Sprites;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.System;
-using System.Timers;
+using StratMono.Util;
 
 namespace StratMono.Scenes
 {
@@ -24,16 +24,10 @@ namespace StratMono.Scenes
 
         private SpriteAtlas _spriteAtlas;
         private GridSystem _gridSystem;
-
-        private VirtualIntegerAxis _cursorMovementXAxisInput;
-        private VirtualIntegerAxis _cursorMovementYAxisInput;
-        private Vector2 _cursorMovementDirection = new Vector2(0, 0);
-        private Timer _timer = new Timer();
-        private bool _disableCursorControllerMovement;
+        private TileCursorSystem _tileCursorSystem;
 
         public override void Initialize()
         {
-            //TODO: move out of scene?
             var defaultRenderer = new DefaultRenderer();
             this.AddRenderer(defaultRenderer);
 
@@ -41,114 +35,24 @@ namespace StratMono.Scenes
             Screen.SetSize(1920, 1080);
 
             _spriteAtlas = Content.LoadSpriteAtlas("Content/roots.atlas");
+            _tileCursorSystem = new TileCursorSystem();
 
             createTiledMap();
             createCamera();
             createGrid();
             createCharacter();
-            createGridCursor();
+            createGridCursorEntity();
         }
 
         public override void Update()
         {
             base.Update();
 
-            if (Input.LeftMouseButtonPressed)
-            {
-                _gridSystem.SelectCurrentTile(Input.MousePosition);
-            }
+            updateInputMode();
 
-            // TODO: system?
             var cursorEntity = FindEntity(CursorEntityName);
-
-            if (Input.MousePositionDelta.X > 0 || Input.MousePositionDelta.Y > 0)
-            {
-                cursorEntity.Position = new Vector2(
-                    Input.MousePosition.X + (Camera.Position.X - Screen.Width / 2),
-                    Input.MousePosition.Y + (Camera.Position.Y - Screen.Height / 2));
-            } else
-            {
-                if (!_disableCursorControllerMovement)
-                {
-                    var movementSpeedOrWhatever = 64;
-                    _cursorMovementDirection.X = _cursorMovementXAxisInput.Value;
-                    _cursorMovementDirection.Y = _cursorMovementYAxisInput.Value;
-
-                    if (_cursorMovementDirection.X > 0)
-                    {
-                        cursorEntity.Position = new Vector2(
-                            cursorEntity.Position.X + movementSpeedOrWhatever, 
-                            cursorEntity.Position.Y);
-                    }
-
-                    if (_cursorMovementDirection.X < 0)
-                    {
-                        cursorEntity.Position = new Vector2(
-                            cursorEntity.Position.X - movementSpeedOrWhatever, 
-                            cursorEntity.Position.Y);
-                    }
-
-                    if (_cursorMovementDirection.Y > 0)
-                    {
-                        cursorEntity.Position = new Vector2(
-                            cursorEntity.Position.X, 
-                            cursorEntity.Position.Y - movementSpeedOrWhatever);
-                    }
-
-                    if (_cursorMovementDirection.Y < 0)
-                    {
-                        cursorEntity.Position = new Vector2(
-                            cursorEntity.Position.X, 
-                            cursorEntity.Position.Y + movementSpeedOrWhatever);
-                    }
-
-                    if (_cursorMovementDirection.X != 0 || _cursorMovementDirection.Y != 0)
-                    {
-                        _disableCursorControllerMovement = true;
-
-                        _timer = new Timer(50);
-                        _timer.Enabled = true;
-                        _timer.Elapsed += (source, e) =>
-                        {
-                            _disableCursorControllerMovement = false;
-                            _timer.Enabled = false;
-                        };
-                    }
-                }
-
-                var bounds = Camera.Bounds;
-                var cursorEntitySpriteAnimator = cursorEntity.GetComponent<SpriteAnimator>();
-                if (cursorEntity.Position.X < bounds.X)
-                {
-                    cursorEntity.Position = new Vector2(
-                        bounds.X, 
-                        cursorEntity.Position.Y);
-                }
-
-                if (cursorEntity.Position.X + cursorEntitySpriteAnimator.Width > bounds.Right)
-                {
-                    cursorEntity.Position = new Vector2(
-                        bounds.Right - cursorEntitySpriteAnimator.Width, 
-                        cursorEntity.Position.Y);
-                }
-
-                if (cursorEntity.Position.Y < bounds.Top)
-                {
-                    cursorEntity.Position = new Vector2(
-                        cursorEntity.Position.X,
-                        bounds.Y);
-                }
-
-                if (cursorEntity.Position.Y + cursorEntitySpriteAnimator.Height > bounds.Bottom)
-                {
-                    cursorEntity.Position = new Vector2(
-                        cursorEntity.Position.X,
-                        bounds.Bottom - cursorEntitySpriteAnimator.Height);
-                }
-            }
-            // TODO: end system?
-
-            _gridSystem.SnapEntitiesToGrid(EntitiesOfType<GridEntity>());
+            _tileCursorSystem.Update(cursorEntity, Camera);
+            _gridSystem.Update(cursorEntity, EntitiesOfType<GridEntity>());
         }
 
         private void createTiledMap()
@@ -190,7 +94,7 @@ namespace StratMono.Scenes
             addToGrid(characterEntity, 10, 12);
         }
 
-        private void createGridCursor()
+        private void createGridCursorEntity()
         {
             var cursorEntity = new GridEntity(CursorEntityName);
             var spriteAnimator = createSpriteAnimator(CursorSpriteName);
@@ -198,12 +102,6 @@ namespace StratMono.Scenes
 
             cursorEntity.AddComponent(spriteAnimator);
             addToGrid(cursorEntity, 5, 13);
-
-            // TODO: consider moving elsewhere, see system comment in Update
-            _cursorMovementXAxisInput = new VirtualIntegerAxis();
-            _cursorMovementYAxisInput = new VirtualIntegerAxis();
-            _cursorMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadRightStickX());
-            _cursorMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadRightStickY());
         }
 
         private GridEntity addToGrid(GridEntity entity, int x, int y)
@@ -213,7 +111,7 @@ namespace StratMono.Scenes
             return entity;
         }
 
-        public SpriteAnimator createSpriteAnimator(string spriteName)
+        private SpriteAnimator createSpriteAnimator(string spriteName)
         {
             var animationNames = _spriteAtlas.AnimationNames
                 .Where(animationName => animationName.Contains(spriteName))
@@ -230,6 +128,36 @@ namespace StratMono.Scenes
             }
 
             return animator;
+        }
+
+        //TODO: needs to be updated as more controls are added
+        private void updateInputMode()
+        {
+            if (Input.CurrentKeyboardState.GetPressedKeys().Length > 0
+                || Input.MousePositionDelta.X > 0
+                || Input.MousePositionDelta.Y > 0)
+            {
+                InputMode.CurrentInputMode = InputModeType.KeyboardMouse;
+            }
+
+            // NOTE: only supporting one gamepad for now
+            if (Input.GamePads.Length > 0 && Input.GamePads[0].IsConnected())
+            {
+                var gamepad = Input.GamePads[0];
+                if (gamepad.IsLeftStickDown()
+                    || gamepad.IsLeftStickUp()
+                    || gamepad.IsLeftStickRight()
+                    || gamepad.IsLeftStickLeft()
+                    || gamepad.IsRightStickDown()
+                    || gamepad.IsRightStickUp()
+                    || gamepad.IsRightStickRight()
+                    || gamepad.IsRightStickLeft()
+                    || gamepad.IsRightTriggerPressed()
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A))
+                {
+                    InputMode.CurrentInputMode = InputModeType.Controller;
+                }
+            }
         }
     }
 }

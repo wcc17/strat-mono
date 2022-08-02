@@ -10,13 +10,13 @@ namespace StratMono.System
 {
     public class GridSystem
     {
-        public GridTile[,] GridTiles { get; }
+        private GridTile[,] _gridTiles;
         private int _gridTileWidth, _gridTileHeight;
         private int _mapWidthInGridTiles, _mapHeightInGridTiles;
-        private Dictionary<string, Point> entityToGridTileMap = new Dictionary<string, Point>();
+        private Dictionary<string, Point> _entityToGridTileMap = new Dictionary<string, Point>();
 
-        private readonly Vector2 NoSelectedTile = new Vector2(-1, -1);
-        public Vector2 selectedTile = new Vector2(-1, -1);
+        private readonly Point _noSelectedTile = new Point(-1, -1);
+        private Point _selectedTile = new Point(-1, -1);
 
         public GridSystem(
             Point tileDimensions,
@@ -28,7 +28,7 @@ namespace StratMono.System
             _gridTileHeight = tileDimensions.Y * 2;
             _mapWidthInGridTiles = worldDimensions.X / _gridTileWidth;
             _mapHeightInGridTiles = worldDimensions.Y / _gridTileHeight;
-            GridTiles = new GridTile[_mapWidthInGridTiles, _mapHeightInGridTiles];
+            _gridTiles = new GridTile[_mapWidthInGridTiles, _mapHeightInGridTiles];
 
             setupGridTiles(boundsObjectGroup, moveCostObjectGroup);
         }
@@ -41,13 +41,77 @@ namespace StratMono.System
 
         public GridEntity AddToGridTile(GridEntity gridEntity, int x, int y)
         {
-            entityToGridTileMap.Add(gridEntity.Name, new Point(x, y));
-            GridTiles[x, y].AddToTile(gridEntity);
+            _entityToGridTileMap.Add(gridEntity.Name, new Point(x, y));
+            _gridTiles[x, y].AddToTile(gridEntity);
 
             var worldPosition = new Vector2(_gridTileWidth * x, _gridTileHeight * y);
             gridEntity.Position = worldPosition;
 
             return gridEntity;
+        }
+
+        public List<GridEntity> GetEntitiesFromSelectedTile()
+        {
+            if (!_selectedTile.Equals(_noSelectedTile))
+            {
+                return _gridTiles[(int)_selectedTile.X, (int)_selectedTile.Y].OccupyingEntities;
+            }
+
+            return null;
+        }
+
+        public HashSet<GridTile> IdentifyPossibleTilesToMoveToFromSelectedTile(int maxMovementCost)
+        {
+            var startTile = _gridTiles[_selectedTile.X, _selectedTile.Y];
+            var frontier = new SimplePriorityQueue<GridTile>();
+            var cameFrom = new Dictionary<GridTile, GridTile>();
+            var costSoFar = new Dictionary<GridTile, int>();
+            var inaccessibleTilesInRange = new HashSet<GridTile>();
+
+            frontier.Enqueue(startTile, 0);
+            cameFrom.Add(startTile, null); //TODO: this is all the paths we can take to a certain tile
+            costSoFar.Add(startTile, 0);
+
+            while (frontier.Count > 0)
+            {
+                var currentTile = frontier.Dequeue();
+                var costToGetHere = costSoFar[currentTile];
+
+                if (costToGetHere < maxMovementCost)
+                {
+                    List<GridTile> neighbors = getNeighborsOfTile(currentTile);
+                    foreach (GridTile neighbor in neighbors)
+                    {
+                        if (neighbor.CharacterCanMoveThroughThisTile)
+                        {
+                            var newCost = costToGetHere + neighbor.MoveCost;
+
+                            if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
+                            {
+                                costSoFar.Add(neighbor, newCost);
+                                cameFrom.Add(neighbor, currentTile);
+                                frontier.Enqueue(neighbor, newCost);
+                            }
+                        } else
+                        {
+                            inaccessibleTilesInRange.Add(neighbor);
+                        }
+                    }
+                } 
+            }
+
+            var tilesWithinRange = new HashSet<GridTile>(inaccessibleTilesInRange);
+            foreach (var tile in costSoFar.Keys)
+            {
+                tilesWithinRange.Add(tile);
+            }
+
+            return tilesWithinRange;
+        }
+
+        public Point GetTileCoordinates(GridTile tile)
+        {
+            return this.convert1dIndexTo2dPoint(tile.Id, _mapWidthInGridTiles, _mapHeightInGridTiles);
         }
 
         private void handleInput(Vector2 currentCursorPosition, BoundedMovingCamera camera)
@@ -60,7 +124,7 @@ namespace StratMono.System
             }
         }
 
-        private Vector2 getNearestGridTile(Vector2 position)
+        private Point getNearestGridTile(Vector2 position)
         {
             var x = Math.Floor(position.X / _gridTileWidth);
             var y = Math.Floor(position.Y / _gridTileHeight);
@@ -73,41 +137,41 @@ namespace StratMono.System
             x = (x >= _mapWidthInGridTiles) ? _mapWidthInGridTiles - 1 : x;
             y = (y >= _mapHeightInGridTiles) ? _mapHeightInGridTiles - 1 : y;
 
-            return new Vector2((int)x, (int)y);
+            return new Point((int)x, (int)y);
         }
 
-        private Vector2 getGridTilePosition(Vector2 gridTile)
+        private Vector2 getGridTilePosition(Point gridTile)
         {
             return new Vector2(gridTile.X * _gridTileWidth, gridTile.Y * _gridTileHeight);
         }
 
         private void removeFromGridTile(string name)
         {
-            if (entityToGridTileMap.ContainsKey(name))
+            if (_entityToGridTileMap.ContainsKey(name))
             {
-                Point oldGridTileCoords = entityToGridTileMap[name];
-                entityToGridTileMap.Remove(name);
-                GridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].RemoveFromTile(name);
+                Point oldGridTileCoords =_entityToGridTileMap[name];
+                _entityToGridTileMap.Remove(name);
+                _gridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].RemoveFromTile(name);
             }
         }
 
         private void selectCurrentTile(Vector2 currentCursorPosition, BoundedMovingCamera camera)
         {
-            Vector2 nearestGridTile = getNearestGridTile(currentCursorPosition);
+            Point nearestGridTile = getNearestGridTile(currentCursorPosition);
 
             // if no tile is currently selected or if the selected tile is different from the current
-            if (selectedTile.Equals(NoSelectedTile) || !selectedTile.Equals(nearestGridTile))
+            if (_selectedTile.Equals(_noSelectedTile) || !_selectedTile.Equals(nearestGridTile))
             {
-                selectedTile = nearestGridTile;
+                _selectedTile = nearestGridTile;
 
                 // move the camera so that the selected tile is in the middle of the screen
-                var selectedTilePosition = getGridTilePosition(selectedTile);
+                var selectedTilePosition = getGridTilePosition(_selectedTile);
                 camera.MoveGoal = new Vector2(
                     selectedTilePosition.X + (_gridTileWidth / 2),
                     selectedTilePosition.Y + (_gridTileHeight / 2));
             } else
             {
-                selectedTile = NoSelectedTile;
+                _selectedTile = _noSelectedTile;
             }
         }
 
@@ -115,7 +179,7 @@ namespace StratMono.System
         {
             foreach (var gridEntity in gridEntities)
             {
-                Vector2 gridTile = getNearestGridTile(gridEntity.Position);
+                Point gridTile = getNearestGridTile(gridEntity.Position);
                 removeFromGridTile(gridEntity.Name);
                 AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
             }
@@ -123,23 +187,24 @@ namespace StratMono.System
 
         private void setupGridTiles(TmxObjectGroup boundsObjectGroup, TmxObjectGroup moveCostObjectGroup)
         {
-            for (var x = 0; x < GridTiles.GetLength(0); x++)
+            for (var x = 0; x < _mapWidthInGridTiles; x++)
             {
-                for (var y = 0; y < GridTiles.GetLength(1); y++)
+                for (var y = 0; y < _mapHeightInGridTiles; y++)
                 {
-                    var gridTile = new GridTile();
-                    GridTiles[x, y] = gridTile;
+                    var gridTileId = convert2dPointTo1dIndex(new Point(x, y), _mapWidthInGridTiles);
+                    var gridTile = new GridTile(gridTileId);
+                    _gridTiles[x, y] = gridTile;
                 }
             }
 
             iterateObjectGroupRects(boundsObjectGroup, (x, y, obj) => 
             { 
-                GridTiles[(int)x, (int)y].isAccessible = false; 
+                _gridTiles[(int)x, (int)y].IsAccessible = false; 
             });
 
             iterateObjectGroupRects(moveCostObjectGroup, (x, y, obj) =>
             {
-                GridTiles[(int)x, (int)y].moveCost = Int32.Parse(obj.Properties["cost"]);
+                _gridTiles[(int)x, (int)y].MoveCost = Int32.Parse(obj.Properties["cost"]);
             });
         }
 
@@ -167,31 +232,138 @@ namespace StratMono.System
                 }
             }
         }
+
+        private List<GridTile> getNeighborsOfTile(GridTile tile)
+        {
+            var gridCoords = convert1dIndexTo2dPoint(tile.Id, _mapWidthInGridTiles, _mapHeightInGridTiles);
+            var x = gridCoords.X;
+            var y = gridCoords.Y;
+            List<GridTile> neighbors = new List<GridTile>();
+
+            if (x - 1 >= 0)
+            {
+                neighbors.Add(_gridTiles[x - 1, y]);
+            }
+            if (x + 1 < _mapWidthInGridTiles)
+            {
+                neighbors.Add(_gridTiles[x + 1, y]);
+            }
+            if (y - 1 >= 0)
+            {
+                neighbors.Add(_gridTiles[x, y - 1]);
+            }
+            if (y + 1 < _mapHeightInGridTiles)
+            {
+                neighbors.Add(_gridTiles[x, y + 1]);
+            }
+
+            return neighbors;
+        }
+
+        private Point convert1dIndexTo2dPoint(int index, int rowLength, int columnLength)
+        {
+            return new Point(index / rowLength, index % columnLength);
+        }
+
+        private int convert2dPointTo1dIndex(Point point, int rowLength)
+        {
+            return (point.X * rowLength) + point.Y;
+        }
     }
 
     public class GridTile
     {
-        public Dictionary<string, GridEntity> OccupyingEntities = new Dictionary<string, GridEntity>();
-        public int moveCost;
-        public bool isAccessible;
+        public int Id; // NOTE: also doubles as the index - can be converted to exact x,y coordinate by converting from 1d index to 2d index
+        public List<GridEntity> OccupyingEntities = new List<GridEntity>();
+        public int MoveCost;
 
-        public GridTile()
+        private bool _isAccessible;
+        public bool IsAccessible 
         {
-            isAccessible = true;
-            moveCost = 1;
+            get 
+            {
+                return _isAccessible;
+            }
+
+            set
+            {
+                _isAccessible = value;
+                if (!_isAccessible)
+                {
+                    _characterCanMoveThroughThisTile = false;
+                }
+            }
+        }
+
+        private bool _characterCanMoveThroughThisTile;
+        public bool CharacterCanMoveThroughThisTile 
+        {
+            get 
+            {
+                return _characterCanMoveThroughThisTile;
+            }
+
+            set 
+            {
+                if (!_isAccessible)
+                {
+                    _characterCanMoveThroughThisTile = false;
+                }
+
+                _characterCanMoveThroughThisTile = value;
+            }
+        }
+
+        public GridTile(int id)
+        {
+            Id = id;
+            MoveCost = 1;
+            IsAccessible = true;
+            CharacterCanMoveThroughThisTile = true;
         }
 
         public void AddToTile(GridEntity gridEntity)
         {
-            OccupyingEntities.Add(gridEntity.Name, gridEntity);
+            OccupyingEntities.Add(gridEntity);
+
+            if (gridEntity.GetType() == typeof(CharacterGridEntity))
+            {
+                CharacterCanMoveThroughThisTile = false;
+            }
         }
 
         public void RemoveFromTile(string gridEntityName)
         {
-            if (OccupyingEntities.ContainsKey(gridEntityName))
+            for (int i = OccupyingEntities.Count - 1; i >= 0; i--)
             {
-                OccupyingEntities.Remove(gridEntityName);
+                if (OccupyingEntities[i].Name.Equals(gridEntityName))
+                {
+                    if (OccupyingEntities[i].GetType() == typeof(CharacterGridEntity))
+                    {
+                        CharacterCanMoveThroughThisTile = true;
+                    }
+
+                    OccupyingEntities.RemoveAt(i);
+                    break;
+                }
             }
+        }
+
+        public override bool Equals(object obj)
+        {
+            var item = obj as GridTile;
+
+            if (item == null)
+            {
+                return false;
+            }
+
+            return this.Id.Equals(item.Id);
+        }
+
+        public override int GetHashCode()
+        {
+            return this.Id.GetHashCode();
         }
     }
 }

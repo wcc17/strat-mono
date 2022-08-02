@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.Sprites;
-using Nez.Textures;
+using StartMono.Util;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.System;
@@ -14,13 +14,19 @@ namespace StratMono.Scenes
 {
     public class LevelScene : Scene
     {
-        enum UpdateOrder : int
+        enum RenderLayer : int
         {
-            TileMap = 0,
-            TileHighlight = 1,
-            Character = 2,
-            Cursor = 3,
+            Cursor = 0,
+            Character = 1,
+            TileHighlightOutline = 2,
+            TileHighlight = 3,
+            TileMap = 4,
         }
+
+        private readonly Color BlueFill = new Color(99, 155, 255, 200);
+        private readonly Color BlueOutline = new Color(91, 110, 225, 200);
+        private readonly Color RedFill = new Color(217, 87, 99, 200);
+        private readonly Color RedOutline = new Color(172, 50, 50, 200);
 
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
@@ -41,7 +47,6 @@ namespace StratMono.Scenes
             var defaultRenderer = new DefaultRenderer();
             this.AddRenderer(defaultRenderer);
 
-
             //SetDesignResolution(1920, 1080, SceneResolutionPolicy.ShowAllPixelPerfect);
             Screen.SetSize(1920, 1080);
             Screen.IsFullscreen = true;
@@ -54,23 +59,6 @@ namespace StratMono.Scenes
             createGrid();
             createCharacter();
             createGridCursorEntity();
-
-            int opacity = 200;
-            Color blueFill = new Color(99, 155, 255, opacity);
-            Color blueOutline = new Color(91, 110, 225, opacity);
-            GridEntity shapeEntity1 = new GridEntity("shape1");
-            shapeEntity1.AddComponent(createRectangleOutlineSprite(64, 64, blueOutline, 3));
-            shapeEntity1.AddComponent(createRectangleSprite(64, 64, blueFill));
-            shapeEntity1.SetUpdateOrder((int) UpdateOrder.TileHighlight);
-            addToGrid(shapeEntity1, 6, 6);
-
-            Color redFill = new Color(217, 87, 99, opacity);
-            Color redOutline = new Color(172, 50, 50, opacity);
-            GridEntity shapeEntity2 = new GridEntity("shape2");
-            shapeEntity2.AddComponent(createRectangleOutlineSprite(64, 64, redOutline, 3));
-            shapeEntity2.AddComponent(createRectangleSprite(64, 64, redFill));
-            shapeEntity2.SetUpdateOrder((int)UpdateOrder.TileHighlight);
-            addToGrid(shapeEntity2, 7, 6);
         }
 
         public override void Update()
@@ -81,18 +69,15 @@ namespace StratMono.Scenes
 
             var cursorEntity = FindEntity(CursorEntityName);
             _tileCursorSystem.Update(
-                cursorEntity, 
+                cursorEntity,
                 Camera);
             _gridSystem.Update(
                 cursorEntity,
                 EntitiesOfType<GridEntity>(),
                 (BoundedMovingCamera)Camera);
 
-            Console.WriteLine(cursorEntity.Position);
-            Console.WriteLine(cursorEntity.LocalPosition);
-            Console.WriteLine(cursorEntity.GetComponent<SpriteAnimator>().Bounds);
-            Console.WriteLine(cursorEntity.GetComponent<SpriteAnimator>());
-            Console.WriteLine();
+            var selectedCharacter = checkForSelectedCharacter();
+            handleSelectedCharacter(selectedCharacter);
         }
 
         private void createTiledMap()
@@ -100,8 +85,9 @@ namespace StratMono.Scenes
             var tiledMapEntity = CreateEntity(TiledMapEntityName);
             var tiledMap = Content.LoadTiledMap("Content/assets/tiles/test_scene_map.tmx");
             var tiledMapRenderer = new TiledMapRenderer(tiledMap);
+
+            tiledMapRenderer.RenderLayer = (int)RenderLayer.TileMap;
             tiledMapEntity.AddComponent(tiledMapRenderer);
-            tiledMapEntity.SetUpdateOrder((int)UpdateOrder.TileMap);
         }
 
         private void createCamera()
@@ -134,12 +120,13 @@ namespace StratMono.Scenes
             var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
             var tiledMap = tiledMapRenderer.TiledMap;
 
-            for (var i = 0; i < 100; i++)
+            for (var i = 0; i < 500; i++)
             {
-                var characterEntity = new GridEntity();
-                characterEntity.AddComponent(createSpriteAnimator(CharacterSpriteName));
+                var characterEntity = new CharacterGridEntity();
+                var spriteAnimator = createSpriteAnimator(CharacterSpriteName);
+                spriteAnimator.RenderLayer = (int)RenderLayer.Character;
+                characterEntity.AddComponent(spriteAnimator);
                 characterEntity.AddComponent(new CharacterMovement());
-                characterEntity.SetUpdateOrder((int)UpdateOrder.Character);
 
                 int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64);
                 int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64);
@@ -152,9 +139,9 @@ namespace StratMono.Scenes
         {
             var cursorEntity = new GridEntity(CursorEntityName);
             var spriteAnimator = createSpriteAnimator(CursorSpriteName);
+            spriteAnimator.RenderLayer = (int)RenderLayer.Cursor;
             spriteAnimator.Play("default", SpriteAnimator.LoopMode.PingPong);
             cursorEntity.AddComponent(spriteAnimator);
-            cursorEntity.SetUpdateOrder((int)UpdateOrder.Cursor);
             addToGrid(cursorEntity, 5, 13);
         }
 
@@ -214,49 +201,132 @@ namespace StratMono.Scenes
             }
         }
 
-        private SpriteRenderer createRectangleOutlineSprite(int width, int height, Color color, int lineWidth)
+        private CharacterGridEntity checkForSelectedCharacter()
         {
-            Texture2D texture = new Texture2D(Core.GraphicsDevice, width, height);
-            Color[] colors = new Color[width * height];
-            for (var x = 0; x < width; x++)
+            List<GridEntity> entitiesOnSelectedTile = _gridSystem.GetEntitiesFromSelectedTile();
+            if (entitiesOnSelectedTile != null)
             {
-                for (var z = 0; z < lineWidth; z++)
+                foreach (var entity in entitiesOnSelectedTile)
                 {
-                    colors[(x * width) + z] = color;
-                    colors[(x * width) + height - 1 - z] = color;
-                }
-
-                for (var y = 0; y < height; y++)
-                {
-                    if (x >= 0 && x < lineWidth)
+                    if (entity.GetType() == typeof(CharacterGridEntity))
                     {
-                        colors[(x * width) + y] = color;
+                        return (CharacterGridEntity)entity;
                     }
-
-                    if (x <= width - 1 && x >= width - 1 - lineWidth)
-                    {
-                        colors[(x * width) + y] = color;
-                    }
+                    break;
                 }
             }
-            texture.SetData(colors);
 
-            Sprite sprite = new Sprite(texture, 0, 0, width, height);
-            sprite.Origin = new Vector2(0, 0);
-            SpriteRenderer shape = new SpriteRenderer(sprite);
-            return shape;
+            return null;
         }
 
-        private SpriteRenderer createRectangleSprite(int width, int height, Color color)
+        bool handledCharacterSelect = false; // TODO: do better
+        private void handleSelectedCharacter(CharacterGridEntity character)
         {
-            Texture2D texture = new Texture2D(Core.GraphicsDevice, 1, 1);
-            Color[] colors = new Color[] { color };
-            texture.SetData(colors);
+            if (character == null)
+            {
+                return;
+            }
 
-            Sprite sprite = new Sprite(texture, 0, 0, width, height);
-            sprite.Origin = new Vector2(0, 0);
-            SpriteRenderer shape = new SpriteRenderer(sprite);
-            return shape;
+            if (handledCharacterSelect)
+            {
+                return;
+            }
+
+            // TODO: get all possible squares that we could travel to
+            // TODO: should actually store how far a character can travel somewhere (maxMovementCost)
+            var tilesInRange = _gridSystem.IdentifyPossibleTilesToMoveToFromSelectedTile(5);
+            foreach(GridTile tile in tilesInRange)
+            {
+                GridEntity tileHighlight = new GridTileHighlight("highlight" + tile.Id);
+                SpriteRenderer outline;
+                SpriteRenderer shape;
+                if (tile.CharacterCanMoveThroughThisTile)
+                {
+                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, BlueOutline, 2);
+                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, BlueFill);
+                } else
+                {
+                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, RedOutline, 2);
+                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, RedFill);
+                }
+
+                shape.RenderLayer = (int)RenderLayer.TileHighlight;
+                outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
+                tileHighlight.AddComponent(outline);
+                tileHighlight.AddComponent(shape);
+
+                Point tileCoordinates = _gridSystem.GetTileCoordinates(tile);
+                addToGrid(tileHighlight, tileCoordinates.X, tileCoordinates.Y);
+            }
+
+            handledCharacterSelect = true;
         }
     }
 }
+
+//static identifyTilesForPossibleCharacterMovement(startTile, grid, gridWidthInTiles, gridHeightInTiles)
+//{
+//    let maxCost = 5; //TODO: will depend on the character that is being moved
+//    let cameFrom = new Map(); //tileId > tileId map. what tile we came from and where we went
+//    let costSoFar = new Map(); //tileId > cost to get to that tile
+//    let inaccessibleTileIdsInRange = [];
+//    let frontier = new PriorityQueue((a, b) =>
+//    {
+//        return a.cost - b.cost;
+//    });
+
+//    frontier.enq({ tile: startTile, cost: 0 });
+//    cameFrom.set(startTile.id, undefined);
+//    costSoFar.set(startTile.id, 0);
+
+//    while (!frontier.isEmpty())
+//    {
+//        let current = frontier.deq().tile;
+
+//        let costToGetHere = costSoFar.get(current.id);
+//        if (costToGetHere < maxCost)
+//        {
+//            let neighbors = GridUtil.getNeighborsOfTile(current, grid, gridWidthInTiles, gridHeightInTiles);
+
+//            for (let i = 0; i < neighbors.length; i++)
+//            {
+//                let neighbor = neighbors[i];
+
+//                if (neighbor.characterCanMoveThroughTile())
+//                {
+//                    let newCost = costToGetHere + neighbor.cost;
+
+//                    if (!costSoFar.has(neighbor.id) || newCost < costSoFar.get(neighbor.id))
+//                    {
+//                        costSoFar.set(neighbor.id, newCost);
+//                        cameFrom.set(neighbor.id, current);
+//                        frontier.enq({ tile: neighbor, cost: newCost });
+//                     }
+//                } else
+//               {
+//                  if (!inaccessibleTileIdsInRange.includes(neighbor.id))
+//                  {
+//                       inaccessibleTileIdsInRange.push(neighbor.id);
+//                  }
+//               }
+//            }
+//        }
+//    }
+
+//    return [cameFrom, costSoFar, inaccessibleTileIdsInRange];
+//}
+
+//getTilesWithinRangeOfSelectedCharacter(selectedTile) {
+//    let[pathsMap, costsMap, inaccessibleTileIdsInRange] = GridPathfindingUtil.identifyTilesForPossibleCharacterMovement(selectedTile, this._grid, this._gridTileWidth, this._gridTileHeight);
+//    let pathsToTileIdsWithinRangeOfSelected = pathsMap;
+//    let tileIdsWithinRangeOfSelected = MapUtil.getKeyArrayFromMap(costsMap);
+//    tileIdsWithinRangeOfSelected.push.apply(tileIdsWithinRangeOfSelected, inaccessibleTileIdsInRange);
+
+//    let tilesWithinRange = [];
+//    for (let i = 0; i < tileIdsWithinRangeOfSelected.length; i++)
+//    {
+//        tilesWithinRange.push(this.getTileAtIndex(tileIdsWithinRangeOfSelected[i]));
+//    }
+
+//    return [tilesWithinRange, pathsToTileIdsWithinRangeOfSelected];
+//}

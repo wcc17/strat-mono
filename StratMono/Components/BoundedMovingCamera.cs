@@ -25,7 +25,8 @@ namespace StratMono.Components
                 return _moveGoal;
             }
 
-            set {
+            set 
+            {
                 _moveGoal = setMoveGoal(value);
             } 
         }

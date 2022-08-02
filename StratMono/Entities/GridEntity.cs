@@ -8,10 +8,5 @@ namespace StratMono.Entities
         public GridEntity() : base() { }
 
         public GridEntity(string name) : base(name) { }
-
-        public override void Update()
-        {
-            base.Update();
-        }
     }
 }

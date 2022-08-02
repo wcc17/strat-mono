@@ -47,11 +47,11 @@
             }
         },
         "test_scene_map.tmx": {
-            "scale": 8,
+            "scale": 1,
             "selectedLayer": 2,
             "viewCenter": {
-                "x": 73.125,
-                "y": 59.375
+                "x": 82,
+                "y": 1354.5
             }
         },
         "test_scene_tileset.json": {
@@ -59,7 +59,7 @@
             "scaleInEditor": 1
         },
         "test_scene_tileset.tsx": {
-            "scaleInDock": 0.33,
+            "scaleInDock": 11,
             "scaleInEditor": 4
         }
     },
@@ -71,14 +71,15 @@
     "map.tileHeight": 32,
     "map.tileWidth": 32,
     "openFiles": [
-        "test_scene_map.tmx"
+        "test_scene_map.tmx",
+        "test_scene_tileset.tsx"
     ],
     "project": "strat.tiled-project",
     "property.type": "int",
     "recentFiles": [
+        "test_scene_tileset.tsx",
         "test_scene_map.tmx",
         "test_scene_tileset.json",
-        "test_scene_tileset.tsx",
         "test_scene_map.json",
         "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/test_scene_tileset.tsx",
         "C:/Users/chris/Development/untitled-game/assets/gfx/map.tmx",

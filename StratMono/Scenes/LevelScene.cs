@@ -64,8 +64,7 @@ namespace StratMono.Scenes
                 EntitiesOfType<GridEntity>(),
                 (BoundedMovingCamera)Camera);
 
-            _state = _state.CheckForSelectedCharacter(this, _gridSystem);
-            _state = _state.HandleSelectedCharacter(this, _gridSystem);
+            _state = _state.Update(this, _gridSystem);
         }
 
         public GridEntity AddToGrid(GridEntity entity, int x, int y)

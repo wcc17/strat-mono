@@ -8,7 +8,15 @@ namespace StratMono.States.Scene
 {
     public abstract class BaseState
     {
-        public virtual BaseState CheckForSelectedCharacter(
+        public abstract BaseState Update(
+            LevelScene scene,
+            GridSystem gridSystem);
+
+        public abstract void EnterState(
+            LevelScene scene,
+            GridSystem gridSystem);
+
+        protected virtual bool CheckForNewSelection(
             LevelScene scene,
             GridSystem gridSystem)
         {
@@ -22,23 +30,16 @@ namespace StratMono.States.Scene
                     {
                         newSelectedCharacter = (CharacterGridEntity)entity;
                     }
-                    break;
                 }
             }
 
-            if (scene.SelectedCharacter == newSelectedCharacter)
-            {
-                return this;
-            }
-            else
+            if (newSelectedCharacter != scene.SelectedCharacter)
             {
                 scene.SelectedCharacter = newSelectedCharacter;
-                return new SelectionChangeState();
+                return true;
             }
-        }
 
-        public abstract BaseState HandleSelectedCharacter(
-            LevelScene scene, 
-            GridSystem gridSystem);
+            return false;
+        }
     }
 }

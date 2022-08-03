@@ -4,9 +4,9 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
-using StartMono.Util;
 using StratMono.Components;
 using StratMono.Entities;
+using StratMono.States.Scene;
 using StratMono.System;
 using StratMono.Util;
 
@@ -14,20 +14,6 @@ namespace StratMono.Scenes
 {
     public class LevelScene : Scene
     {
-        enum RenderLayer : int
-        {
-            Cursor = 0,
-            Character = 1,
-            TileHighlightOutline = 2,
-            TileHighlight = 3,
-            TileMap = 4,
-        }
-
-        private readonly Color BlueFill = new Color(99, 155, 255, 200);
-        private readonly Color BlueOutline = new Color(91, 110, 225, 200);
-        private readonly Color RedFill = new Color(217, 87, 99, 200);
-        private readonly Color RedOutline = new Color(172, 50, 50, 200);
-
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
         private const string CursorEntityName = "cursor";
@@ -35,12 +21,12 @@ namespace StratMono.Scenes
         private const string CharacterSpriteName = "player";
         private const string CursorSpriteName = "tile_cursor";
 
-        private const string TiledMapBoundsLayerName = "bounds";
-        private const string TiledMapMoveCostLayerName = "move_cost";
-
         private SpriteAtlas _spriteAtlas;
         private GridSystem _gridSystem;
         private TileCursorSystem _tileCursorSystem;
+        private BaseState _state = new DefaultState();
+
+        public CharacterGridEntity SelectedCharacter = null;
 
         public override void Initialize()
         {
@@ -68,16 +54,31 @@ namespace StratMono.Scenes
             updateInputMode();
 
             var cursorEntity = FindEntity(CursorEntityName);
+
             _tileCursorSystem.Update(
                 cursorEntity,
                 Camera);
+
             _gridSystem.Update(
                 cursorEntity,
                 EntitiesOfType<GridEntity>(),
                 (BoundedMovingCamera)Camera);
 
-            var selectedCharacter = checkForSelectedCharacter();
-            handleSelectedCharacter(selectedCharacter);
+            _state = _state.CheckForSelectedCharacter(this, _gridSystem);
+            _state = _state.HandleSelectedCharacter(this, _gridSystem);
+        }
+
+        public GridEntity AddToGrid(GridEntity entity, int x, int y)
+        {
+            AddEntity(entity);
+            _gridSystem.AddToGridTile(entity, x, y);
+            return entity;
+        }
+
+        public void RemoveFromGrid(GridEntity entity)
+        {
+            _gridSystem.RemoveFromGridTile(entity.Name);
+            entity.Destroy();
         }
 
         private void createTiledMap()
@@ -130,8 +131,7 @@ namespace StratMono.Scenes
 
                 int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64);
                 int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64);
-                addToGrid(characterEntity, x, y);
-
+                AddToGrid(characterEntity, x, y);
             }
         }
 
@@ -142,14 +142,7 @@ namespace StratMono.Scenes
             spriteAnimator.RenderLayer = (int)RenderLayer.Cursor;
             spriteAnimator.Play("default", SpriteAnimator.LoopMode.PingPong);
             cursorEntity.AddComponent(spriteAnimator);
-            addToGrid(cursorEntity, 5, 13);
-        }
-
-        private GridEntity addToGrid(GridEntity entity, int x, int y)
-        {
-            AddEntity(entity);
-            _gridSystem.AddToGridTile(entity, x, y);
-            return entity;
+            AddToGrid(cursorEntity, 5, 13);
         }
 
         private SpriteAnimator createSpriteAnimator(string spriteName)
@@ -200,133 +193,5 @@ namespace StratMono.Scenes
                 }
             }
         }
-
-        private CharacterGridEntity checkForSelectedCharacter()
-        {
-            List<GridEntity> entitiesOnSelectedTile = _gridSystem.GetEntitiesFromSelectedTile();
-            if (entitiesOnSelectedTile != null)
-            {
-                foreach (var entity in entitiesOnSelectedTile)
-                {
-                    if (entity.GetType() == typeof(CharacterGridEntity))
-                    {
-                        return (CharacterGridEntity)entity;
-                    }
-                    break;
-                }
-            }
-
-            return null;
-        }
-
-        bool handledCharacterSelect = false; // TODO: do better
-        private void handleSelectedCharacter(CharacterGridEntity character)
-        {
-            if (character == null)
-            {
-                return;
-            }
-
-            if (handledCharacterSelect)
-            {
-                return;
-            }
-
-            // TODO: get all possible squares that we could travel to
-            // TODO: should actually store how far a character can travel somewhere (maxMovementCost)
-            var tilesInRange = _gridSystem.IdentifyPossibleTilesToMoveToFromSelectedTile(5);
-            foreach(GridTile tile in tilesInRange)
-            {
-                GridEntity tileHighlight = new GridTileHighlight("highlight" + tile.Id);
-                SpriteRenderer outline;
-                SpriteRenderer shape;
-                if (tile.CharacterCanMoveThroughThisTile)
-                {
-                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, BlueOutline, 2);
-                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, BlueFill);
-                } else
-                {
-                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, RedOutline, 2);
-                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, RedFill);
-                }
-
-                shape.RenderLayer = (int)RenderLayer.TileHighlight;
-                outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
-                tileHighlight.AddComponent(outline);
-                tileHighlight.AddComponent(shape);
-
-                Point tileCoordinates = _gridSystem.GetTileCoordinates(tile);
-                addToGrid(tileHighlight, tileCoordinates.X, tileCoordinates.Y);
-            }
-
-            handledCharacterSelect = true;
-        }
     }
 }
-
-//static identifyTilesForPossibleCharacterMovement(startTile, grid, gridWidthInTiles, gridHeightInTiles)
-//{
-//    let maxCost = 5; //TODO: will depend on the character that is being moved
-//    let cameFrom = new Map(); //tileId > tileId map. what tile we came from and where we went
-//    let costSoFar = new Map(); //tileId > cost to get to that tile
-//    let inaccessibleTileIdsInRange = [];
-//    let frontier = new PriorityQueue((a, b) =>
-//    {
-//        return a.cost - b.cost;
-//    });
-
-//    frontier.enq({ tile: startTile, cost: 0 });
-//    cameFrom.set(startTile.id, undefined);
-//    costSoFar.set(startTile.id, 0);
-
-//    while (!frontier.isEmpty())
-//    {
-//        let current = frontier.deq().tile;
-
-//        let costToGetHere = costSoFar.get(current.id);
-//        if (costToGetHere < maxCost)
-//        {
-//            let neighbors = GridUtil.getNeighborsOfTile(current, grid, gridWidthInTiles, gridHeightInTiles);
-
-//            for (let i = 0; i < neighbors.length; i++)
-//            {
-//                let neighbor = neighbors[i];
-
-//                if (neighbor.characterCanMoveThroughTile())
-//                {
-//                    let newCost = costToGetHere + neighbor.cost;
-
-//                    if (!costSoFar.has(neighbor.id) || newCost < costSoFar.get(neighbor.id))
-//                    {
-//                        costSoFar.set(neighbor.id, newCost);
-//                        cameFrom.set(neighbor.id, current);
-//                        frontier.enq({ tile: neighbor, cost: newCost });
-//                     }
-//                } else
-//               {
-//                  if (!inaccessibleTileIdsInRange.includes(neighbor.id))
-//                  {
-//                       inaccessibleTileIdsInRange.push(neighbor.id);
-//                  }
-//               }
-//            }
-//        }
-//    }
-
-//    return [cameFrom, costSoFar, inaccessibleTileIdsInRange];
-//}
-
-//getTilesWithinRangeOfSelectedCharacter(selectedTile) {
-//    let[pathsMap, costsMap, inaccessibleTileIdsInRange] = GridPathfindingUtil.identifyTilesForPossibleCharacterMovement(selectedTile, this._grid, this._gridTileWidth, this._gridTileHeight);
-//    let pathsToTileIdsWithinRangeOfSelected = pathsMap;
-//    let tileIdsWithinRangeOfSelected = MapUtil.getKeyArrayFromMap(costsMap);
-//    tileIdsWithinRangeOfSelected.push.apply(tileIdsWithinRangeOfSelected, inaccessibleTileIdsInRange);
-
-//    let tilesWithinRange = [];
-//    for (let i = 0; i < tileIdsWithinRangeOfSelected.length; i++)
-//    {
-//        tilesWithinRange.push(this.getTileAtIndex(tileIdsWithinRangeOfSelected[i]));
-//    }
-
-//    return [tilesWithinRange, pathsToTileIdsWithinRangeOfSelected];
-//}

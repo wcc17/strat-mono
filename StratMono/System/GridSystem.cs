@@ -50,6 +50,16 @@ namespace StratMono.System
             return gridEntity;
         }
 
+        public void RemoveFromGridTile(string name)
+        {
+            if (_entityToGridTileMap.ContainsKey(name))
+            {
+                Point oldGridTileCoords = _entityToGridTileMap[name];
+                _entityToGridTileMap.Remove(name);
+                _gridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].RemoveFromTile(name);
+            }
+        }
+
         public List<GridEntity> GetEntitiesFromSelectedTile()
         {
             if (!_selectedTile.Equals(_noSelectedTile))
@@ -145,16 +155,6 @@ namespace StratMono.System
             return new Vector2(gridTile.X * _gridTileWidth, gridTile.Y * _gridTileHeight);
         }
 
-        private void removeFromGridTile(string name)
-        {
-            if (_entityToGridTileMap.ContainsKey(name))
-            {
-                Point oldGridTileCoords =_entityToGridTileMap[name];
-                _entityToGridTileMap.Remove(name);
-                _gridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].RemoveFromTile(name);
-            }
-        }
-
         private void selectCurrentTile(Vector2 currentCursorPosition, BoundedMovingCamera camera)
         {
             Point nearestGridTile = getNearestGridTile(currentCursorPosition);
@@ -180,7 +180,7 @@ namespace StratMono.System
             foreach (var gridEntity in gridEntities)
             {
                 Point gridTile = getNearestGridTile(gridEntity.Position);
-                removeFromGridTile(gridEntity.Name);
+                RemoveFromGridTile(gridEntity.Name);
                 AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
             }
         }

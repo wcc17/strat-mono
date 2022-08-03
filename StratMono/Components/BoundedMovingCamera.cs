@@ -71,7 +71,6 @@ namespace StratMono.Components
             {
                 handleMoveGoal();
             }
-
         }
 
         private void handleInput()
@@ -95,10 +94,10 @@ namespace StratMono.Components
             }
         }
 
-        //TODO: should re-use this
+        //TODO: should re-use this?
         private void handleMoveGoal()
         {
-            var moveGoalSpeed = 100;
+            var moveGoalSpeed = 25;
             var remainingDistanceX = Math.Abs(_moveGoal.X - Position.X);
             var remainingDistanceY = Math.Abs(_moveGoal.Y - Position.Y);
             var moveGoalSpeedX = (remainingDistanceX > moveGoalSpeed) ? moveGoalSpeed : remainingDistanceX;

@@ -49,6 +49,7 @@ namespace StratMono.System
         {
             if (!_disableCursorControllerMovement)
             {
+                // TODO: stupid name
                 var movementSpeedOrWhatever = 64;
                 _cursorMovementDirection.X = _cursorMovementXAxisInput.Value;
                 _cursorMovementDirection.Y = _cursorMovementYAxisInput.Value;

@@ -10,14 +10,18 @@ namespace StratMono.Components
     public class BoundedMovingCamera : Camera, IUpdatable
     {
         private readonly int _cameraMoveSpeed = 10;
+        private readonly float maximumZoom = 0.3f;
+        private readonly float minimumZoom = -0.3f;
+        private readonly float zoomSpeed = 0.1f;
 
         private readonly Rectangle _levelBounds;
         private VirtualIntegerAxis _cameraMovementXAxisInput;
         private VirtualIntegerAxis _cameraMovementYAxisInput;
         private Vector2 _cameraMovementDirection = new Vector2(0, 0);
-
+        private int _previousScrollWheelValue = 0;
         private readonly Vector2 _noMoveGoal = new Vector2(-1, -1);
         private Vector2 _moveGoal = new Vector2(-1, -1);
+
         public Vector2 MoveGoal 
         {
             get 
@@ -53,6 +57,7 @@ namespace StratMono.Components
         public void Update()
         {
             updatePosition();
+            updateZoom();
             adjustPositionForBounds();
         }
 
@@ -73,9 +78,29 @@ namespace StratMono.Components
             }
         }
 
+        private void updateZoom()
+        {
+            var delta = Input.CurrentMouseState.ScrollWheelValue - _previousScrollWheelValue;
+            
+            _previousScrollWheelValue = Input.CurrentMouseState.ScrollWheelValue;
+            if (delta > 0)
+            {
+                Console.WriteLine("scroll up");
+                Zoom += zoomSpeed;
+                Zoom = (Zoom > maximumZoom) ? maximumZoom : Zoom;
+            }
+            else if (delta < 0)
+            {
+                Console.WriteLine("scroll down");
+                Zoom -= zoomSpeed;
+                Zoom = (Zoom < minimumZoom) ? minimumZoom : Zoom;
+            }
+
+            Console.WriteLine(Zoom);
+        }
+
         private void handleInput()
         {
-
             if (_cameraMovementDirection.X > 0)
             {
                 Position = new Vector2(Position.X + _cameraMoveSpeed, Position.Y);

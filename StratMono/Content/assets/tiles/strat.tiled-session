@@ -51,7 +51,7 @@
             "selectedLayer": 2,
             "viewCenter": {
                 "x": 82,
-                "y": 1354.5
+                "y": 1354
             }
         },
         "test_scene_tileset.json": {
@@ -77,8 +77,8 @@
     "project": "strat.tiled-project",
     "property.type": "int",
     "recentFiles": [
-        "test_scene_tileset.tsx",
         "test_scene_map.tmx",
+        "test_scene_tileset.tsx",
         "test_scene_tileset.json",
         "test_scene_map.json",
         "C:/Users/chris/Development/untitled-game/assets/gfx/tileset/test_scene_tileset.tsx",

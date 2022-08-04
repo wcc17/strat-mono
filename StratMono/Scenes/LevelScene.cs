@@ -35,7 +35,6 @@ namespace StratMono.Scenes
         public CharacterGridMovementInformation CharacterGridMovementInfo = null;
 
         public CharacterGridEntity SelectedCharacter;
-        // TODO: try setting SelectedCharacter to null when SelectedTile is null?
         public GridTile SelectedTile = null;
 
         public override void Initialize()

@@ -4,12 +4,14 @@ using System.Text;
 using Nez;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using StratMono.Util;
 
 namespace StratMono.Components
 {
     public class BoundedMovingCamera : Camera, IUpdatable
     {
-        private readonly int _cameraMoveSpeed = 10;
+        private readonly int _cameraMoveSpeed = 50;
+        private readonly float _cameraMoveLerp = 0.2f;
         private readonly float maximumZoom = 0.3f;
         private readonly float minimumZoom = -0.3f;
         private readonly float zoomSpeed = 0.1f;
@@ -21,6 +23,7 @@ namespace StratMono.Components
         private int _previousScrollWheelValue = 0;
         private readonly Vector2 _noMoveGoal = new Vector2(-1, -1);
         private Vector2 _moveGoal = new Vector2(-1, -1);
+
 
         public Vector2 MoveGoal 
         {
@@ -58,7 +61,9 @@ namespace StratMono.Components
         {
             updatePosition();
             updateZoom();
-            adjustPositionForBounds();
+            adjustPositionForBounds(); //TODO: I like the way using lerp works here, but it doesn't look as great when zooming out
+
+            Entity.Transform.RoundPosition();
         }
 
         private void updatePosition()
@@ -69,7 +74,7 @@ namespace StratMono.Components
             if (_cameraMovementDirection.X != 0 || _cameraMovementDirection.Y != 0)
             {
                 _moveGoal = _noMoveGoal;
-                handleInput();
+                handleMovement();
             }
 
             if (!_moveGoal.Equals(_noMoveGoal))
@@ -80,70 +85,96 @@ namespace StratMono.Components
 
         private void updateZoom()
         {
-            var delta = Input.CurrentMouseState.ScrollWheelValue - _previousScrollWheelValue;
-            
-            _previousScrollWheelValue = Input.CurrentMouseState.ScrollWheelValue;
-            if (delta > 0)
+            if (InputMode.CurrentInputMode == InputModeType.KeyboardMouse)
             {
-                Console.WriteLine("scroll up");
-                Zoom += zoomSpeed;
-                Zoom = (Zoom > maximumZoom) ? maximumZoom : Zoom;
-            }
-            else if (delta < 0)
+                var delta = Input.CurrentMouseState.ScrollWheelValue - _previousScrollWheelValue;
+                _previousScrollWheelValue = Input.CurrentMouseState.ScrollWheelValue;
+                if (delta > 0)
+                {
+                    increaseZoom();
+                }
+                else if (delta < 0)
+                {
+                    decreaseZoom();
+                }
+            } else
             {
-                Console.WriteLine("scroll down");
-                Zoom -= zoomSpeed;
-                Zoom = (Zoom < minimumZoom) ? minimumZoom : Zoom;
+                if (Input.GamePads[0].IsButtonPressed(Buttons.RightShoulder))
+                {
+                    increaseZoom();
+                }
+                if (Input.GamePads[0].IsButtonPressed(Buttons.LeftShoulder))
+                {
+                    decreaseZoom();
+                }
             }
-
-            Console.WriteLine(Zoom);
         }
 
-        private void handleInput()
+        private void increaseZoom()
         {
+            Console.WriteLine("scroll up");
+            Zoom += zoomSpeed;
+            Zoom = (Zoom > maximumZoom) ? maximumZoom : Zoom;
+        }
+
+        private void decreaseZoom()
+        {
+            Console.WriteLine("scroll down");
+            Zoom -= zoomSpeed;
+            Zoom = (Zoom < minimumZoom) ? minimumZoom : Zoom;
+        }
+
+        private void handleMovement()
+        {
+            Vector2 desiredPosition = new Vector2(Position.X, Position.Y);
+
             if (_cameraMovementDirection.X > 0)
             {
-                Position = new Vector2(Position.X + _cameraMoveSpeed, Position.Y);
+                desiredPosition.X = Position.X + _cameraMoveSpeed;
             }
             if (_cameraMovementDirection.X < 0)
             {
-                Position = new Vector2(Position.X - _cameraMoveSpeed, Position.Y);
+                desiredPosition.X = Position.X - _cameraMoveSpeed;
             }
             if (_cameraMovementDirection.Y > 0)
             {
-                Position = new Vector2(Position.X, Position.Y + _cameraMoveSpeed);
+                desiredPosition.Y = Position.Y + _cameraMoveSpeed;
             }
             if (_cameraMovementDirection.Y < 0)
             {
-                Position = new Vector2(Position.X, Position.Y - _cameraMoveSpeed);
+                desiredPosition.Y = Position.Y - _cameraMoveSpeed;
             }
+
+            setPositionWithLerp(desiredPosition);
         }
 
-        //TODO: should re-use this?
         private void handleMoveGoal()
         {
-            var moveGoalSpeed = 25;
+            var moveGoalSpeed = 250;
             var remainingDistanceX = Math.Abs(_moveGoal.X - Position.X);
             var remainingDistanceY = Math.Abs(_moveGoal.Y - Position.Y);
             var moveGoalSpeedX = (remainingDistanceX > moveGoalSpeed) ? moveGoalSpeed : remainingDistanceX;
             var moveGoalSpeedY = (remainingDistanceY > moveGoalSpeed) ? moveGoalSpeed : remainingDistanceY;
 
+            Vector2 desiredPosition = new Vector2(Position.X, Position.Y);
             if (_moveGoal.X > Position.X)
             {
-                Position = new Vector2(Position.X + moveGoalSpeedX, Position.Y);
+                desiredPosition.X += moveGoalSpeedX;
             }
             if (_moveGoal.X < Position.X)
             {
-                Position = new Vector2(Position.X - moveGoalSpeedX, Position.Y);
+                desiredPosition.X -= moveGoalSpeedX;
             }
             if (_moveGoal.Y > Position.Y)
             {
-                Position = new Vector2(Position.X, Position.Y + moveGoalSpeedY);
+                desiredPosition.Y += moveGoalSpeedY;
             }
             if (_moveGoal.Y < Position.Y)
             {
-                Position = new Vector2(Position.X, Position.Y - moveGoalSpeedY);
+                desiredPosition.Y -= moveGoalSpeedY;
             }
+
+            setPositionWithLerp(desiredPosition);
 
             if (remainingDistanceX <= 0 && remainingDistanceY <= 0)
             {
@@ -154,25 +185,34 @@ namespace StratMono.Components
         private void adjustPositionForBounds()
         {
             var bounds = Bounds;
+            var desiredPosition = new Vector2(Position.X, Position.Y);
             if (bounds.X < _levelBounds.Left)
             {
-                Position = new Vector2(bounds.Width / 2, Position.Y);
+                desiredPosition.X = bounds.Width / 2;
             }
 
             if ((bounds.X + bounds.Width) > _levelBounds.Right)
             {
-                Position = new Vector2(_levelBounds.Right - (bounds.Width / 2), Position.Y);
+                desiredPosition.X = _levelBounds.Right - (bounds.Width / 2);
             }
 
             if (bounds.Y < _levelBounds.Top)
             {
-                Position = new Vector2(Position.X, bounds.Height / 2);
+                desiredPosition.Y = bounds.Height / 2;
             }
 
             if ((bounds.Y + bounds.Height) > _levelBounds.Bottom)
             {
-                Position = new Vector2(Position.X, _levelBounds.Bottom - (bounds.Height / 2));
+                desiredPosition.Y = _levelBounds.Bottom - (bounds.Height / 2);
             }
+
+            setPositionWithLerp(desiredPosition);
+        }
+
+        private void setPositionWithLerp(Vector2 desiredPosition)
+        {
+            var desiredPositionDelta = new Vector2(desiredPosition.X - Position.X, desiredPosition.Y - Position.Y);
+            Position = Vector2.Lerp(Position, Position + desiredPositionDelta, _cameraMoveLerp);
         }
 
         private Vector2 setMoveGoal(Vector2 moveGoal)

@@ -39,6 +39,8 @@ namespace StratMono.Scenes
 
         public override void Initialize()
         {
+            ClearColor = Color.Black;
+
             var defaultRenderer = new DefaultRenderer();
             this.AddRenderer(defaultRenderer);
 
@@ -230,7 +232,9 @@ namespace StratMono.Scenes
                     || gamepad.IsRightStickRight()
                     || gamepad.IsRightStickLeft()
                     || gamepad.IsRightTriggerPressed()
-                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A))
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A)
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.RightShoulder) 
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.LeftShoulder))
                 {
                     InputMode.CurrentInputMode = InputModeType.Controller;
                 }

@@ -3,20 +3,17 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 using StratMono.Entities;
 using Nez.Tiled;
-using Nez;
-using StratMono.Components;
+using StratMono.Util;
 
 namespace StratMono.System
 {
     public class GridSystem
     {
         private GridTile[,] _gridTiles;
-        private int _gridTileWidth, _gridTileHeight;
         private int _mapWidthInGridTiles, _mapHeightInGridTiles;
         private Dictionary<string, Point> _entityToGridTileMap = new Dictionary<string, Point>();
 
-        private readonly Point _noSelectedTile = new Point(-1, -1);
-        private Point _selectedTile = new Point(-1, -1);
+        public int GridTileWidth, GridTileHeight;
 
         public GridSystem(
             Point tileDimensions,
@@ -24,18 +21,17 @@ namespace StratMono.System
             TmxObjectGroup boundsObjectGroup,
             TmxObjectGroup moveCostObjectGroup)
         {
-            _gridTileWidth = tileDimensions.X * 2;
-            _gridTileHeight = tileDimensions.Y * 2;
-            _mapWidthInGridTiles = worldDimensions.X / _gridTileWidth;
-            _mapHeightInGridTiles = worldDimensions.Y / _gridTileHeight;
+            GridTileWidth = tileDimensions.X * 2;
+            GridTileHeight = tileDimensions.Y * 2;
+            _mapWidthInGridTiles = worldDimensions.X / GridTileWidth;
+            _mapHeightInGridTiles = worldDimensions.Y / GridTileHeight;
             _gridTiles = new GridTile[_mapWidthInGridTiles, _mapHeightInGridTiles];
 
             setupGridTiles(boundsObjectGroup, moveCostObjectGroup);
         }
 
-        public void Update(Entity cursorEntity, List<GridEntity> gridEntities, BoundedMovingCamera camera)
+        public void Update(List<GridEntity> gridEntities)
         {
-            handleInput(cursorEntity.Position, camera);
             snapEntitiesToGrid(gridEntities);
         }
 
@@ -44,12 +40,13 @@ namespace StratMono.System
             _entityToGridTileMap.Add(gridEntity.Name, new Point(x, y));
             _gridTiles[x, y].AddToTile(gridEntity);
 
-            var worldPosition = new Vector2(_gridTileWidth * x, _gridTileHeight * y);
+            var worldPosition = new Vector2(GridTileWidth * x, GridTileHeight * y);
             gridEntity.Position = worldPosition;
 
             return gridEntity;
         }
 
+        // TODO: this is being called a ton by snapEntitiestoGrid, might be worth revisiting how its done
         public void RemoveFromGridTile(string name)
         {
             if (_entityToGridTileMap.ContainsKey(name))
@@ -60,26 +57,16 @@ namespace StratMono.System
             }
         }
 
-        public List<GridEntity> GetEntitiesFromSelectedTile()
+        public CharacterGridMovementInformation IdentifyPossibleTilesToMoveToTile(GridTile tile, int maxMovementCost)
         {
-            if (!_selectedTile.Equals(_noSelectedTile))
-            {
-                return _gridTiles[(int)_selectedTile.X, (int)_selectedTile.Y].OccupyingEntities;
-            }
-
-            return null;
-        }
-
-        public HashSet<GridTile> IdentifyPossibleTilesToMoveToFromSelectedTile(int maxMovementCost)
-        {
-            var startTile = _gridTiles[_selectedTile.X, _selectedTile.Y];
+            var startTile = _gridTiles[tile.Coordinates.X, tile.Coordinates.Y];
             var frontier = new SimplePriorityQueue<GridTile>();
             var cameFrom = new Dictionary<GridTile, GridTile>();
             var costSoFar = new Dictionary<GridTile, int>();
             var inaccessibleTilesInRange = new HashSet<GridTile>();
 
             frontier.Enqueue(startTile, 0);
-            cameFrom.Add(startTile, null); //TODO: this is all the paths we can take to a certain tile
+            cameFrom.Add(startTile, null); 
             costSoFar.Add(startTile, 0);
 
             while (frontier.Count > 0)
@@ -111,33 +98,18 @@ namespace StratMono.System
             }
 
             var tilesWithinRange = new HashSet<GridTile>(inaccessibleTilesInRange);
-            foreach (var tile in costSoFar.Keys)
+            foreach (var costTile in costSoFar.Keys)
             {
-                tilesWithinRange.Add(tile);
+                tilesWithinRange.Add(costTile);
             }
 
-            return tilesWithinRange;
+            return new CharacterGridMovementInformation(cameFrom, tilesWithinRange);
         }
 
-        public Point GetTileCoordinates(GridTile tile)
+        public GridTile GetNearestTileAtPosition(Vector2 position)
         {
-            return this.convert1dIndexTo2dPoint(tile.Id, _mapWidthInGridTiles, _mapHeightInGridTiles);
-        }
-
-        private void handleInput(Vector2 currentCursorPosition, BoundedMovingCamera camera)
-        {
-            if (Input.LeftMouseButtonPressed 
-                || Input.GamePads[0].IsRightTriggerPressed()
-                || Input.GamePads[0].IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A))
-            {
-                selectCurrentTile(currentCursorPosition, camera);
-            }
-        }
-
-        private Point getNearestGridTile(Vector2 position)
-        {
-            var x = Math.Floor(position.X / _gridTileWidth);
-            var y = Math.Floor(position.Y / _gridTileHeight);
+            var x = Math.Floor(position.X / GridTileWidth);
+            var y = Math.Floor(position.Y / GridTileHeight);
 
             // Don't let any entity go off of the left side or top of screen
             x = (x < 0) ? 0 : x;
@@ -147,41 +119,26 @@ namespace StratMono.System
             x = (x >= _mapWidthInGridTiles) ? _mapWidthInGridTiles - 1 : x;
             y = (y >= _mapHeightInGridTiles) ? _mapHeightInGridTiles - 1 : y;
 
-            return new Point((int)x, (int)y);
+            return _gridTiles[(int)x, (int)y];
+        }
+
+        private GridTile _getGridTileFromCoords(Point coords)
+        {
+            return _gridTiles[coords.X, coords.Y];
         }
 
         private Vector2 getGridTilePosition(Point gridTile)
         {
-            return new Vector2(gridTile.X * _gridTileWidth, gridTile.Y * _gridTileHeight);
-        }
-
-        private void selectCurrentTile(Vector2 currentCursorPosition, BoundedMovingCamera camera)
-        {
-            Point nearestGridTile = getNearestGridTile(currentCursorPosition);
-
-            // if no tile is currently selected or if the selected tile is different from the current
-            if (_selectedTile.Equals(_noSelectedTile) || !_selectedTile.Equals(nearestGridTile))
-            {
-                _selectedTile = nearestGridTile;
-
-                // move the camera so that the selected tile is in the middle of the screen
-                var selectedTilePosition = getGridTilePosition(_selectedTile);
-                camera.MoveGoal = new Vector2(
-                    selectedTilePosition.X + (_gridTileWidth / 2),
-                    selectedTilePosition.Y + (_gridTileHeight / 2));
-            } else
-            {
-                _selectedTile = _noSelectedTile;
-            }
+            return new Vector2(gridTile.X * GridTileWidth, gridTile.Y * GridTileHeight);
         }
 
         private void snapEntitiesToGrid(List<GridEntity> gridEntities)
         {
             foreach (var gridEntity in gridEntities)
             {
-                Point gridTile = getNearestGridTile(gridEntity.Position);
+                var gridTile = GetNearestTileAtPosition(gridEntity.Position);
                 RemoveFromGridTile(gridEntity.Name);
-                AddToGridTile(gridEntity, (int)gridTile.X, (int)gridTile.Y);
+                AddToGridTile(gridEntity, (int)gridTile.Coordinates.X, (int)gridTile.Coordinates.Y);
             }
         }
 
@@ -192,7 +149,7 @@ namespace StratMono.System
                 for (var y = 0; y < _mapHeightInGridTiles; y++)
                 {
                     var gridTileId = convert2dPointTo1dIndex(new Point(x, y), _mapWidthInGridTiles);
-                    var gridTile = new GridTile(gridTileId);
+                    var gridTile = new GridTile(gridTileId, x, y, x * GridTileWidth, y * GridTileHeight);
                     _gridTiles[x, y] = gridTile;
                 }
             }
@@ -219,12 +176,12 @@ namespace StratMono.System
                     (int)obj.Height
                 );
 
-                var startTileX = boundsRect.X / _gridTileWidth;
-                var endTileX = (boundsRect.X + boundsRect.Width) / _gridTileWidth;
+                var startTileX = boundsRect.X / GridTileWidth;
+                var endTileX = (boundsRect.X + boundsRect.Width) / GridTileWidth;
                 for (var x = startTileX; x < endTileX; x++)
                 {
-                    var startTileY = boundsRect.Y / _gridTileHeight;
-                    var endTileY = (boundsRect.Y + boundsRect.Height) / _gridTileHeight;
+                    var startTileY = boundsRect.Y / GridTileHeight;
+                    var endTileY = (boundsRect.Y + boundsRect.Height) / GridTileHeight;
                     for (var y = startTileY; y < endTileY; y++)
                     {
                         iterateAction((int)x, (int)y, obj);
@@ -235,9 +192,8 @@ namespace StratMono.System
 
         private List<GridTile> getNeighborsOfTile(GridTile tile)
         {
-            var gridCoords = convert1dIndexTo2dPoint(tile.Id, _mapWidthInGridTiles, _mapHeightInGridTiles);
-            var x = gridCoords.X;
-            var y = gridCoords.Y;
+            var x = tile.Coordinates.X;
+            var y = tile.Coordinates.Y;
             List<GridTile> neighbors = new List<GridTile>();
 
             if (x - 1 >= 0)
@@ -268,102 +224,6 @@ namespace StratMono.System
         private int convert2dPointTo1dIndex(Point point, int rowLength)
         {
             return (point.X * rowLength) + point.Y;
-        }
-    }
-
-    public class GridTile
-    {
-        public int Id; // NOTE: also doubles as the index - can be converted to exact x,y coordinate by converting from 1d index to 2d index
-        public List<GridEntity> OccupyingEntities = new List<GridEntity>();
-        public int MoveCost;
-
-        private bool _isAccessible;
-        public bool IsAccessible 
-        {
-            get 
-            {
-                return _isAccessible;
-            }
-
-            set
-            {
-                _isAccessible = value;
-                if (!_isAccessible)
-                {
-                    _characterCanMoveThroughThisTile = false;
-                }
-            }
-        }
-
-        private bool _characterCanMoveThroughThisTile;
-        public bool CharacterCanMoveThroughThisTile 
-        {
-            get 
-            {
-                return _characterCanMoveThroughThisTile;
-            }
-
-            set 
-            {
-                if (!_isAccessible)
-                {
-                    _characterCanMoveThroughThisTile = false;
-                }
-
-                _characterCanMoveThroughThisTile = value;
-            }
-        }
-
-        public GridTile(int id)
-        {
-            Id = id;
-            MoveCost = 1;
-            IsAccessible = true;
-            CharacterCanMoveThroughThisTile = true;
-        }
-
-        public void AddToTile(GridEntity gridEntity)
-        {
-            OccupyingEntities.Add(gridEntity);
-
-            if (gridEntity.GetType() == typeof(CharacterGridEntity))
-            {
-                CharacterCanMoveThroughThisTile = false;
-            }
-        }
-
-        public void RemoveFromTile(string gridEntityName)
-        {
-            for (int i = OccupyingEntities.Count - 1; i >= 0; i--)
-            {
-                if (OccupyingEntities[i].Name.Equals(gridEntityName))
-                {
-                    if (OccupyingEntities[i].GetType() == typeof(CharacterGridEntity))
-                    {
-                        CharacterCanMoveThroughThisTile = true;
-                    }
-
-                    OccupyingEntities.RemoveAt(i);
-                    break;
-                }
-            }
-        }
-
-        public override bool Equals(object obj)
-        {
-            var item = obj as GridTile;
-
-            if (item == null)
-            {
-                return false;
-            }
-
-            return this.Id.Equals(item.Id);
-        }
-
-        public override int GetHashCode()
-        {
-            return this.Id.GetHashCode();
         }
     }
 }

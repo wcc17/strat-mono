@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
+using StartMono.Util;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.States.Scene;
@@ -14,6 +15,11 @@ namespace StratMono.Scenes
 {
     public class LevelScene : Scene
     {
+        private readonly Color BlueFill = new Color(99, 155, 255, 200);
+        private readonly Color BlueOutline = new Color(91, 110, 225, 200);
+        private readonly Color RedFill = new Color(217, 87, 99, 200);
+        private readonly Color RedOutline = new Color(172, 50, 50, 200);
+
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
         private const string CursorEntityName = "cursor";
@@ -22,11 +28,15 @@ namespace StratMono.Scenes
         private const string CursorSpriteName = "tile_cursor";
 
         private SpriteAtlas _spriteAtlas;
-        private GridSystem _gridSystem;
         private TileCursorSystem _tileCursorSystem;
         private BaseState _state = new DefaultState();
 
-        public CharacterGridEntity SelectedCharacter = null;
+        public GridSystem GridSystem;
+        public CharacterGridMovementInformation CharacterGridMovementInfo = null;
+
+        public CharacterGridEntity SelectedCharacter;
+        // TODO: try setting SelectedCharacter to null when SelectedTile is null?
+        public GridTile SelectedTile = null;
 
         public override void Initialize()
         {
@@ -59,25 +69,60 @@ namespace StratMono.Scenes
                 cursorEntity,
                 Camera);
 
-            _gridSystem.Update(
-                cursorEntity,
-                EntitiesOfType<GridEntity>(),
-                (BoundedMovingCamera)Camera);
-
-            _state = _state.Update(this, _gridSystem);
+            _state = _state.Update(this, cursorEntity.Position);
         }
 
         public GridEntity AddToGrid(GridEntity entity, int x, int y)
         {
             AddEntity(entity);
-            _gridSystem.AddToGridTile(entity, x, y);
+            GridSystem.AddToGridTile(entity, x, y);
             return entity;
         }
 
         public void RemoveFromGrid(GridEntity entity)
         {
-            _gridSystem.RemoveFromGridTile(entity.Name);
+            GridSystem.RemoveFromGridTile(entity.Name);
             entity.Destroy();
+        }
+
+        public void SetupMovementTileHighlights()
+        {
+            // TODO: should actually store how far a character can travel somewhere (maxMovementCost)
+            CharacterGridMovementInfo = GridSystem.IdentifyPossibleTilesToMoveToTile(SelectedTile, 5);
+            foreach (GridTile tile in CharacterGridMovementInfo.TilesInRangeOfCharacter)
+            {
+                GridEntity tileHighlight = new GridTileHighlight("highlight" + tile.Id);
+                SpriteRenderer outline;
+                SpriteRenderer shape;
+                if (tile.CharacterCanMoveThroughThisTile)
+                {
+                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, BlueOutline, 2);
+                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, BlueFill);
+                }
+                else
+                {
+                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, RedOutline, 2);
+                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, RedFill);
+                }
+
+                shape.RenderLayer = (int)RenderLayer.TileHighlight;
+                outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
+                tileHighlight.AddComponent(outline);
+                tileHighlight.AddComponent(shape);
+
+                AddToGrid(tileHighlight, tile.Coordinates.X, tile.Coordinates.Y);
+            }
+        }
+
+        public void RemoveHighlightsFromGrid()
+        {
+            List<GridTileHighlight> highlights = EntitiesOfType<GridTileHighlight>();
+            foreach (GridTileHighlight highlight in highlights)
+            {
+                RemoveFromGrid(highlight);
+            }
+
+
         }
 
         private void createTiledMap()
@@ -107,7 +152,7 @@ namespace StratMono.Scenes
             var tiledMapEntity = FindEntity(TiledMapEntityName);
             var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
             var tiledMap = tiledMapRenderer.TiledMap;
-            _gridSystem = new GridSystem(
+            GridSystem = new GridSystem(
                 new Point(tiledMap.TileWidth, tiledMap.TileHeight),
                 new Point(tiledMap.WorldWidth, tiledMap.WorldHeight),
                 tiledMapEntity.GetComponent<TiledMapRenderer>().TiledMap.GetObjectGroup("bounds"),
@@ -126,7 +171,7 @@ namespace StratMono.Scenes
                 var spriteAnimator = createSpriteAnimator(CharacterSpriteName);
                 spriteAnimator.RenderLayer = (int)RenderLayer.Character;
                 characterEntity.AddComponent(spriteAnimator);
-                characterEntity.AddComponent(new CharacterMovement());
+                characterEntity.AddComponent(new CharacterAnimatedMovement());
 
                 int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64);
                 int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64);

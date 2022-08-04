@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Nez.Sprites;
 using StartMono.Util;
+using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
@@ -12,84 +13,87 @@ namespace StratMono.States.Scene
 {
     public class CharacterSelectedState : BaseState
     {
-        private readonly Color BlueFill = new Color(99, 155, 255, 200);
-        private readonly Color BlueOutline = new Color(91, 110, 225, 200);
-        private readonly Color RedFill = new Color(217, 87, 99, 200);
-        private readonly Color RedOutline = new Color(172, 50, 50, 200);
-
-        public override BaseState Update(
-            LevelScene scene, 
-            GridSystem gridSystem)
+        public override void EnterState(LevelScene scene) 
         {
+            scene.RemoveHighlightsFromGrid();
+            scene.SetupMovementTileHighlights();
+        }
 
-            BaseState nextState = this;
+        public override BaseState Update(LevelScene scene, Vector2 cursorEntityPosition)
+        {
+            scene.GridSystem.Update(scene.EntitiesOfType<GridEntity>());
 
-            var selectionChanged = CheckForNewSelection(scene, gridSystem);
-            if (selectionChanged)
+            if (DidUserMakeSelection())
             {
-                _removeHighlightsFromGrid(scene);
+                GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntityPosition);
+                CharacterGridEntity selectedCharacter = GetCharacterFromSelectedTile(selectedTile);
 
-                if (scene.SelectedCharacter != null)
+                var movementInformation = scene.CharacterGridMovementInfo;
+                bool noSelectedCharacter = selectedCharacter == null;
+                bool userReselectedTile = selectedTile == scene.SelectedTile;
+                bool tileNotInRange = !movementInformation.TilesInRangeOfCharacter.Contains(selectedTile);
+                
+                if (noSelectedCharacter && userReselectedTile)
                 {
-                    // NOTE: assuming that not null is a selected character until something else could be selected
-                    nextState = new CharacterSelectedState();
-                    nextState.EnterState(scene, gridSystem);
-                } else
-                {
-                    nextState = new DefaultState();
-                    nextState.EnterState(scene, gridSystem);
+                    return goToDefaultState(scene, selectedTile);
                 }
+
+                if (noSelectedCharacter && tileNotInRange)
+                {
+                    return goToDefaultState(scene, selectedTile);
+                }
+
+                if (selectedCharacter == scene.SelectedCharacter)
+                {
+                    return goToDefaultState(scene, selectedTile);
+                }
+
+                if (selectedCharacter != null)
+                {
+                    // the user meant to switch to a different character, re-enter characterselectedState
+                    UpdateSceneSelections(scene, selectedTile, selectedCharacter);
+                    CenterCameraOnPosition(scene, selectedTile.Position);
+
+                    var nextState = new CharacterSelectedState();
+                    nextState.EnterState(scene);
+                    return nextState;
+                }
+
+                return goToCharacterMovingState(scene, selectedTile);
             }
 
+            return this;
+        }
+
+        private BaseState goToDefaultState(LevelScene scene, GridTile selectedTile)
+        {
+            // the user meant to deselect and go back to default state
+            UpdateSceneSelections(scene, selectedTile, null);
+            CenterCameraOnPosition(scene, selectedTile.Position);
+            var nextState = new DefaultState();
+            nextState.EnterState(scene);
             return nextState;
         }
 
-        public override void EnterState(
-            LevelScene scene,
-            GridSystem gridSystem)
+        private BaseState goToCharacterMovingState(LevelScene scene, GridTile selectedTile)
         {
-            _setupMovementTileHighlights(scene, gridSystem);
-        }
+            Dictionary<GridTile, GridTile> allPathsFromCharacter 
+                = scene.CharacterGridMovementInfo.PathsFromCharacterToTilesInRange;
 
-        private void _setupMovementTileHighlights(
-            LevelScene scene, 
-            GridSystem gridSystem)
-        {
-            // TODO: should actually store how far a character can travel somewhere (maxMovementCost)
-            var tilesInRange = gridSystem.IdentifyPossibleTilesToMoveToFromSelectedTile(5);
-            foreach (GridTile tile in tilesInRange)
+            GridTile nextTile = selectedTile;
+            Stack<GridTile> pathToTake = new Stack<GridTile>();
+            while (nextTile != null)
             {
-                GridEntity tileHighlight = new GridTileHighlight("highlight" + tile.Id);
-                SpriteRenderer outline;
-                SpriteRenderer shape;
-                if (tile.CharacterCanMoveThroughThisTile)
-                {
-                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, BlueOutline, 2);
-                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, BlueFill);
-                }
-                else
-                {
-                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, RedOutline, 2);
-                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, RedFill);
-                }
-
-                shape.RenderLayer = (int)RenderLayer.TileHighlight;
-                outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
-                tileHighlight.AddComponent(outline);
-                tileHighlight.AddComponent(shape);
-
-                Point tileCoordinates = gridSystem.GetTileCoordinates(tile);
-                scene.AddToGrid(tileHighlight, tileCoordinates.X, tileCoordinates.Y);
+                pathToTake.Push(nextTile);
+                allPathsFromCharacter.TryGetValue(nextTile, out nextTile);
             }
+
+            scene.SelectedCharacter.AddComponent(new GridEntityMoveToGoal(pathToTake));
+
+            var nextState = new CharacterMovingState();
+            nextState.EnterState(scene);
+            return nextState;
         }
 
-        private void _removeHighlightsFromGrid(LevelScene scene)
-        {
-            List<GridTileHighlight> highlights = scene.EntitiesOfType<GridTileHighlight>();
-            foreach (GridTileHighlight highlight in highlights)
-            {
-                scene.RemoveFromGrid(highlight);
-            }
-        }
     }
 }

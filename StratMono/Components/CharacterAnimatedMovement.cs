@@ -1,33 +1,34 @@
 ﻿using System;
-using System.Numerics;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.Sprites;
+using StratMono.Util;
 
 namespace StratMono.Components
 {
-    public class CharacterMovement : Component, IUpdatable
+    public class CharacterAnimatedMovement : Component, IUpdatable
     {
+        public Vector2 MoveDirection = MovementDirection.DOWN;
+
         public void Update()
         {
-            //TODO: just a default direction for now, something will eventually change this
-            Vector2 moveDirection = new Vector2(0, 1);
             string animationToPlay = "walk_down";
 
-            if (moveDirection.X > 0)
+            if (MoveDirection.X > 0)
             {
                 animationToPlay = "walk_right";
             }
-            else if (moveDirection.X < 0)
+            else if (MoveDirection.X < 0)
             {
                 animationToPlay = "walk_left";
             }
 
-            if (moveDirection.Y < 0)
+            if (MoveDirection.Y < 0)
             {
                 animationToPlay = "walk_up";
             }
-            else if (moveDirection.Y > 0)
+            else if (MoveDirection.Y > 0)
             {
                 animationToPlay = "walk_down";
             }

@@ -28,7 +28,7 @@ namespace StratMono.System
         {
             if (InputMode.CurrentInputMode == InputModeType.KeyboardMouse)
             {
-                handleMouseMovement(cursorEntity, camera.Position);
+                cursorEntity.Position = camera.MouseToWorldPoint();
             }
             else if (InputMode.CurrentInputMode == InputModeType.Controller)
             {
@@ -36,13 +36,6 @@ namespace StratMono.System
             }
 
             adjustPositionForCameraBounds(cursorEntity, camera.Bounds);
-        }
-
-        private void handleMouseMovement(Entity cursorEntity, Vector2 cameraPosition)
-        {
-            cursorEntity.Position = new Vector2(
-                Input.MousePosition.X + (cameraPosition.X - Screen.Width / 2),
-                Input.MousePosition.Y + (cameraPosition.Y - Screen.Height / 2));
         }
 
         private void handleControllerMovement(Entity cursorEntity)

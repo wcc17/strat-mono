@@ -9,7 +9,7 @@ namespace StratMono.System
 {
     class TileCursorSystem
     {
-
+        private readonly int controllerCursorMoveSpeed = 64;
         private VirtualIntegerAxis _cursorMovementXAxisInput;
         private VirtualIntegerAxis _cursorMovementYAxisInput;
         private Vector2 _cursorMovementDirection = new Vector2(0, 0);
@@ -49,22 +49,20 @@ namespace StratMono.System
         {
             if (!_disableCursorControllerMovement)
             {
-                // TODO: stupid name
-                var movementSpeedOrWhatever = 64;
                 _cursorMovementDirection.X = _cursorMovementXAxisInput.Value;
                 _cursorMovementDirection.Y = _cursorMovementYAxisInput.Value;
 
                 if (_cursorMovementDirection.X > 0)
                 {
                     cursorEntity.Position = new Vector2(
-                        cursorEntity.Position.X + movementSpeedOrWhatever,
+                        cursorEntity.Position.X + controllerCursorMoveSpeed,
                         cursorEntity.Position.Y);
                 }
 
                 if (_cursorMovementDirection.X < 0)
                 {
                     cursorEntity.Position = new Vector2(
-                        cursorEntity.Position.X - movementSpeedOrWhatever,
+                        cursorEntity.Position.X - controllerCursorMoveSpeed,
                         cursorEntity.Position.Y);
                 }
 
@@ -72,14 +70,14 @@ namespace StratMono.System
                 {
                     cursorEntity.Position = new Vector2(
                         cursorEntity.Position.X,
-                        cursorEntity.Position.Y - movementSpeedOrWhatever);
+                        cursorEntity.Position.Y - controllerCursorMoveSpeed);
                 }
 
                 if (_cursorMovementDirection.Y < 0)
                 {
                     cursorEntity.Position = new Vector2(
                         cursorEntity.Position.X,
-                        cursorEntity.Position.Y + movementSpeedOrWhatever);
+                        cursorEntity.Position.Y + controllerCursorMoveSpeed);
                 }
 
                 if (_cursorMovementDirection.X != 0 || _cursorMovementDirection.Y != 0)

@@ -10,11 +10,13 @@ namespace StratMono.Components
 {
     public class BoundedMovingCamera : Camera, IUpdatable
     {
-        private readonly int _cameraMoveSpeed = 50;
-        private readonly float _cameraMoveLerp = 0.2f;
-        private readonly float maximumZoom = 0.3f;
-        private readonly float minimumZoom = -0.3f;
-        private readonly float zoomSpeed = 0.1f;
+        private readonly int _cameraMoveSpeed = 1000;
+        private readonly float _cameraMoveLerp = 0.7f;
+        private readonly int _cameraMoveGoalSpeed = 2000;
+        
+        private readonly float _maximumZoom = 0.3f;
+        private readonly float _minimumZoom = -0.3f;
+        private readonly float _zoomSpeed = 0.1f;
 
         private readonly Rectangle _levelBounds;
         private VirtualIntegerAxis _cameraMovementXAxisInput;
@@ -61,7 +63,7 @@ namespace StratMono.Components
         {
             updatePosition();
             updateZoom();
-            adjustPositionForBounds(); //TODO: I like the way using lerp works here, but it doesn't look as great when zooming out
+            adjustPositionForBounds();
 
             Entity.Transform.RoundPosition();
         }
@@ -113,15 +115,15 @@ namespace StratMono.Components
         private void increaseZoom()
         {
             Console.WriteLine("scroll up");
-            Zoom += zoomSpeed;
-            Zoom = (Zoom > maximumZoom) ? maximumZoom : Zoom;
+            Zoom += _zoomSpeed;
+            Zoom = (Zoom > _maximumZoom) ? _maximumZoom : Zoom;
         }
 
         private void decreaseZoom()
         {
             Console.WriteLine("scroll down");
-            Zoom -= zoomSpeed;
-            Zoom = (Zoom < minimumZoom) ? minimumZoom : Zoom;
+            Zoom -= _zoomSpeed;
+            Zoom = (Zoom < _minimumZoom) ? _minimumZoom : Zoom;
         }
 
         private void handleMovement()
@@ -130,19 +132,19 @@ namespace StratMono.Components
 
             if (_cameraMovementDirection.X > 0)
             {
-                desiredPosition.X = Position.X + _cameraMoveSpeed;
+                desiredPosition.X += (_cameraMoveSpeed * Time.DeltaTime);
             }
             if (_cameraMovementDirection.X < 0)
             {
-                desiredPosition.X = Position.X - _cameraMoveSpeed;
+                desiredPosition.X -= (_cameraMoveSpeed * Time.DeltaTime);
             }
             if (_cameraMovementDirection.Y > 0)
             {
-                desiredPosition.Y = Position.Y + _cameraMoveSpeed;
+                desiredPosition.Y += (_cameraMoveSpeed * Time.DeltaTime);
             }
             if (_cameraMovementDirection.Y < 0)
             {
-                desiredPosition.Y = Position.Y - _cameraMoveSpeed;
+                desiredPosition.Y -= (_cameraMoveSpeed * Time.DeltaTime);
             }
 
             setPositionWithLerp(desiredPosition);
@@ -150,36 +152,43 @@ namespace StratMono.Components
 
         private void handleMoveGoal()
         {
-            var moveGoalSpeed = 250;
             var remainingDistanceX = Math.Abs(_moveGoal.X - Position.X);
             var remainingDistanceY = Math.Abs(_moveGoal.Y - Position.Y);
-            var moveGoalSpeedX = (remainingDistanceX > moveGoalSpeed) ? moveGoalSpeed : remainingDistanceX;
-            var moveGoalSpeedY = (remainingDistanceY > moveGoalSpeed) ? moveGoalSpeed : remainingDistanceY;
-
-            Vector2 desiredPosition = new Vector2(Position.X, Position.Y);
-            if (_moveGoal.X > Position.X)
-            {
-                desiredPosition.X += moveGoalSpeedX;
-            }
-            if (_moveGoal.X < Position.X)
-            {
-                desiredPosition.X -= moveGoalSpeedX;
-            }
-            if (_moveGoal.Y > Position.Y)
-            {
-                desiredPosition.Y += moveGoalSpeedY;
-            }
-            if (_moveGoal.Y < Position.Y)
-            {
-                desiredPosition.Y -= moveGoalSpeedY;
-            }
-
-            setPositionWithLerp(desiredPosition);
 
             if (remainingDistanceX <= 0 && remainingDistanceY <= 0)
             {
                 _moveGoal = _noMoveGoal;
+                return;
             }
+
+            Vector2 desiredPosition = new Vector2(Position.X, Position.Y);
+            if (_moveGoal.X > desiredPosition.X)
+            {
+                desiredPosition.X += (_cameraMoveGoalSpeed * Time.DeltaTime);
+                desiredPosition.X = (desiredPosition.X > _moveGoal.X) ? _moveGoal.X : desiredPosition.X;
+            }
+            if (_moveGoal.X < desiredPosition.X)
+            {
+                desiredPosition.X -= (_cameraMoveGoalSpeed * Time.DeltaTime);
+                desiredPosition.X = (desiredPosition.X < _moveGoal.X) ? _moveGoal.X : desiredPosition.X;
+            }
+            if (_moveGoal.Y > desiredPosition.Y)
+            {
+                desiredPosition.Y += (_cameraMoveGoalSpeed * Time.DeltaTime);
+                desiredPosition.Y = (desiredPosition.Y > _moveGoal.Y) ? _moveGoal.Y : desiredPosition.Y;
+            }
+            if (_moveGoal.Y < desiredPosition.Y)
+            {
+                desiredPosition.Y -= (_cameraMoveGoalSpeed * Time.DeltaTime);
+                desiredPosition.Y = (desiredPosition.Y < _moveGoal.Y) ? _moveGoal.Y : desiredPosition.Y;
+            }
+
+            setPositionWithLerp(desiredPosition);
+            
+            Console.WriteLine(desiredPosition);
+            Console.WriteLine(_moveGoal);
+            Console.WriteLine();
+            Console.WriteLine();
         }
 
         private void adjustPositionForBounds()
@@ -206,7 +215,8 @@ namespace StratMono.Components
                 desiredPosition.Y = _levelBounds.Bottom - (bounds.Height / 2);
             }
 
-            setPositionWithLerp(desiredPosition);
+            //setPositionWithLerp(desiredPosition); this looked bad
+            Position = desiredPosition;
         }
 
         private void setPositionWithLerp(Vector2 desiredPosition)

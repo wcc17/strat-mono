@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
+using Nez.UI;
 using StartMono.Util;
 using StratMono.Components;
 using StratMono.Entities;
@@ -39,7 +40,7 @@ namespace StratMono.Scenes
 
         public override void Initialize()
         {
-            ClearColor = Color.Black;
+            //ClearColor = Color.Black;
 
             var defaultRenderer = new DefaultRenderer();
             this.AddRenderer(defaultRenderer);
@@ -56,6 +57,28 @@ namespace StratMono.Scenes
             createGrid();
             createCharacter();
             createGridCursorEntity();
+
+            //var uiCanvas = new UICanvas();
+            //uiCanvas.RenderLayer = 0;
+            //var stage = uiCanvas.Stage;
+            //var table = stage.AddElement(new Table());
+            //table.SetBounds(10, 10, 150, 200);
+            //table.SetFillParent(false);
+
+            //PrimitiveDrawable background = new PrimitiveDrawable(Color.White);
+            //table.SetBackground(background);
+
+            //var button1 = new Button(ButtonStyle.Create(Color.Black, Color.DarkGray, Color.Green));
+            //button1.OnClicked += f => Console.WriteLine("hello?");
+            //var button2 = new Button(ButtonStyle.Create(Color.Black, Color.DarkGray, Color.Green));
+            //table.Add(button1).SetMinWidth(100).SetMinHeight(30);
+            //table.Row();
+            //table.Add(button2).SetMinWidth(100).SetMinHeight(30);
+
+            //var uiCanvasEntity = new Entity();
+            //uiCanvasEntity.AddComponent(uiCanvas);
+            //AddEntity(uiCanvasEntity);
+
         }
 
         public override void Update()
@@ -122,8 +145,6 @@ namespace StratMono.Scenes
             {
                 RemoveFromGrid(highlight);
             }
-
-
         }
 
         private void createTiledMap()

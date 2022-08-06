@@ -9,7 +9,7 @@ namespace StratMono.Components
 {
     public class GridEntityMoveToGoal : Component, IUpdatable
     {
-        private readonly int _moveSpeed = 10;
+        private readonly int _moveSpeed = 1000;
         private Stack<GridTile> _pathToTake;
 
         public GridEntityMoveToGoal(Stack<GridTile> pathToTake)
@@ -50,7 +50,9 @@ namespace StratMono.Components
             if (entityPosition.X != nextGridTile.Position.X)
             {
                 var distanceToTravel = getDistanceToTravel(nextGridTile.Position.X, entityPosition.X);
-                Entity.Position = new Vector2(entityPosition.X + distanceToTravel, entityPosition.Y);
+
+                var newX = entityPosition.X + distanceToTravel;
+                Entity.Position = new Vector2(newX, entityPosition.Y);
 
                 if (animatedMovement != null)
                 {
@@ -67,7 +69,9 @@ namespace StratMono.Components
             else
             {
                 var distanceToTravel = getDistanceToTravel(nextGridTile.Position.Y, entityPosition.Y);
-                Entity.Position = new Vector2(entityPosition.X, entityPosition.Y + distanceToTravel);
+
+                var newY = entityPosition.Y + distanceToTravel;
+                Entity.Position = new Vector2(entityPosition.X, newY);
 
                 if (animatedMovement != null)
                 {
@@ -83,11 +87,25 @@ namespace StratMono.Components
             }
         }
 
-        private int getDistanceToTravel(int nextGridTileCoordinate, int entityPositionCoordinate)
+        private float getDistanceToTravel(int nextGridTileCoordinate, int entityPositionCoordinate)
         {
-            var distanceToNextTile = Math.Abs(nextGridTileCoordinate - entityPositionCoordinate);
-            var distanceToTravel = (Math.Abs(distanceToNextTile) > _moveSpeed) ? _moveSpeed : distanceToNextTile;
-            distanceToTravel = (nextGridTileCoordinate < entityPositionCoordinate) ? -distanceToTravel : distanceToTravel;
+            var distanceToNextTile = nextGridTileCoordinate - entityPositionCoordinate;
+            float distanceToTravel = _moveSpeed * Time.DeltaTime;
+
+            if (distanceToNextTile < 0)
+            {
+                distanceToTravel = -distanceToTravel;
+                if (distanceToTravel < distanceToNextTile)
+                {
+                    distanceToTravel = distanceToNextTile;
+                }
+            } else
+            {
+                if (distanceToTravel > distanceToNextTile)
+                {
+                    distanceToTravel = distanceToNextTile;
+                }
+            }
 
             return distanceToTravel;
         }

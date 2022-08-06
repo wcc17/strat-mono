@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Nez;
 using StratMono.Scenes;
+using System; 
 
 namespace StratMono
 {
@@ -11,7 +12,7 @@ namespace StratMono
         public StratMonoGame()
         {
             Content.RootDirectory = "Content";
-            IsMouseVisible = false;
+            IsMouseVisible = true;
         }
 
         protected override void Initialize()

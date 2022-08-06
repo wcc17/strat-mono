@@ -14,9 +14,9 @@ namespace StratMono.Components
         private readonly float _cameraMoveLerp = 0.7f;
         private readonly int _cameraMoveGoalSpeed = 2000;
         
-        private readonly float _maximumZoom = 0.3f;
-        private readonly float _minimumZoom = -0.3f;
-        private readonly float _zoomSpeed = 0.1f;
+        private readonly float _maximumZoom = 0.4f;
+        private readonly float _minimumZoom = -0.4f;
+        private readonly float _zoomSpeed = 0.2f;
 
         private readonly Rectangle _levelBounds;
         private VirtualIntegerAxis _cameraMovementXAxisInput;
@@ -117,6 +117,7 @@ namespace StratMono.Components
             Console.WriteLine("scroll up");
             Zoom += _zoomSpeed;
             Zoom = (Zoom > _maximumZoom) ? _maximumZoom : Zoom;
+            Console.WriteLine(Zoom);
         }
 
         private void decreaseZoom()
@@ -124,6 +125,7 @@ namespace StratMono.Components
             Console.WriteLine("scroll down");
             Zoom -= _zoomSpeed;
             Zoom = (Zoom < _minimumZoom) ? _minimumZoom : Zoom;
+            Console.WriteLine(Zoom);
         }
 
         private void handleMovement()
@@ -152,15 +154,6 @@ namespace StratMono.Components
 
         private void handleMoveGoal()
         {
-            var remainingDistanceX = Math.Abs(_moveGoal.X - Position.X);
-            var remainingDistanceY = Math.Abs(_moveGoal.Y - Position.Y);
-
-            if (remainingDistanceX <= 0 && remainingDistanceY <= 0)
-            {
-                _moveGoal = _noMoveGoal;
-                return;
-            }
-
             Vector2 desiredPosition = new Vector2(Position.X, Position.Y);
             if (_moveGoal.X > desiredPosition.X)
             {
@@ -183,12 +176,14 @@ namespace StratMono.Components
                 desiredPosition.Y = (desiredPosition.Y < _moveGoal.Y) ? _moveGoal.Y : desiredPosition.Y;
             }
 
+            if (desiredPosition.X == _moveGoal.X && desiredPosition.Y == _moveGoal.Y)
+            {
+                Position = desiredPosition; // skipping lerp when we've gotten close enough to the destination
+                _moveGoal = _noMoveGoal;
+                return;
+            }
+
             setPositionWithLerp(desiredPosition);
-            
-            Console.WriteLine(desiredPosition);
-            Console.WriteLine(_moveGoal);
-            Console.WriteLine();
-            Console.WriteLine();
         }
 
         private void adjustPositionForBounds()

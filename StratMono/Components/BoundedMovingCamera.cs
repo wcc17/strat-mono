@@ -117,7 +117,6 @@ namespace StratMono.Components
             Console.WriteLine("scroll up");
             Zoom += _zoomSpeed;
             Zoom = (Zoom > _maximumZoom) ? _maximumZoom : Zoom;
-            Console.WriteLine(Zoom);
         }
 
         private void decreaseZoom()
@@ -125,7 +124,6 @@ namespace StratMono.Components
             Console.WriteLine("scroll down");
             Zoom -= _zoomSpeed;
             Zoom = (Zoom < _minimumZoom) ? _minimumZoom : Zoom;
-            Console.WriteLine(Zoom);
         }
 
         private void handleMovement()

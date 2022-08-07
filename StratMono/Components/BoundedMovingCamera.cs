@@ -46,17 +46,15 @@ namespace StratMono.Components
 
             // horizontal input from dpad, left stick or keyboard left/right
             _cameraMovementXAxisInput = new VirtualIntegerAxis();
-            _cameraMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadDpadLeftRight());
-            _cameraMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadLeftStickX());
+            _cameraMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadRightStickX());
             _cameraMovementXAxisInput.Nodes.Add(
                 new VirtualAxis.KeyboardKeys(VirtualInput.OverlapBehavior.TakeNewer, Keys.A, Keys.D));
 
             // vertical input from dpad, left stick or keyboard up/down
             _cameraMovementYAxisInput = new VirtualIntegerAxis();
-            _cameraMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadDpadUpDown());
-            _cameraMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadLeftStickY());
+            _cameraMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadRightStickY());
             _cameraMovementYAxisInput.Nodes.Add(
-                new VirtualAxis.KeyboardKeys(VirtualInput.OverlapBehavior.TakeNewer, Keys.W, Keys.S));
+                new VirtualAxis.KeyboardKeys(VirtualInput.OverlapBehavior.TakeNewer, Keys.S, Keys.W));
         }
 
         public void Update()
@@ -140,11 +138,11 @@ namespace StratMono.Components
             }
             if (_cameraMovementDirection.Y > 0)
             {
-                desiredPosition.Y += (_cameraMoveSpeed * Time.DeltaTime);
+                desiredPosition.Y -= (_cameraMoveSpeed * Time.DeltaTime);
             }
             if (_cameraMovementDirection.Y < 0)
             {
-                desiredPosition.Y -= (_cameraMoveSpeed * Time.DeltaTime);
+                desiredPosition.Y += (_cameraMoveSpeed * Time.DeltaTime);
             }
 
             setPositionWithLerp(desiredPosition);

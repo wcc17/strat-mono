@@ -9,7 +9,10 @@ namespace StratMono.System
 {
     public class TileCursorSystem
     {
-        private readonly int controllerCursorMoveSpeed = 64;
+        private readonly float CursorMovementControllerDpadDelay = 0.09f;
+        private readonly float CursorMovementControllerStickDelay = 0.01f;
+        private readonly int ControllerCursorMoveSpeed = 64;
+
         private VirtualIntegerAxis _cursorMovementXAxisInput;
         private VirtualIntegerAxis _cursorMovementYAxisInput;
         private Vector2 _cursorMovementDirection = new Vector2(0, 0);
@@ -19,9 +22,12 @@ namespace StratMono.System
         public TileCursorSystem()
         {
             _cursorMovementXAxisInput = new VirtualIntegerAxis();
+            _cursorMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadLeftStickX());
+            _cursorMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadDpadLeftRight());
+
             _cursorMovementYAxisInput = new VirtualIntegerAxis();
-            _cursorMovementXAxisInput.Nodes.Add(new VirtualAxis.GamePadRightStickX());
-            _cursorMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadRightStickY());
+            _cursorMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadLeftStickY());
+            _cursorMovementYAxisInput.Nodes.Add(new VirtualAxis.GamePadDpadUpDown());
         }
 
         public void Update(Entity cursorEntity, Camera camera)
@@ -48,14 +54,14 @@ namespace StratMono.System
                 if (_cursorMovementDirection.X > 0)
                 {
                     cursorEntity.Position = new Vector2(
-                        cursorEntity.Position.X + controllerCursorMoveSpeed,
+                        cursorEntity.Position.X + ControllerCursorMoveSpeed,
                         cursorEntity.Position.Y);
                 }
 
                 if (_cursorMovementDirection.X < 0)
                 {
                     cursorEntity.Position = new Vector2(
-                        cursorEntity.Position.X - controllerCursorMoveSpeed,
+                        cursorEntity.Position.X - ControllerCursorMoveSpeed,
                         cursorEntity.Position.Y);
                 }
 
@@ -63,28 +69,33 @@ namespace StratMono.System
                 {
                     cursorEntity.Position = new Vector2(
                         cursorEntity.Position.X,
-                        cursorEntity.Position.Y - controllerCursorMoveSpeed);
+                        cursorEntity.Position.Y + ControllerCursorMoveSpeed);
                 }
 
                 if (_cursorMovementDirection.Y < 0)
                 {
                     cursorEntity.Position = new Vector2(
                         cursorEntity.Position.X,
-                        cursorEntity.Position.Y + controllerCursorMoveSpeed);
+                        cursorEntity.Position.Y - ControllerCursorMoveSpeed);
                 }
 
                 if (_cursorMovementDirection.X != 0 || _cursorMovementDirection.Y != 0)
                 {
-                    _disableCursorControllerMovement = true;
+                    var controllerDelay = CursorMovementControllerStickDelay;
+                    // The delay for the left stick should be much shorter than the dpad, dpad is for finer control when using a controller
+                    if (Input.GamePads[0].IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadLeft)
+                        || Input.GamePads[0].IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadRight)
+                        || Input.GamePads[0].IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadUp)
+                        || Input.GamePads[0].IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadDown))
+                    {
+                        controllerDelay = CursorMovementControllerDpadDelay;
+                    }
 
-                    // TODO: replace with https://github.com/prime31/Nez/blob/master/FAQs/Nez-Core.md#timermanager
-                    _timer = new Timer(50);
-                    _timer.Enabled = true;
-                    _timer.Elapsed += (source, e) =>
+                    _disableCursorControllerMovement = true;
+                    var timer = Core.Schedule(controllerDelay, repeats: false, (timer) =>
                     {
                         _disableCursorControllerMovement = false;
-                        _timer.Enabled = false;
-                    };
+                    });
                 }
             }
         }

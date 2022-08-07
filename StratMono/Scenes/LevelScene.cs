@@ -233,7 +233,11 @@ namespace StratMono.Scenes
                     || gamepad.IsRightTriggerPressed()
                     || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A)
                     || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.RightShoulder) 
-                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.LeftShoulder))
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.LeftShoulder)
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadLeft)
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadRight)
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadUp)
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadDown))
                 {
                     InputMode.CurrentInputMode = InputModeType.Controller;
                 }

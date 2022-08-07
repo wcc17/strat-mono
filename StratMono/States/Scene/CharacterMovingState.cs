@@ -5,6 +5,7 @@ using StratMono.Scenes;
 using StratMono.System;
 using System.Collections.Generic;
 using System;
+using StratMono.Util;
 
 namespace StratMono.States.Scene
 {
@@ -42,6 +43,13 @@ namespace StratMono.States.Scene
                 // This will be set to true if character moved, then the user cancelled the action
                 if (_returnedToOriginalPosition)
                 {
+                    // if we're on controller, put the cursor back to where we started
+                    if (InputMode.CurrentInputMode == InputModeType.Controller)
+                    {
+                        var originalTilePosition = new Stack<GridTile>(_pathToTake).Pop().Position;
+                        cursorEntity.Position = new Vector2(originalTilePosition.X, originalTilePosition.Y);
+                    }
+
                     scene.SelectedCharacter = null;
                     scene.SelectedTile = null;
                     nextState = new DefaultState();

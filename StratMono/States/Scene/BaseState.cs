@@ -13,7 +13,18 @@ namespace StratMono.States.Scene
     {
         public abstract void EnterState(LevelScene scene);
 
-        public abstract BaseState Update(LevelScene scene, Vector2 cursorEntityPosition);
+        public virtual BaseState Update(LevelScene scene, GridEntity cursorEntity)
+        {
+            (scene.Camera as BoundedMovingCamera).Update();
+
+            scene.SceneTileCursorSystem.Update(
+                cursorEntity,
+                scene.Camera);
+
+            scene.GridSystem.Update(scene.EntitiesOfType<GridEntity>());
+
+            return this;
+        }
 
         protected virtual void UpdateSceneSelections(
             LevelScene scene, 
@@ -22,6 +33,12 @@ namespace StratMono.States.Scene
         {
             scene.SelectedTile = selectedTile;
             scene.SelectedCharacter = selectedCharacter;
+        }
+
+        protected virtual void CenterCameraOnPosition(LevelScene scene, Vector2 position)
+        {
+            var point = new Point((int)position.X, (int)position.Y);
+            CenterCameraOnPosition(scene, point);
         }
 
         protected virtual void CenterCameraOnPosition(LevelScene scene, Point position)

@@ -19,13 +19,13 @@ namespace StratMono.States.Scene
             scene.SetupMovementTileHighlights();
         }
 
-        public override BaseState Update(LevelScene scene, Vector2 cursorEntityPosition)
+        public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
-            scene.GridSystem.Update(scene.EntitiesOfType<GridEntity>());
+            base.Update(scene, cursorEntity);
 
             if (DidUserMakeSelection())
             {
-                GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntityPosition);
+                GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
                 CharacterGridEntity selectedCharacter = GetCharacterFromSelectedTile(selectedTile);
 
                 var movementInformation = scene.CharacterGridMovementInfo;
@@ -77,20 +77,13 @@ namespace StratMono.States.Scene
 
         private BaseState goToCharacterMovingState(LevelScene scene, GridTile selectedTile)
         {
-            Dictionary<GridTile, GridTile> allPathsFromCharacter 
+            Dictionary<GridTile, GridTile> allPathsFromCharacter
                 = scene.CharacterGridMovementInfo.PathsFromCharacterToTilesInRange;
+            
+            var initialTile = scene.GridSystem.GetNearestTileAtPosition(scene.SelectedCharacter.Position);
+            var goalTile = selectedTile;
 
-            GridTile nextTile = selectedTile;
-            Stack<GridTile> pathToTake = new Stack<GridTile>();
-            while (nextTile != null)
-            {
-                pathToTake.Push(nextTile);
-                allPathsFromCharacter.TryGetValue(nextTile, out nextTile);
-            }
-
-            scene.SelectedCharacter.AddComponent(new GridEntityMoveToGoal(pathToTake));
-
-            var nextState = new CharacterMovingState();
+            var nextState = new CharacterMovingState(allPathsFromCharacter, initialTile, goalTile);
             nextState.EnterState(scene);
             return nextState;
         }

@@ -15,16 +15,16 @@ namespace StratMono.States.Scene
             scene.RemoveHighlightsFromGrid();
         }
 
-        public override BaseState Update(LevelScene scene, Vector2 cursorEntityPosition)
+        public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
+            base.Update(scene, cursorEntity);
+            
             BaseState nextState = this;
-
-            scene.GridSystem.Update(scene.EntitiesOfType<GridEntity>());
 
             if (DidUserMakeSelection())
             {
                 // default state doesn't care if selected tile or character changed
-                GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntityPosition);
+                GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
                 CharacterGridEntity selectedCharacter = GetCharacterFromSelectedTile(selectedTile);
 
                 UpdateSceneSelections(scene, selectedTile, selectedCharacter);

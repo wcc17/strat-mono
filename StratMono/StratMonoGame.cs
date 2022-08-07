@@ -13,6 +13,7 @@ namespace StratMono
         {
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            ExitOnEscapeKeypress = false;
         }
 
         protected override void Initialize()
@@ -28,11 +29,11 @@ namespace StratMono
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
-                Keyboard.GetState().IsKeyDown(Keys.Escape))
-            {
-                Exit();
-            }
+            //if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || 
+            //    Keyboard.GetState().IsKeyDown(Keys.Escape))
+            //{
+            //    Exit();
+            //}
 
             base.Update(gameTime);
         }

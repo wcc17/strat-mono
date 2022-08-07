@@ -8,7 +8,7 @@ using StratMono.Util;
 
 namespace StratMono.Components
 {
-    public class BoundedMovingCamera : Camera, IUpdatable
+    public class BoundedMovingCamera : Camera
     {
         private readonly int _cameraMoveSpeed = 1000;
         private readonly float _cameraMoveLerp = 0.7f;

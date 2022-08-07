@@ -7,7 +7,7 @@ using StratMono.Util;
 
 namespace StratMono.System
 {
-    class TileCursorSystem
+    public class TileCursorSystem
     {
         private readonly int controllerCursorMoveSpeed = 64;
         private VirtualIntegerAxis _cursorMovementXAxisInput;

@@ -29,9 +29,9 @@ namespace StratMono.Scenes
         private const string CursorSpriteName = "tile_cursor";
 
         private SpriteAtlas _spriteAtlas;
-        private TileCursorSystem _tileCursorSystem;
         private BaseState _state = new DefaultState();
 
+        public TileCursorSystem SceneTileCursorSystem;
         public GridSystem GridSystem;
         public CharacterGridMovementInformation CharacterGridMovementInfo = null;
 
@@ -40,8 +40,6 @@ namespace StratMono.Scenes
 
         public override void Initialize()
         {
-            //ClearColor = Color.Black;
-
             var defaultRenderer = new DefaultRenderer();
             this.AddRenderer(defaultRenderer);
 
@@ -50,35 +48,12 @@ namespace StratMono.Scenes
             Screen.IsFullscreen = true;
 
             _spriteAtlas = Content.LoadSpriteAtlas("Content/roots.atlas");
-            _tileCursorSystem = new TileCursorSystem();
 
             createTiledMap();
             createCamera();
             createGrid();
             createCharacter();
             createGridCursorEntity();
-
-            //var uiCanvas = new UICanvas();
-            //uiCanvas.RenderLayer = 0;
-            //var stage = uiCanvas.Stage;
-            //var table = stage.AddElement(new Table());
-            //table.SetBounds(10, 10, 150, 200);
-            //table.SetFillParent(false);
-
-            //PrimitiveDrawable background = new PrimitiveDrawable(Color.White);
-            //table.SetBackground(background);
-
-            //var button1 = new Button(ButtonStyle.Create(Color.Black, Color.DarkGray, Color.Green));
-            //button1.OnClicked += f => Console.WriteLine("hello?");
-            //var button2 = new Button(ButtonStyle.Create(Color.Black, Color.DarkGray, Color.Green));
-            //table.Add(button1).SetMinWidth(100).SetMinHeight(30);
-            //table.Row();
-            //table.Add(button2).SetMinWidth(100).SetMinHeight(30);
-
-            //var uiCanvasEntity = new Entity();
-            //uiCanvasEntity.AddComponent(uiCanvas);
-            //AddEntity(uiCanvasEntity);
-
         }
 
         public override void Update()
@@ -87,13 +62,7 @@ namespace StratMono.Scenes
 
             updateInputMode();
 
-            var cursorEntity = FindEntity(CursorEntityName);
-
-            _tileCursorSystem.Update(
-                cursorEntity,
-                Camera);
-
-            _state = _state.Update(this, cursorEntity.Position);
+            _state = _state.Update(this, (GridEntity)FindEntity(CursorEntityName));
         }
 
         public GridEntity AddToGrid(GridEntity entity, int x, int y)
@@ -203,6 +172,7 @@ namespace StratMono.Scenes
 
         private void createGridCursorEntity()
         {
+            SceneTileCursorSystem = new TileCursorSystem();
             var cursorEntity = new GridEntity(CursorEntityName);
             var spriteAnimator = createSpriteAnimator(CursorSpriteName);
             spriteAnimator.RenderLayer = (int)RenderLayer.Cursor;

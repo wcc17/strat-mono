@@ -1,27 +1,73 @@
 ﻿using Microsoft.Xna.Framework;
 using StratMono.Components;
+using StratMono.Entities;
 using StratMono.Scenes;
+using StratMono.System;
+using System.Collections.Generic;
+using System;
 
 namespace StratMono.States.Scene
 {
     public class CharacterMovingState : BaseState
     {
-        public override void EnterState(LevelScene scene) { }
+        // Both of these are in case the character moves, finishes, and then cancels the movement
+        private readonly Dictionary<GridTile, GridTile> _possiblePathsFromCharacter;
+        private readonly GridTile _initialTile;
+        private readonly GridTile _goalTile;
+        private readonly bool _returnedToOriginalPosition;
 
-        public override BaseState Update(LevelScene scene, Vector2 cursorEntityPosition)
+        public CharacterMovingState(
+            Dictionary<GridTile, GridTile> possiblePathsFromCharacter,
+            GridTile initialTile,
+            GridTile goalTile,
+            bool returnedToOriginalPosition = false) : base()
+        {
+            _possiblePathsFromCharacter = possiblePathsFromCharacter;
+            _initialTile = initialTile;
+            _goalTile = goalTile;
+            _returnedToOriginalPosition = returnedToOriginalPosition;
+
+            Console.WriteLine("initial tile: " + _initialTile);
+            Console.WriteLine("goal tile: " + _goalTile);
+        }
+
+        public override void EnterState(LevelScene scene) 
+        {
+            GridTile nextTile = _goalTile;
+            Stack<GridTile> pathToTake = new Stack<GridTile>();
+            while (nextTile != null)
+            {
+                pathToTake.Push(nextTile);
+                _possiblePathsFromCharacter.TryGetValue(nextTile, out nextTile);
+            }
+
+            scene.SelectedCharacter.AddComponent(new GridEntityMoveToGoal(pathToTake));
+        }
+
+        public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
             BaseState nextState = this;
 
-            var characterPosition = new Point((int)scene.SelectedCharacter.Position.X, (int)scene.SelectedCharacter.Position.Y);
-            CenterCameraOnPosition(scene, characterPosition);
+            CenterCameraOnPosition(scene, scene.SelectedCharacter.Position);
 
-            // wait for character to finish moving, then return default state
             if (!scene.SelectedCharacter.GetComponent<GridEntityMoveToGoal>().Enabled)
             {
                 scene.SelectedCharacter.RemoveComponent<GridEntityMoveToGoal>();
-                scene.SelectedCharacter = null;
-                scene.SelectedTile = null;
-                nextState = new DefaultState();
+
+                // This will be set to true if character moved, then the user cancelled the action
+                if (_returnedToOriginalPosition)
+                {
+                    scene.SelectedCharacter = null;
+                    scene.SelectedTile = null;
+                    nextState = new DefaultState();
+                    nextState.EnterState(scene);
+                    return nextState;
+                }
+
+                nextState = new CharacterFinishedMovingState(
+                    _possiblePathsFromCharacter,
+                    _initialTile,
+                    _goalTile);
                 nextState.EnterState(scene);
             }
 

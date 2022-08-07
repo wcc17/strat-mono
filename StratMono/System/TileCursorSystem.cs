@@ -16,7 +16,6 @@ namespace StratMono.System
         private VirtualIntegerAxis _cursorMovementXAxisInput;
         private VirtualIntegerAxis _cursorMovementYAxisInput;
         private Vector2 _cursorMovementDirection = new Vector2(0, 0);
-        private Timer _timer = new Timer();
         private bool _disableCursorControllerMovement;
 
         public TileCursorSystem()

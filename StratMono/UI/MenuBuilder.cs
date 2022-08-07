@@ -3,6 +3,7 @@ using Nez;
 using Nez.UI;
 using StratMono.Util;
 using System;
+using Microsoft.Xna.Framework.Input;
 
 namespace StratMono.UI
 {
@@ -43,6 +44,7 @@ namespace StratMono.UI
             button2.GamepadUpElement = button1;
 
             stage.SetGamepadFocusElement(button1);
+            stage.GamepadActionButtons = new Buttons[] { Buttons.A, Buttons.RightTrigger };
             
             table.Add(button1).SetMinWidth(300).SetMinHeight(80);
             table.Row();

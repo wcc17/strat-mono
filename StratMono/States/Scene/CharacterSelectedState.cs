@@ -80,10 +80,15 @@ namespace StratMono.States.Scene
             Dictionary<GridTile, GridTile> allPathsFromCharacter
                 = scene.CharacterGridMovementInfo.PathsFromCharacterToTilesInRange;
             
-            var initialTile = scene.GridSystem.GetNearestTileAtPosition(scene.SelectedCharacter.Position);
-            var goalTile = selectedTile;
+            GridTile nextTile = selectedTile;
+            Stack<GridTile> pathToTake = new Stack<GridTile>();
+            while (nextTile != null)
+            {
+                pathToTake.Push(nextTile);
+                allPathsFromCharacter.TryGetValue(nextTile, out nextTile);
+            }
 
-            var nextState = new CharacterMovingState(allPathsFromCharacter, initialTile, goalTile);
+            var nextState = new CharacterMovingState(pathToTake);
             nextState.EnterState(scene);
             return nextState;
         }

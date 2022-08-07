@@ -6,10 +6,11 @@ namespace StratMono.Util
 {
     public enum RenderLayer : int
     {
-        Cursor = 0,
-        Character = 1,
-        TileHighlightOutline = 2,
-        TileHighlight = 3,
-        TileMap = 4,
+        UI = 0,
+        Cursor = 1,
+        Character = 2,
+        TileHighlightOutline = 3,
+        TileHighlight = 4,
+        TileMap = 5,
     }
 }

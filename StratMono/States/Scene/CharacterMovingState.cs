@@ -10,38 +10,22 @@ namespace StratMono.States.Scene
 {
     public class CharacterMovingState : BaseState
     {
-        // Both of these are in case the character moves, finishes, and then cancels the movement
-        private readonly Dictionary<GridTile, GridTile> _possiblePathsFromCharacter;
-        private readonly GridTile _initialTile;
-        private readonly GridTile _goalTile;
+        private readonly Stack<GridTile> _pathToTake;
         private readonly bool _returnedToOriginalPosition;
 
         public CharacterMovingState(
-            Dictionary<GridTile, GridTile> possiblePathsFromCharacter,
-            GridTile initialTile,
-            GridTile goalTile,
+            Stack<GridTile> pathToTake,
             bool returnedToOriginalPosition = false) : base()
         {
-            _possiblePathsFromCharacter = possiblePathsFromCharacter;
-            _initialTile = initialTile;
-            _goalTile = goalTile;
+            _pathToTake = pathToTake;
             _returnedToOriginalPosition = returnedToOriginalPosition;
-
-            Console.WriteLine("initial tile: " + _initialTile);
-            Console.WriteLine("goal tile: " + _goalTile);
         }
 
         public override void EnterState(LevelScene scene) 
         {
-            GridTile nextTile = _goalTile;
-            Stack<GridTile> pathToTake = new Stack<GridTile>();
-            while (nextTile != null)
-            {
-                pathToTake.Push(nextTile);
-                _possiblePathsFromCharacter.TryGetValue(nextTile, out nextTile);
-            }
-
-            scene.SelectedCharacter.AddComponent(new GridEntityMoveToGoal(pathToTake));
+            // to create the initial new stack, it pops off all of the elements. So we have to do it twice to put it back in the right order
+            var stackClone = new Stack<GridTile>(new Stack<GridTile>(_pathToTake));
+            scene.SelectedCharacter.AddComponent(new GridEntityMoveToGoal(stackClone));
         }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
@@ -49,6 +33,7 @@ namespace StratMono.States.Scene
             BaseState nextState = this;
 
             CenterCameraOnPosition(scene, scene.SelectedCharacter.Position);
+            (scene.Camera as BoundedMovingCamera).Update();
 
             if (!scene.SelectedCharacter.GetComponent<GridEntityMoveToGoal>().Enabled)
             {
@@ -64,10 +49,7 @@ namespace StratMono.States.Scene
                     return nextState;
                 }
 
-                nextState = new CharacterFinishedMovingState(
-                    _possiblePathsFromCharacter,
-                    _initialTile,
-                    _goalTile);
+                nextState = new CharacterFinishedMovingState(new Stack<GridTile>(_pathToTake));
                 nextState.EnterState(scene);
             }
 

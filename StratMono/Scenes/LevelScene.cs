@@ -20,6 +20,8 @@ namespace StratMono.Scenes
         private readonly Color BlueOutline = new Color(91, 110, 225, 200);
         private readonly Color RedFill = new Color(217, 87, 99, 200);
         private readonly Color RedOutline = new Color(172, 50, 50, 200);
+        private readonly Color GreenFill = new Color(244, 211, 94, 200);
+        private readonly Color GreenOutline = new Color(230, 190, 100, 200);
 
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
@@ -40,7 +42,9 @@ namespace StratMono.Scenes
 
         public override void Initialize()
         {
-            var defaultRenderer = new DefaultRenderer();
+            var screenSpaceRenderer = new ScreenSpaceRenderer(0, new int[] { (int)RenderLayer.UI });
+            var defaultRenderer = new DefaultRenderer(1);
+            this.AddRenderer(screenSpaceRenderer);
             this.AddRenderer(defaultRenderer);
 
             //SetDesignResolution(1920, 1080, SceneResolutionPolicy.ShowAllPixelPerfect);
@@ -92,6 +96,11 @@ namespace StratMono.Scenes
                     outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, BlueOutline, 2);
                     shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, BlueFill);
                 }
+                else if (tile.Position == new Point((int)SelectedCharacter.Position.X, (int)SelectedCharacter.Position.Y))
+                {
+                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, GreenOutline, 2);
+                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, GreenFill);
+                }
                 else
                 {
                     outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, RedOutline, 2);
@@ -135,7 +144,6 @@ namespace StratMono.Scenes
             var cameraEntity = CreateEntity(CameraEntityName);
             var levelBounds = new RectangleF(Vector2.Zero, new Vector2(tiledMap.WorldWidth, tiledMap.WorldHeight));
             Camera = cameraEntity.AddComponent(new BoundedMovingCamera(levelBounds));
-            //Camera.ZoomIn(5);
         }
 
         private void createGrid()

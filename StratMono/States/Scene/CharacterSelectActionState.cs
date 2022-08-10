@@ -12,7 +12,7 @@ using System.Collections.Generic;
 
 namespace StratMono.States.Scene
 {
-    class CharacterFinishedMovingState : BaseState
+    class CharacterSelectActionState : BaseState
     {
         private readonly string ActionMenuEntityName = "ActionMenu";
 
@@ -22,14 +22,17 @@ namespace StratMono.States.Scene
         private bool _isCancelClicked = false;
         private List<GridTile> _tilesWithAttackableCharacters = new List<GridTile>();
 
-        public CharacterFinishedMovingState(Stack<GridTile> returnPath) : base()
+        public CharacterSelectActionState(Stack<GridTile> returnPath) : base()
         {
             _returnPath = returnPath;
         }
 
         public override void EnterState(LevelScene scene)
         {
-            List<GridTile> neighbors = scene.GridSystem.GetNeighborsOfTile(_returnPath.Peek());
+            CharacterGridEntity selectedCharacter = scene.SelectedCharacter;
+            GridTile selectedCharacterTile = scene.GridSystem.GetNearestTileAtPosition(scene.SelectedCharacter.Position);
+            
+            List<GridTile> neighbors = scene.GridSystem.GetNeighborsOfTile(selectedCharacterTile);
             foreach(var gridTile in neighbors)
             {
                 var characterEntity = scene.GetCharacterFromSelectedTile(gridTile);
@@ -56,27 +59,44 @@ namespace StratMono.States.Scene
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
+            HandleReadyForInput();
+            if (!ReadyForInput)
+            {
+                _isAttackClicked = false;
+                _isWaitClicked = false;
+                _isCancelClicked = false;
+                return this;
+            }
+
             if (Input.IsKeyPressed(Keys.Escape) || _isCancelClicked)
             {
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
-
-                var nextState = new CharacterMovingState(
-                    _returnPath,
-                    returnedToOriginalPosition: true);
-                nextState.EnterState(scene);
-                return nextState;
+                return (_returnPath != null) ? goToCharacterMovingState(scene) : goToDefaultState(scene);
             }
 
             if (_isWaitClicked)
             {
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
-
-                var nextState = new DefaultState();
-                nextState.EnterState(scene);
-                return nextState;
+                return goToDefaultState(scene);
             }
 
             return this;
+        }
+
+        private BaseState goToCharacterMovingState(LevelScene scene)
+        {
+            var nextState = new CharacterMovingState(
+                        _returnPath,
+                        returnedToOriginalPosition: true);
+            nextState.EnterState(scene);
+            return nextState;
+        }
+
+        private BaseState goToDefaultState(LevelScene scene)
+        {
+            var nextState = new DefaultState();
+            nextState.EnterState(scene);
+            return nextState;
         }
     }
 }

@@ -16,7 +16,6 @@ namespace StratMono.States.Scene
     {
         private readonly string ActionMenuEntityName = "EnemyActionMenu";
         private bool _isCancelClicked = false;
-        private bool _readyForInput = false;
 
         public override void EnterState(LevelScene scene)
         {
@@ -36,19 +35,9 @@ namespace StratMono.States.Scene
         {
             (scene.Camera as BoundedMovingCamera).Update();
 
-            // Gamepad buttons need a "debounce". This is the first time where it's been a problem
-            // Pressing the button in one state causes that pressed/released status to leak into this 
-            // state. Other states have movement, etc that add an artifical delay, so this wasn't needed
-            // Just wait until the action buttons are completely not pressed before moving on
-            // TODO: need to add this to BaseState somehow so that it could be re-used
-            if (!_readyForInput)
+            HandleReadyForInput();
+            if (!ReadyForInput)
             {
-                _readyForInput = !Input.GamePads[0].IsButtonReleased(Buttons.A)
-                    && !Input.GamePads[0].IsButtonReleased(Buttons.RightTrigger)
-                    && !Input.GamePads[0].IsButtonPressed(Buttons.A)
-                    && !Input.GamePads[0].IsButtonPressed(Buttons.RightTrigger)
-                    && !Input.GamePads[0].IsButtonDown(Buttons.A)
-                    && !Input.GamePads[0].IsButtonDown(Buttons.RightTrigger);
                 _isCancelClicked = false;
                 return this;
             }

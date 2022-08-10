@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Nez;
 using StratMono.Components;
 using StratMono.Entities;
@@ -11,6 +12,8 @@ namespace StratMono.States.Scene
 {
     public abstract class BaseState
     {
+        public bool ReadyForInput = false;
+
         public abstract void EnterState(LevelScene scene);
 
         public virtual BaseState Update(LevelScene scene, GridEntity cursorEntity)
@@ -59,6 +62,24 @@ namespace StratMono.States.Scene
             }
 
             return false;
+        }
+
+        protected virtual void HandleReadyForInput()
+        {
+            // Gamepad buttons need a "debounce". This is the first time where it's been a problem
+            // Pressing the button in one state causes that pressed/released status to leak into this 
+            // state. Other states have movement, etc that add an artifical delay, so this wasn't needed
+            // Just wait until the action buttons are completely not pressed before moving on
+            // TODO: need to add this to BaseState somehow so that it could be re-used
+            if (!ReadyForInput)
+            {
+                ReadyForInput = !Input.GamePads[0].IsButtonReleased(Buttons.A)
+                    && !Input.GamePads[0].IsButtonReleased(Buttons.RightTrigger)
+                    && !Input.GamePads[0].IsButtonPressed(Buttons.A)
+                    && !Input.GamePads[0].IsButtonPressed(Buttons.RightTrigger)
+                    && !Input.GamePads[0].IsButtonDown(Buttons.A)
+                    && !Input.GamePads[0].IsButtonDown(Buttons.RightTrigger);
+            }
         }
     }
 }

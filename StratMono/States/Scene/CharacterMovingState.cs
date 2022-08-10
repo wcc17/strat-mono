@@ -57,7 +57,7 @@ namespace StratMono.States.Scene
                     return nextState;
                 }
 
-                nextState = new CharacterFinishedMovingState(new Stack<GridTile>(_pathToTake));
+                nextState = new CharacterSelectActionState(new Stack<GridTile>(_pathToTake));
                 nextState.EnterState(scene);
             }
 

@@ -46,7 +46,7 @@ namespace StratMono.States.Scene
 
                 if (selectedCharacter == scene.SelectedCharacter)
                 {
-                    return goToDefaultState(scene, selectedTile);
+                    return goToCharacterSelectActionState(scene, selectedTile, selectedCharacter);
                 }
 
                 if (userSelectedEnemy)
@@ -121,5 +121,15 @@ namespace StratMono.States.Scene
             return nextState;
         }
 
+        private BaseState goToCharacterSelectActionState(
+            LevelScene scene, 
+            GridTile selectedTile, 
+            CharacterGridEntity selectedCharacter)
+        {
+            UpdateSceneSelections(scene, selectedTile, selectedCharacter);
+            var nextState = new CharacterSelectActionState(null);
+            nextState.EnterState(scene);
+            return nextState;
+        }
     }
 }

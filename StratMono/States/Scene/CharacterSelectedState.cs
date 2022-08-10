@@ -32,7 +32,8 @@ namespace StratMono.States.Scene
                 bool noSelectedCharacter = selectedCharacter == null;
                 bool userReselectedTile = selectedTile == scene.SelectedTile;
                 bool tileNotInRange = !movementInformation.TilesInRangeOfCharacter.Contains(selectedTile);
-                
+                bool userSelectedEnemy = selectedCharacter != null && selectedCharacter.GetComponent<EnemyComponent>() != null;
+
                 if (noSelectedCharacter && userReselectedTile)
                 {
                     return goToDefaultState(scene, selectedTile);
@@ -48,15 +49,16 @@ namespace StratMono.States.Scene
                     return goToDefaultState(scene, selectedTile);
                 }
 
+                if (userSelectedEnemy)
+                {
+                    // character meant to choose an enemy character, open their menu instead
+                    return goToEnemySelectedState(scene, selectedTile, selectedCharacter);
+                }
+
                 if (selectedCharacter != null)
                 {
                     // the user meant to switch to a different character, re-enter characterselectedState
-                    UpdateSceneSelections(scene, selectedTile, selectedCharacter);
-                    CenterCameraOnPosition(scene, selectedTile.Position);
-
-                    var nextState = new CharacterSelectedState();
-                    nextState.EnterState(scene);
-                    return nextState;
+                    return goToCharacterSelectedState(scene, selectedTile, selectedCharacter);
                 }
 
                 return goToCharacterMovingState(scene, selectedTile);
@@ -71,6 +73,32 @@ namespace StratMono.States.Scene
             UpdateSceneSelections(scene, selectedTile, null);
             CenterCameraOnPosition(scene, selectedTile.Position);
             var nextState = new DefaultState();
+            nextState.EnterState(scene);
+            return nextState;
+        }
+
+        private BaseState goToEnemySelectedState(
+            LevelScene scene, 
+            GridTile selectedTile, 
+            CharacterGridEntity selectedCharacter)
+        {
+            UpdateSceneSelections(scene, selectedTile, selectedCharacter);
+            CenterCameraOnPosition(scene, selectedTile.Position);
+
+            var nextState = new EnemySelectedState();
+            nextState.EnterState(scene);
+            return nextState;
+        }
+
+        private BaseState goToCharacterSelectedState(
+            LevelScene scene, 
+            GridTile selectedTile, 
+            CharacterGridEntity selectedCharacter)
+        {
+            UpdateSceneSelections(scene, selectedTile, selectedCharacter);
+            CenterCameraOnPosition(scene, selectedTile.Position);
+
+            var nextState = new CharacterSelectedState();
             nextState.EnterState(scene);
             return nextState;
         }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Timers;
 using Nez;
 using Microsoft.Xna.Framework;
 using Nez.Sprites;

@@ -30,16 +30,11 @@ namespace StratMono.States.Scene
                 UpdateSceneSelections(scene, selectedTile, selectedCharacter);
                 CenterCameraOnPosition(scene, selectedTile.Position);
 
-                if (selectedCharacter == null)
-                {
-                    return nextState;
-                }
-                
-                if (selectedCharacter.GetComponent<EnemyComponent>() != null)
+                if (selectedCharacter != null && selectedCharacter.GetComponent<EnemyComponent>() != null)
                 {
                     nextState = new EnemySelectedState();
                     nextState.EnterState(scene);
-                } else
+                } else if (selectedCharacter != null)
                 {
                     nextState = new CharacterSelectedState();
                     nextState.EnterState(scene);

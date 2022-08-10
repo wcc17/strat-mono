@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.UI;
+using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
@@ -16,8 +17,10 @@ namespace StratMono.States.Scene
         private readonly string ActionMenuEntityName = "ActionMenu";
 
         private readonly Stack<GridTile> _returnPath;
+        private bool _isAttackClicked = false;
         private bool _isWaitClicked = false;
         private bool _isCancelClicked = false;
+        private List<GridTile> _tilesWithAttackableCharacters = new List<GridTile>();
 
         public CharacterFinishedMovingState(Stack<GridTile> returnPath) : base()
         {
@@ -26,7 +29,21 @@ namespace StratMono.States.Scene
 
         public override void EnterState(LevelScene scene)
         {
+            List<GridTile> neighbors = scene.GridSystem.GetNeighborsOfTile(_returnPath.Peek());
+            foreach(var gridTile in neighbors)
+            {
+                var characterEntity = scene.GetCharacterFromSelectedTile(gridTile);
+                if (characterEntity != null && characterEntity.GetComponent<EnemyComponent>() != null)
+                {
+                    _tilesWithAttackableCharacters.Add(gridTile);
+                }
+            }
+
             var buttonDefinitions = new Dictionary<string, Action<Button>>();
+            if (_tilesWithAttackableCharacters.Count > 0)
+            {
+                buttonDefinitions.Add("Attack", button => _isAttackClicked = true);
+            }
             buttonDefinitions.Add("Wait", button => _isWaitClicked = true);
             buttonDefinitions.Add("Cancel", button => _isCancelClicked = true);
 

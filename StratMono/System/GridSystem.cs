@@ -76,7 +76,7 @@ namespace StratMono.System
 
                 if (costToGetHere < maxMovementCost)
                 {
-                    List<GridTile> neighbors = getNeighborsOfTile(currentTile);
+                    List<GridTile> neighbors = GetNeighborsOfTile(currentTile);
                     foreach (GridTile neighbor in neighbors)
                     {
                         if (neighbor.CharacterCanMoveThroughThisTile)
@@ -125,6 +125,32 @@ namespace StratMono.System
         public GridTile GetGridTileFromCoords(Point coords)
         {
             return _gridTiles[coords.X, coords.Y];
+        }
+
+        public List<GridTile> GetNeighborsOfTile(GridTile tile)
+        {
+            var x = tile.Coordinates.X;
+            var y = tile.Coordinates.Y;
+            List<GridTile> neighbors = new List<GridTile>();
+
+            if (x - 1 >= 0)
+            {
+                neighbors.Add(_gridTiles[x - 1, y]);
+            }
+            if (x + 1 < _mapWidthInGridTiles)
+            {
+                neighbors.Add(_gridTiles[x + 1, y]);
+            }
+            if (y - 1 >= 0)
+            {
+                neighbors.Add(_gridTiles[x, y - 1]);
+            }
+            if (y + 1 < _mapHeightInGridTiles)
+            {
+                neighbors.Add(_gridTiles[x, y + 1]);
+            }
+
+            return neighbors;
         }
 
         private Vector2 getGridTilePosition(Point gridTile)
@@ -188,32 +214,6 @@ namespace StratMono.System
                     }
                 }
             }
-        }
-
-        private List<GridTile> getNeighborsOfTile(GridTile tile)
-        {
-            var x = tile.Coordinates.X;
-            var y = tile.Coordinates.Y;
-            List<GridTile> neighbors = new List<GridTile>();
-
-            if (x - 1 >= 0)
-            {
-                neighbors.Add(_gridTiles[x - 1, y]);
-            }
-            if (x + 1 < _mapWidthInGridTiles)
-            {
-                neighbors.Add(_gridTiles[x + 1, y]);
-            }
-            if (y - 1 >= 0)
-            {
-                neighbors.Add(_gridTiles[x, y - 1]);
-            }
-            if (y + 1 < _mapHeightInGridTiles)
-            {
-                neighbors.Add(_gridTiles[x, y + 1]);
-            }
-
-            return neighbors;
         }
 
         private Point convert1dIndexTo2dPoint(int index, int rowLength, int columnLength)

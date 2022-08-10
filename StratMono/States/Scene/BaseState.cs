@@ -60,22 +60,5 @@ namespace StratMono.States.Scene
 
             return false;
         }
-
-        protected CharacterGridEntity GetCharacterFromSelectedTile(GridTile selectedTile)
-        {
-            List<GridEntity> entitiesOnSelectedTile = selectedTile.OccupyingEntities;
-            if (entitiesOnSelectedTile != null)
-            {
-                foreach (var entity in entitiesOnSelectedTile)
-                {
-                    if (entity.GetType() == typeof(CharacterGridEntity))
-                    {
-                        return (CharacterGridEntity)entity;
-                    }
-                }
-            }
-
-            return null;
-        }
     }
 }

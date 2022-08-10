@@ -25,7 +25,7 @@ namespace StratMono.States.Scene
             {
                 // default state doesn't care if selected tile or character changed
                 GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
-                CharacterGridEntity selectedCharacter = GetCharacterFromSelectedTile(selectedTile);
+                CharacterGridEntity selectedCharacter = scene.GetCharacterFromSelectedTile(selectedTile);
 
                 UpdateSceneSelections(scene, selectedTile, selectedCharacter);
                 CenterCameraOnPosition(scene, selectedTile.Position);

@@ -26,7 +26,7 @@ namespace StratMono.States.Scene
             if (DidUserMakeSelection())
             {
                 GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
-                CharacterGridEntity selectedCharacter = GetCharacterFromSelectedTile(selectedTile);
+                CharacterGridEntity selectedCharacter = scene.GetCharacterFromSelectedTile(selectedTile);
 
                 var movementInformation = scene.CharacterGridMovementInfo;
                 bool noSelectedCharacter = selectedCharacter == null;

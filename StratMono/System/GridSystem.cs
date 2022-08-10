@@ -122,7 +122,7 @@ namespace StratMono.System
             return _gridTiles[(int)x, (int)y];
         }
 
-        private GridTile _getGridTileFromCoords(Point coords)
+        public GridTile GetGridTileFromCoords(Point coords)
         {
             return _gridTiles[coords.X, coords.Y];
         }

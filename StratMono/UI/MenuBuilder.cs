@@ -4,41 +4,46 @@ using Nez.UI;
 using StratMono.Util;
 using System;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Graphics;
 using Nez.BitmapFonts;
+using System.Collections.Generic;
 
 namespace StratMono.UI
 {
     public static class MenuBuilder
     {
         private static readonly Point TablePosition = new Point(50, 50);
-        private static readonly int TableWidth = 330;
-        private static readonly int TableHeight = 220;
         private static readonly int ButtonWidth = 300;
         private static readonly int ButtonHeight = 80;
         private static readonly int ButtonPadding = 20;
+        private static readonly int TableWidthPadding = 30;
+        private static readonly int TableHeightPadding = 20;
 
         public static Entity BuildActionMenu(
             BitmapFont font,
             string entityName, 
-            Action<Button> onWaitButtonClick, 
-            Action<Button> onCancelButtonClick)
+            Dictionary<string, Action<Button>> buttonDefinitions)
         {
             var uiCanvas = new UICanvas();
             uiCanvas.RenderLayer = (int)RenderLayer.UI;
 
             var stage = uiCanvas.Stage;
+            stage.GamepadActionButtons = new Buttons[] { Buttons.A, Buttons.RightTrigger };
+
             var skin = Skin.CreateDefaultSkin();
             var table = createTable(stage);
-            var waitButton = createButton(skin, "Wait", onWaitButtonClick);
-            var cancelButton = createButton(skin, "Cancel", onCancelButtonClick);
+
+            List<Button> buttons = new List<Button>();
+            foreach(string buttonText in buttonDefinitions.Keys)
+            {
+                var button = createButton(skin, buttonText, buttonDefinitions[buttonText]);
+                buttons.Add(button);
+            }
+            table.SetWidth(ButtonWidth + TableWidthPadding);
+            table.SetHeight((ButtonHeight * buttons.Count) + (buttons.Count * TableHeightPadding));
+
+            stage.SetGamepadFocusElement(buttons[0]);
             
-            stage.SetGamepadFocusElement(waitButton);
-            stage.GamepadActionButtons = new Buttons[] { Buttons.A, Buttons.RightTrigger };
-            
-            addButtonsToTable(
-                table, 
-                new Button[] { waitButton, cancelButton });            
+            addButtonsToTable(table, buttons);
 
             var uiCanvasEntity = new Entity(entityName);
             uiCanvasEntity.AddComponent(uiCanvas);
@@ -56,8 +61,6 @@ namespace StratMono.UI
             var table = stage.AddElement(new Table());
             table.SetX(TablePosition.X);
             table.SetY(TablePosition.Y);
-            table.SetWidth(TableWidth);
-            table.SetHeight(TableHeight);
 
             PrimitiveDrawable background = new PrimitiveDrawable(Color.White);
             table.SetBackground(background);
@@ -77,14 +80,14 @@ namespace StratMono.UI
             return button;
         }
 
-        private static void addButtonsToTable(Table table, Button[] buttons)
+        private static void addButtonsToTable(Table table, List<Button> buttons)
         {
-            for (int i = 0; i < buttons.Length; i++)
+            for (int i = 0; i < buttons.Count; i++)
             {
-                buttons[i].GamepadUpElement = ((i - 1) > -1) ? buttons[i - 1] : buttons[buttons.Length - 1];
-                buttons[i].GamepadDownElement = ((i + 1) < buttons.Length) ? buttons[i + 1] : buttons[0];
+                buttons[i].GamepadUpElement = ((i - 1) > -1) ? buttons[i - 1] : buttons[buttons.Count - 1];
+                buttons[i].GamepadDownElement = ((i + 1) < buttons.Count) ? buttons[i + 1] : buttons[0];
 
-                if (i != buttons.Length - 1)
+                if (i != buttons.Count - 1)
                 {
                     table.Add(buttons[i])
                         .SetMinWidth(ButtonWidth)

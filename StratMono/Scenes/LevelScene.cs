@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Nez;
+using Nez.BitmapFonts;
 using Nez.Sprites;
 using Nez.UI;
 using StartMono.Util;
@@ -33,6 +36,7 @@ namespace StratMono.Scenes
         private SpriteAtlas _spriteAtlas;
         private BaseState _state = new DefaultState();
 
+        public BitmapFont font;
         public TileCursorSystem SceneTileCursorSystem;
         public GridSystem GridSystem;
         public CharacterGridMovementInformation CharacterGridMovementInfo = null;

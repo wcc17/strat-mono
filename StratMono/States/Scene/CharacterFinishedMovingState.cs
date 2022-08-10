@@ -27,6 +27,7 @@ namespace StratMono.States.Scene
         public override void EnterState(LevelScene scene)
         {
             var uiCanvasEntity = MenuBuilder.BuildActionMenu(
+                scene.font,
                 ActionMenuEntityName, 
                 button => _isWaitClicked = true, 
                 button => _isCancelClicked = true);

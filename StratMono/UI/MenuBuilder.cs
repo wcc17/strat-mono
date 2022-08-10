@@ -4,56 +4,44 @@ using Nez.UI;
 using StratMono.Util;
 using System;
 using Microsoft.Xna.Framework.Input;
+using Microsoft.Xna.Framework.Graphics;
+using Nez.BitmapFonts;
 
 namespace StratMono.UI
 {
     public static class MenuBuilder
     {
+        private static readonly Point TablePosition = new Point(50, 50);
+        private static readonly int TableWidth = 330;
+        private static readonly int TableHeight = 220;
+        private static readonly int ButtonWidth = 300;
+        private static readonly int ButtonHeight = 80;
+        private static readonly int ButtonPadding = 20;
+
         public static Entity BuildActionMenu(
+            BitmapFont font,
             string entityName, 
-            Action<Button> onButtonOneClick, 
-            Action<Button> onButtonTwoClick)
+            Action<Button> onWaitButtonClick, 
+            Action<Button> onCancelButtonClick)
         {
             var uiCanvas = new UICanvas();
             uiCanvas.RenderLayer = (int)RenderLayer.UI;
 
             var stage = uiCanvas.Stage;
-
-            var table = stage.AddElement(new Table());
-            table.SetX(20);
-            table.SetY(20);
-            table.SetWidth(350);
-            table.SetHeight(500);
-            table.SetFillParent(false);
-            PrimitiveDrawable background = new PrimitiveDrawable(Color.White);
-            table.SetBackground(background);
-
             var skin = Skin.CreateDefaultSkin();
+            var table = createTable(stage);
+            var waitButton = createButton(skin, "Wait", onWaitButtonClick);
+            var cancelButton = createButton(skin, "Cancel", onCancelButtonClick);
             
-            var button1 = new Button(skin);
-            var button2 = new Button(skin);
-
-            button1.OnClicked += onButtonOneClick;
-            button1.ShouldUseExplicitFocusableControl = true;
-            button1.GamepadDownElement = button2;
-            button1.GamepadUpElement = button2;
-
-            button2.OnClicked += onButtonTwoClick;
-            button2.ShouldUseExplicitFocusableControl = true;
-            button2.GamepadDownElement = button1;
-            button2.GamepadUpElement = button1;
-
-            stage.SetGamepadFocusElement(button1);
+            stage.SetGamepadFocusElement(waitButton);
             stage.GamepadActionButtons = new Buttons[] { Buttons.A, Buttons.RightTrigger };
             
-            table.Add(button1).SetMinWidth(300).SetMinHeight(80);
-            table.Row();
-            table.Add(button2).SetMinWidth(300).SetMinHeight(80);
-            table.Row();
+            addButtonsToTable(
+                table, 
+                new Button[] { waitButton, cancelButton });            
 
             var uiCanvasEntity = new Entity(entityName);
             uiCanvasEntity.AddComponent(uiCanvas);
-
             return uiCanvasEntity;
         }
 
@@ -61,6 +49,57 @@ namespace StratMono.UI
         {
             menuEntity.RemoveAllComponents();
             menuEntity.Destroy();
+        }
+
+        private static Table createTable(Stage stage)
+        {
+            var table = stage.AddElement(new Table());
+            table.SetX(TablePosition.X);
+            table.SetY(TablePosition.Y);
+            table.SetWidth(TableWidth);
+            table.SetHeight(TableHeight);
+
+            PrimitiveDrawable background = new PrimitiveDrawable(Color.White);
+            table.SetBackground(background);
+
+            return table;
+        }
+
+        private static Button createButton(
+            Skin skin, 
+            string labelText,
+            Action<Button> onClicked)
+        {
+            var button = new Button(skin);
+            button.ShouldUseExplicitFocusableControl = true;
+            button.Add(new Label(labelText, Graphics.Instance.BitmapFont, Color.Black, 5));
+            button.OnClicked += onClicked;
+            return button;
+        }
+
+        private static void addButtonsToTable(Table table, Button[] buttons)
+        {
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                buttons[i].GamepadUpElement = ((i - 1) > -1) ? buttons[i - 1] : buttons[buttons.Length - 1];
+                buttons[i].GamepadDownElement = ((i + 1) < buttons.Length) ? buttons[i + 1] : buttons[0];
+
+                if (i != buttons.Length - 1)
+                {
+                    table.Add(buttons[i])
+                        .SetMinWidth(ButtonWidth)
+                        .SetMinHeight(ButtonHeight)
+                        .SetPadBottom(ButtonPadding);
+                }
+                else
+                {
+                    table.Add(buttons[i])
+                        .SetMinWidth(ButtonWidth)
+                        .SetMinHeight(ButtonHeight);
+                }
+
+                table.Row();
+            }
         }
     }
 }

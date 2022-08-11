@@ -183,7 +183,7 @@ namespace StratMono.Scenes
         private void createTiledMap()
         {
             var tiledMapEntity = CreateEntity(TiledMapEntityName);
-            var tiledMap = Content.LoadTiledMap("Content/assets/tiles/test_scene_map.tmx");
+            var tiledMap = Content.LoadTiledMap("Content/assets/tiles/test_scene_map_2.tmx");
             var tiledMapRenderer = new TiledMapRenderer(tiledMap);
 
             tiledMapRenderer.RenderLayer = (int)RenderLayer.TileMap;
@@ -252,9 +252,12 @@ namespace StratMono.Scenes
                 // temporary, ugly, just making sure I don't put characters on top of each other for testing
                 int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
                 int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
-                while (GetCharacterFromSelectedTile(GridSystem.GetGridTileFromCoords(new Point(x, y))) != null) {
+                bool tileInaccessible = true;
+                while (tileInaccessible) {
                     x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
                     y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
+                    tileInaccessible = !GridSystem.GetGridTileFromCoords(new Point(x, y)).IsAccessible
+                        || GetCharacterFromSelectedTile(GridSystem.GetGridTileFromCoords(new Point(x, y))) != null;
                 }
 
                 AddToGrid(characterEntity, x, y);

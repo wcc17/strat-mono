@@ -16,6 +16,8 @@ namespace StratMono.States.Scene
 
         public abstract void EnterState(LevelScene scene);
 
+        public abstract void ExitState(LevelScene scene);
+
         public virtual BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
             (scene.Camera as BoundedMovingCamera).Update();
@@ -80,6 +82,11 @@ namespace StratMono.States.Scene
                     && !Input.GamePads[0].IsButtonDown(Buttons.A)
                     && !Input.GamePads[0].IsButtonDown(Buttons.RightTrigger);
             }
+        }
+
+        protected virtual bool IsACancelButtonPressed()
+        {
+            return (Input.IsKeyPressed(Keys.Escape) || Input.GamePads[0].IsButtonPressed(Buttons.B));
         }
     }
 }

@@ -19,8 +19,6 @@ namespace StratMono.States.Scene
 
         public override void EnterState(LevelScene scene)
         {
-            scene.RemoveHighlightsFromGrid();
-
             var buttonDefinitions = new Dictionary<string, Action<Button>>();
             buttonDefinitions.Add("Cancel", button => _isCancelClicked = true);
 
@@ -42,16 +40,17 @@ namespace StratMono.States.Scene
                 return this;
             }
 
-            if (Input.IsKeyPressed(Keys.Escape) || _isCancelClicked)
+            if (IsACancelButtonPressed() || _isCancelClicked)
             {
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
 
                 var nextState = new DefaultState();
-                nextState.EnterState(scene);
                 return nextState;
             }
 
             return this;
         }
+
+        public override void ExitState(LevelScene scene) { }
     }
 }

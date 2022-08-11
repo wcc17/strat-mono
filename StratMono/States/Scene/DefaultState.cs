@@ -10,10 +10,7 @@ namespace StratMono.States.Scene
 {
     public class DefaultState : BaseState
     {
-        public override void EnterState(LevelScene scene)
-        {
-            scene.RemoveHighlightsFromGrid();
-        }
+        public override void EnterState(LevelScene scene) { }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
@@ -33,14 +30,14 @@ namespace StratMono.States.Scene
                 if (selectedCharacter != null && selectedCharacter.GetComponent<EnemyComponent>() != null)
                 {
                     nextState = new EnemySelectedState();
-                    nextState.EnterState(scene);
                 } else if (selectedCharacter != null)
                 {
                     nextState = new CharacterSelectedState();
-                    nextState.EnterState(scene);
                 }
             }
             return nextState;
         }
+
+        public override void ExitState(LevelScene scene) { }
     }
 }

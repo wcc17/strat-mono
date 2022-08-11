@@ -8,7 +8,7 @@ namespace StratMono.System
 {
     public class TileCursorSystem
     {
-        private readonly float CursorMovementControllerDpadDelay = 0.09f;
+        private readonly float CursorMovementControllerDpadDelay = 0.1f;
         private readonly float CursorMovementControllerStickDelay = 0.01f;
         private readonly int ControllerCursorMoveSpeed = 64;
 

@@ -23,8 +23,9 @@ namespace StratMono.Scenes
         private readonly Color BlueOutline = new Color(91, 110, 225, 200);
         private readonly Color RedFill = new Color(217, 87, 99, 200);
         private readonly Color RedOutline = new Color(172, 50, 50, 200);
-        private readonly Color GreenFill = new Color(244, 211, 94, 200);
-        private readonly Color GreenOutline = new Color(230, 190, 100, 200);
+        private readonly Color YellowFill = new Color(244, 211, 94, 200);
+        private readonly Color YellowOutline = new Color(230, 190, 100, 200);
+        private readonly int OutlineWidth = 2;
 
         private const string TiledMapEntityName = "tiled-map";
         private const string CameraEntityName = "camera";
@@ -70,10 +71,8 @@ namespace StratMono.Scenes
         public override void Update()
         {
             base.Update();
-
             updateInputMode();
-
-            _state = _state.Update(this, (GridEntity)FindEntity(CursorEntityName));
+            updateState();
         }
 
         public GridEntity AddToGrid(GridEntity entity, int x, int y)
@@ -95,32 +94,64 @@ namespace StratMono.Scenes
             CharacterGridMovementInfo = GridSystem.IdentifyPossibleTilesToMoveToTile(SelectedTile, 5);
             foreach (GridTile tile in CharacterGridMovementInfo.TilesInRangeOfCharacter)
             {
-                GridEntity tileHighlight = new GridTileHighlight("highlight" + tile.Id);
-                SpriteRenderer outline;
-                SpriteRenderer shape;
                 if (tile.CharacterCanMoveThroughThisTile)
                 {
-                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, BlueOutline, 2);
-                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, BlueFill);
+                    CreateAndAddPositiveTileHighlight(tile);
                 }
                 else if (tile.Position == new Point((int)SelectedCharacter.Position.X, (int)SelectedCharacter.Position.Y))
                 {
-                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, GreenOutline, 2);
-                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, GreenFill);
+                    CreateAndAddActiveTileHighlight(tile);
                 }
                 else
                 {
-                    outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(64, 64, RedOutline, 2);
-                    shape = PrimitiveShapeUtil.CreateRectangleSprite(64, 64, RedFill);
+                    CreateAndAddNegativeTileHighlight(tile);
                 }
-
-                shape.RenderLayer = (int)RenderLayer.TileHighlight;
-                outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
-                tileHighlight.AddComponent(outline);
-                tileHighlight.AddComponent(shape);
-
-                AddToGrid(tileHighlight, tile.Coordinates.X, tile.Coordinates.Y);
             }
+        }
+
+        public GridEntity CreateAndAddPositiveTileHighlight(GridTile gridTile)
+        {
+            return CreateAndAddTileHighlight(gridTile, BlueOutline, BlueFill);
+        }
+
+        public GridEntity CreateAndAddNegativeTileHighlight(GridTile gridTile)
+        {
+            return CreateAndAddTileHighlight(gridTile, RedOutline, RedFill);
+        }
+
+        public GridEntity CreateAndAddActiveTileHighlight(GridTile gridTile)
+        {
+            return CreateAndAddTileHighlight(gridTile, YellowOutline, YellowFill);
+        }
+
+        private void updateState()
+        {
+            var previousState = _state;
+            _state = _state.Update(this, (GridEntity)FindEntity(CursorEntityName));
+            if (previousState != _state)
+            {
+                previousState.ExitState(this);
+                _state.EnterState(this);
+            }
+        }
+
+        private GridEntity CreateAndAddTileHighlight(GridTile gridTile, Color outlineColor, Color fillColor)
+        {
+            GridEntity tileHighlight = new GridTileHighlight("highlight" + gridTile.Id);
+
+            SpriteRenderer outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(
+                64, 64, outlineColor, OutlineWidth);
+            SpriteRenderer shape = PrimitiveShapeUtil.CreateRectangleSprite(
+                64, 64, fillColor);
+
+            shape.RenderLayer = (int)RenderLayer.TileHighlight;
+            outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
+            tileHighlight.AddComponent(outline);
+            tileHighlight.AddComponent(shape);
+
+            AddToGrid(tileHighlight, gridTile.Coordinates.X, gridTile.Coordinates.Y);
+
+            return tileHighlight;
         }
 
         public void RemoveHighlightsFromGrid()
@@ -284,6 +315,7 @@ namespace StratMono.Scenes
                     || gamepad.IsRightStickLeft()
                     || gamepad.IsRightTriggerPressed()
                     || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.A)
+                    || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.B)
                     || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.RightShoulder) 
                     || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.LeftShoulder)
                     || gamepad.IsButtonPressed(Microsoft.Xna.Framework.Input.Buttons.DPadLeft)

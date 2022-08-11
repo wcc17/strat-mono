@@ -1,4 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
+using Nez;
 using Nez.Sprites;
 using StartMono.Util;
 using StratMono.Components;
@@ -15,7 +17,6 @@ namespace StratMono.States.Scene
     {
         public override void EnterState(LevelScene scene) 
         {
-            scene.RemoveHighlightsFromGrid();
             scene.SetupMovementTileHighlights();
         }
 
@@ -64,16 +65,29 @@ namespace StratMono.States.Scene
                 return goToCharacterMovingState(scene, selectedTile);
             }
 
+            if (IsACancelButtonPressed())
+            {
+                return goToDefaultState(scene, null);
+            }
+
             return this;
+        }
+
+        public override void ExitState(LevelScene scene)
+        {
+            scene.RemoveHighlightsFromGrid();
         }
 
         private BaseState goToDefaultState(LevelScene scene, GridTile selectedTile)
         {
             // the user meant to deselect and go back to default state
             UpdateSceneSelections(scene, selectedTile, null);
-            CenterCameraOnPosition(scene, selectedTile.Position);
+            if (selectedTile != null)
+            {
+                CenterCameraOnPosition(scene, selectedTile.Position);
+            }
+
             var nextState = new DefaultState();
-            nextState.EnterState(scene);
             return nextState;
         }
 
@@ -86,7 +100,6 @@ namespace StratMono.States.Scene
             CenterCameraOnPosition(scene, selectedTile.Position);
 
             var nextState = new EnemySelectedState();
-            nextState.EnterState(scene);
             return nextState;
         }
 
@@ -99,7 +112,6 @@ namespace StratMono.States.Scene
             CenterCameraOnPosition(scene, selectedTile.Position);
 
             var nextState = new CharacterSelectedState();
-            nextState.EnterState(scene);
             return nextState;
         }
 
@@ -117,7 +129,6 @@ namespace StratMono.States.Scene
             }
 
             var nextState = new CharacterMovingState(pathToTake);
-            nextState.EnterState(scene);
             return nextState;
         }
 
@@ -128,7 +139,6 @@ namespace StratMono.States.Scene
         {
             UpdateSceneSelections(scene, selectedTile, selectedCharacter);
             var nextState = new CharacterSelectActionState(null);
-            nextState.EnterState(scene);
             return nextState;
         }
     }

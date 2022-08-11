@@ -53,15 +53,15 @@ namespace StratMono.States.Scene
                     scene.SelectedCharacter = null;
                     scene.SelectedTile = null;
                     nextState = new DefaultState();
-                    nextState.EnterState(scene);
                     return nextState;
                 }
 
                 nextState = new CharacterSelectActionState(new Stack<GridTile>(_pathToTake));
-                nextState.EnterState(scene);
             }
 
             return nextState;
         }
+
+        public override void ExitState(LevelScene scene) { }
     }
 }

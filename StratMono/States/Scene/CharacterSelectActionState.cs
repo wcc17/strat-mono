@@ -68,7 +68,7 @@ namespace StratMono.States.Scene
                 return this;
             }
 
-            if (Input.IsKeyPressed(Keys.Escape) || _isCancelClicked)
+            if (IsACancelButtonPressed() || _isCancelClicked)
             {
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
                 return (_returnPath != null) ? goToCharacterMovingState(scene) : goToDefaultState(scene);
@@ -80,22 +80,34 @@ namespace StratMono.States.Scene
                 return goToDefaultState(scene);
             }
 
+            if (_isAttackClicked)
+            {
+                MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
+                return goToCharacterSelectAttackState(scene);
+            }
+
             return this;
         }
+
+        public override void ExitState(LevelScene scene) { }
 
         private BaseState goToCharacterMovingState(LevelScene scene)
         {
             var nextState = new CharacterMovingState(
                         _returnPath,
                         returnedToOriginalPosition: true);
-            nextState.EnterState(scene);
             return nextState;
         }
 
         private BaseState goToDefaultState(LevelScene scene)
         {
             var nextState = new DefaultState();
-            nextState.EnterState(scene);
+            return nextState;
+        }
+
+        private BaseState goToCharacterSelectAttackState(LevelScene scene)
+        {
+            var nextState = new CharacterSelectAttackState(_returnPath, _tilesWithAttackableCharacters);
             return nextState;
         }
     }

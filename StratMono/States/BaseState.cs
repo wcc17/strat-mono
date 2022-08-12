@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Nez;
+using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
 
@@ -48,6 +50,20 @@ namespace StratMono.States
         protected virtual bool IsACancelButtonPressed()
         {
             return (Input.IsKeyPressed(Keys.Escape) || Input.GamePads[0].IsButtonPressed(Buttons.B));
+        }
+
+        protected virtual void CenterCameraOnPosition(LevelScene scene, Vector2 position)
+        {
+            var point = new Point((int)position.X, (int)position.Y);
+            CenterCameraOnPosition(scene, point);
+        }
+
+        protected virtual void CenterCameraOnPosition(LevelScene scene, Point position)
+        {
+            // move the camera so that the selected tile is in the middle of the screen
+            ((BoundedMovingCamera)scene.Camera).MoveGoal = new Vector2(
+                position.X + (scene.GridSystem.GridTileWidth / 2),
+                position.Y + (scene.GridSystem.GridTileHeight / 2));
         }
     }
 }

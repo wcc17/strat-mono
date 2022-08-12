@@ -44,6 +44,7 @@ namespace StratMono.Scenes
 
         public CharacterGridEntity SelectedCharacter;
         public GridTile SelectedTile = null;
+        public CharacterGridEntity CharacterBeingAttacked;
 
         public override void Initialize()
         {
@@ -177,6 +178,25 @@ namespace StratMono.Scenes
             return null;
         }
 
+        public SpriteAnimator CreateSpriteAnimator(string spriteName)
+        {
+            var animationNames = _spriteAtlas.AnimationNames
+                .Where(animationName => animationName.Contains(spriteName))
+                .ToList();
+
+            SpriteAnimator animator = new SpriteAnimator();
+            foreach (var animationName in animationNames)
+            {
+                var name = animationName.Replace(spriteName + "_", "");
+                animator.AddAnimation(
+                    name,
+                    _spriteAtlas.GetAnimation(animationName)
+                );
+            }
+
+            return animator;
+        }
+
         private void createTiledMap()
         {
             var tiledMapEntity = CreateEntity(TiledMapEntityName);
@@ -225,19 +245,23 @@ namespace StratMono.Scenes
                 switch (npc)
                 {
                     case 0:
-                        spriteAnimator = createSpriteAnimator(Npc1SpriteName);
+                        spriteAnimator = CreateSpriteAnimator(Npc1SpriteName);
+                        characterEntity.SpriteName = Npc1SpriteName;
                         characterEntity.AddComponent(new EnemyComponent());
                         break;  
                     case 1:
-                        spriteAnimator = createSpriteAnimator(Npc2SpriteName);
+                        spriteAnimator = CreateSpriteAnimator(Npc2SpriteName);
+                        characterEntity.SpriteName = Npc2SpriteName;
                         characterEntity.AddComponent(new EnemyComponent());
                         break;
                     case 2:
-                        spriteAnimator = createSpriteAnimator(Npc3SpriteName);
+                        spriteAnimator = CreateSpriteAnimator(Npc3SpriteName);
+                        characterEntity.SpriteName = Npc3SpriteName;
                         characterEntity.AddComponent(new EnemyComponent());
                         break;
                     default:
-                        spriteAnimator = createSpriteAnimator(CharacterSpriteName);
+                        spriteAnimator = CreateSpriteAnimator(CharacterSpriteName);
+                        characterEntity.SpriteName = CharacterSpriteName;
                         break;
                 }
 
@@ -265,30 +289,11 @@ namespace StratMono.Scenes
         {
             SceneTileCursorSystem = new TileCursorSystem();
             var cursorEntity = new GridEntity(CursorEntityName);
-            var spriteAnimator = createSpriteAnimator(CursorSpriteName);
+            var spriteAnimator = CreateSpriteAnimator(CursorSpriteName);
             spriteAnimator.RenderLayer = (int)RenderLayer.Cursor;
             spriteAnimator.Play("default", SpriteAnimator.LoopMode.PingPong);
             cursorEntity.AddComponent(spriteAnimator);
             AddToGrid(cursorEntity, 5, 13);
-        }
-
-        private SpriteAnimator createSpriteAnimator(string spriteName)
-        {
-            var animationNames = _spriteAtlas.AnimationNames
-                .Where(animationName => animationName.Contains(spriteName))
-                .ToList();
-
-            SpriteAnimator animator = new SpriteAnimator();
-            foreach (var animationName in animationNames)
-            {
-                var name = animationName.Replace(spriteName + "_", "");
-                animator.AddAnimation(
-                    name,
-                    _spriteAtlas.GetAnimation(animationName)
-                );
-            }
-
-            return animator;
         }
 
         //TODO: needs to be updated as more controls are added

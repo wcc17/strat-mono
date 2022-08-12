@@ -24,7 +24,6 @@ namespace StratMono.Components
         private readonly Vector2 _noMoveGoal = new Vector2(-1, -1);
         private Vector2 _moveGoal = new Vector2(-1, -1);
 
-
         public Vector2 MoveGoal 
         {
             get 

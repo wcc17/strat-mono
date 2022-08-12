@@ -37,7 +37,9 @@ namespace StratMono.States.FieldState
                 GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
                 if (_tilesWithAttackableCharacters.Contains(selectedTile))
                 {
-                    Console.WriteLine("start the attack");
+                    // TODO: need to make sure this is reset at some point
+                    scene.CharacterBeingAttacked = scene.GetCharacterFromSelectedTile(selectedTile);
+                    return goToBattleInitialState();
                 }
             }
 
@@ -54,10 +56,16 @@ namespace StratMono.States.FieldState
             scene.RemoveHighlightsFromGrid();
         }
 
-        private BaseFieldState goToCharacterSelectActionState(LevelScene scene, GridEntity cursorEntity)
+        private BaseState goToCharacterSelectActionState(LevelScene scene, GridEntity cursorEntity)
         {
             cursorEntity.Position = scene.SelectedCharacter.Position;
             var nextState = new CharacterSelectActionState(_returnPath);
+            return nextState;
+        }
+
+        private BaseState goToBattleInitialState()
+        {
+            var nextState = new BattleState.InitialState();
             return nextState;
         }
     }

@@ -2,6 +2,7 @@
 {
     public class CharacterGridEntity : GridEntity
     {
+        public string SpriteName;
 
         public CharacterGridEntity() : base() { }
 

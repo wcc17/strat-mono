@@ -1,18 +1,12 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Nez;
-using Nez.UI;
-using StratMono.Components;
-using StratMono.Entities;
+﻿using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
-using StratMono.UI;
 using System;
 using System.Collections.Generic;
 
-namespace StratMono.States.Scene
+namespace StratMono.States.FieldState
 {
-    class CharacterSelectAttackState : BaseState
+    class CharacterSelectAttackState : BaseFieldState
     {
         private readonly Stack<GridTile> _returnPath;
         private readonly List<GridTile> _tilesWithAttackableCharacters;
@@ -60,7 +54,7 @@ namespace StratMono.States.Scene
             scene.RemoveHighlightsFromGrid();
         }
 
-        private BaseState goToCharacterSelectActionState(LevelScene scene, GridEntity cursorEntity)
+        private BaseFieldState goToCharacterSelectActionState(LevelScene scene, GridEntity cursorEntity)
         {
             cursorEntity.Position = scene.SelectedCharacter.Position;
             var nextState = new CharacterSelectActionState(_returnPath);

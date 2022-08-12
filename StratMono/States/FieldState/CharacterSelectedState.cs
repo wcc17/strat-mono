@@ -1,19 +1,12 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Nez;
-using Nez.Sprites;
-using StartMono.Util;
-using StratMono.Components;
+﻿using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
-using StratMono.Util;
-using System;
 using System.Collections.Generic;
 
-namespace StratMono.States.Scene
+namespace StratMono.States.FieldState
 {
-    public class CharacterSelectedState : BaseState
+    public class CharacterSelectedState : BaseFieldState
     {
         public override void EnterState(LevelScene scene) 
         {
@@ -78,7 +71,7 @@ namespace StratMono.States.Scene
             scene.RemoveHighlightsFromGrid();
         }
 
-        private BaseState goToDefaultState(LevelScene scene, GridTile selectedTile)
+        private BaseFieldState goToDefaultState(LevelScene scene, GridTile selectedTile)
         {
             // the user meant to deselect and go back to default state
             UpdateSceneSelections(scene, selectedTile, null);
@@ -91,7 +84,7 @@ namespace StratMono.States.Scene
             return nextState;
         }
 
-        private BaseState goToEnemySelectedState(
+        private BaseFieldState goToEnemySelectedState(
             LevelScene scene, 
             GridTile selectedTile, 
             CharacterGridEntity selectedCharacter)
@@ -103,7 +96,7 @@ namespace StratMono.States.Scene
             return nextState;
         }
 
-        private BaseState goToCharacterSelectedState(
+        private BaseFieldState goToCharacterSelectedState(
             LevelScene scene, 
             GridTile selectedTile, 
             CharacterGridEntity selectedCharacter)
@@ -115,7 +108,7 @@ namespace StratMono.States.Scene
             return nextState;
         }
 
-        private BaseState goToCharacterMovingState(LevelScene scene, GridTile selectedTile)
+        private BaseFieldState goToCharacterMovingState(LevelScene scene, GridTile selectedTile)
         {
             Dictionary<GridTile, GridTile> allPathsFromCharacter
                 = scene.CharacterGridMovementInfo.PathsFromCharacterToTilesInRange;
@@ -132,7 +125,7 @@ namespace StratMono.States.Scene
             return nextState;
         }
 
-        private BaseState goToCharacterSelectActionState(
+        private BaseFieldState goToCharacterSelectActionState(
             LevelScene scene, 
             GridTile selectedTile, 
             CharacterGridEntity selectedCharacter)

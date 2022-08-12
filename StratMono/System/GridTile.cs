@@ -1,6 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
 using StratMono.Entities;
-using System;
 using System.Collections.Generic;
 
 namespace StratMono.System

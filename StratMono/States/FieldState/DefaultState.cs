@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Xna.Framework;
-using StratMono.Components;
+﻿using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
 
-namespace StratMono.States.Scene
+namespace StratMono.States.FieldState
 {
-    public class DefaultState : BaseState
+    public class DefaultState : BaseFieldState
     {
         public override void EnterState(LevelScene scene) { }
 
@@ -16,7 +13,7 @@ namespace StratMono.States.Scene
         {
             base.Update(scene, cursorEntity);
             
-            BaseState nextState = this;
+            BaseFieldState nextState = this;
 
             if (DidUserMakeSelection())
             {

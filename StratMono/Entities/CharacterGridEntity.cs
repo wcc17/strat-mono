@@ -1,6 +1,4 @@
-﻿using Nez;
-
-namespace StratMono.Entities
+﻿namespace StratMono.Entities
 {
     public class CharacterGridEntity : GridEntity
     {

@@ -1,7 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Nez;
 using StratMono.System;
-using System;
 using System.Collections.Generic;
 using StratMono.Util;
 

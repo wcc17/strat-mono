@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Nez;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;

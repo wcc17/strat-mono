@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace StratMono.Entities
+﻿namespace StratMono.Entities
 {
     public class GridTileHighlight : GridEntity
     {

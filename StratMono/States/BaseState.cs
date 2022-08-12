@@ -1,14 +1,9 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 using Nez;
-using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
-using StratMono.System;
-using System;
-using System.Collections.Generic;
 
-namespace StratMono.States.Scene
+namespace StratMono.States
 {
     public abstract class BaseState
     {
@@ -18,41 +13,7 @@ namespace StratMono.States.Scene
 
         public abstract void ExitState(LevelScene scene);
 
-        public virtual BaseState Update(LevelScene scene, GridEntity cursorEntity)
-        {
-            (scene.Camera as BoundedMovingCamera).Update();
-
-            scene.SceneTileCursorSystem.Update(
-                cursorEntity,
-                scene.Camera);
-
-            scene.GridSystem.Update(scene.EntitiesOfType<GridEntity>());
-
-            return this;
-        }
-
-        protected virtual void UpdateSceneSelections(
-            LevelScene scene, 
-            GridTile selectedTile, 
-            CharacterGridEntity selectedCharacter)
-        {
-            scene.SelectedTile = selectedTile;
-            scene.SelectedCharacter = selectedCharacter;
-        }
-
-        protected virtual void CenterCameraOnPosition(LevelScene scene, Vector2 position)
-        {
-            var point = new Point((int)position.X, (int)position.Y);
-            CenterCameraOnPosition(scene, point);
-        }
-
-        protected virtual void CenterCameraOnPosition(LevelScene scene, Point position)
-        {
-            // move the camera so that the selected tile is in the middle of the screen
-            ((BoundedMovingCamera)scene.Camera).MoveGoal = new Vector2(
-                position.X + (scene.GridSystem.GridTileWidth / 2),
-                position.Y + (scene.GridSystem.GridTileHeight / 2));
-        }
+        public abstract BaseState Update(LevelScene scene, GridEntity cursorEntity);
 
         protected virtual bool DidUserMakeSelection()
         {

@@ -1,5 +1,4 @@
-﻿using System;
-using Nez;
+﻿using Nez;
 using Microsoft.Xna.Framework;
 using Nez.Sprites;
 using StratMono.Util;

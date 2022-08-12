@@ -4,12 +4,11 @@ using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
 using System.Collections.Generic;
-using System;
 using StratMono.Util;
 
-namespace StratMono.States.Scene
+namespace StratMono.States.FieldState
 {
-    public class CharacterMovingState : BaseState
+    public class CharacterMovingState : BaseFieldState
     {
         private readonly Stack<GridTile> _pathToTake;
         private readonly bool _returnedToOriginalPosition;
@@ -31,7 +30,7 @@ namespace StratMono.States.Scene
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
-            BaseState nextState = this;
+            BaseFieldState nextState = this;
 
             CenterCameraOnPosition(scene, scene.SelectedCharacter.Position);
             (scene.Camera as BoundedMovingCamera).Update();

@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Nez;
 using Nez.BitmapFonts;
 using Nez.Sprites;
-using Nez.UI;
 using StartMono.Util;
 using StratMono.Components;
 using StratMono.Entities;
-using StratMono.States.Scene;
+using StratMono.States;
+using StratMono.States.FieldState;
 using StratMono.System;
 using StratMono.Util;
 

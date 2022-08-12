@@ -1,7 +1,4 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Nez;
-using Nez.UI;
+﻿using Nez.UI;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
@@ -10,9 +7,9 @@ using StratMono.UI;
 using System;
 using System.Collections.Generic;
 
-namespace StratMono.States.Scene
+namespace StratMono.States.FieldState
 {
-    class CharacterSelectActionState : BaseState
+    class CharacterSelectActionState : BaseFieldState
     {
         private readonly string ActionMenuEntityName = "ActionMenu";
 
@@ -91,7 +88,7 @@ namespace StratMono.States.Scene
 
         public override void ExitState(LevelScene scene) { }
 
-        private BaseState goToCharacterMovingState(LevelScene scene)
+        private BaseFieldState goToCharacterMovingState(LevelScene scene)
         {
             var nextState = new CharacterMovingState(
                         _returnPath,
@@ -99,13 +96,13 @@ namespace StratMono.States.Scene
             return nextState;
         }
 
-        private BaseState goToDefaultState(LevelScene scene)
+        private BaseFieldState goToDefaultState(LevelScene scene)
         {
             var nextState = new DefaultState();
             return nextState;
         }
 
-        private BaseState goToCharacterSelectAttackState(LevelScene scene)
+        private BaseFieldState goToCharacterSelectAttackState(LevelScene scene)
         {
             var nextState = new CharacterSelectAttackState(_returnPath, _tilesWithAttackableCharacters);
             return nextState;

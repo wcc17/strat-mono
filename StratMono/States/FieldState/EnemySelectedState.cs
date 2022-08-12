@@ -1,18 +1,14 @@
-﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
-using Nez;
-using Nez.UI;
+﻿using Nez.UI;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
-using StratMono.System;
 using StratMono.UI;
 using System;
 using System.Collections.Generic;
 
-namespace StratMono.States.Scene
+namespace StratMono.States.FieldState
 {
-    class EnemySelectedState : BaseState
+    class EnemySelectedState : BaseFieldState
     {
         private readonly string ActionMenuEntityName = "EnemyActionMenu";
         private bool _isCancelClicked = false;

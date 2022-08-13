@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Nez;
 using Nez.UI;
+using stratMono.States.BattleState;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.UI;
@@ -10,7 +11,7 @@ using System.Text;
 
 namespace StratMono.States.BattleState
 {
-    class DefaultState : BaseState
+    class DefaultState : BaseBattleState
     {
         private static readonly string ActionMenuEntityName = "battleactionmenu";
         private bool _isAttackClicked = false;
@@ -54,7 +55,11 @@ namespace StratMono.States.BattleState
 
             if (_isAttackClicked)
             {
-                Console.WriteLine("handle the attack");
+                return new CharacterAttackState(
+                    scene,
+                    BattlePlayerEntityName,
+                    BattleNpcEntityName,
+                    attackerOnLeft: true);
             }
 
             return this;

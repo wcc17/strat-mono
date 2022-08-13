@@ -12,7 +12,7 @@ using System.Text;
 
 namespace StratMono.States.BattleState
 {
-    class InitialState : BaseState
+    class InitialState : BaseBattleState
     {
         private enum BattleStartState : int
         {
@@ -21,7 +21,6 @@ namespace StratMono.States.BattleState
             BattleReady
         }
 
-        private readonly string ScreenOverlayEntityName = "screenoverlay";
         private readonly float _zoomSpeed = 1.4f;
         private float _screenFadeOpacity = 0f;
         private float _characterFadeOpacity = 1f;
@@ -147,7 +146,7 @@ namespace StratMono.States.BattleState
 
         private void placeCharacters(LevelScene scene)
         {
-            Entity battlePlayerCharacter = new Entity();
+            Entity battlePlayerCharacter = new Entity(BattlePlayerEntityName);
             SpriteAnimator battlePlayerCharacterAnimator = scene.CreateSpriteAnimator(scene.SelectedCharacter.SpriteName);
             battlePlayerCharacterAnimator.Play("walk_right", SpriteAnimator.LoopMode.PingPong);
             battlePlayerCharacterAnimator.RenderLayer = (int)RenderLayer.Battle;
@@ -162,7 +161,7 @@ namespace StratMono.States.BattleState
                 screenSpaceCamera.Bounds.Y + (screenSpaceCamera.Bounds.Height / 2) - (battlePlayerCharacterAnimator.Height / 2));
 
             
-            Entity battleNpcCharacter = new Entity();
+            Entity battleNpcCharacter = new Entity(BattleNpcEntityName);
             SpriteAnimator battleNpcCharacterAnimator = scene.CreateSpriteAnimator(scene.CharacterBeingAttacked.SpriteName);
             battleNpcCharacterAnimator.Play("walk_left", SpriteAnimator.LoopMode.PingPong);
             battleNpcCharacterAnimator.RenderLayer = (int)RenderLayer.Battle;

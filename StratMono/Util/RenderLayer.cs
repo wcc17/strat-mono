@@ -3,10 +3,12 @@
     public enum RenderLayer : int
     {
         UI = 0,
-        Cursor = 1,
-        Character = 2,
-        TileHighlightOutline = 3,
-        TileHighlight = 4,
-        TileMap = 5,
+        Battle = 1,
+        BattleLevelSeparator = 2,
+        Cursor = 3,
+        Character = 4,
+        TileHighlightOutline = 5,
+        TileHighlight = 6,
+        TileMap = 7,
     }
 }

@@ -11,7 +11,14 @@ namespace StratMono.UI
 {
     public static class MenuBuilder
     {
-        private static readonly Point TablePosition = new Point(50, 50);
+        public enum ScreenPosition {
+            TopLeft,
+            TopCenter,
+            Center,
+            BottomCenter,
+        }
+
+        private static ScreenPosition _screenPosition = ScreenPosition.TopLeft;
         private static readonly int ButtonWidth = 300;
         private static readonly int ButtonHeight = 80;
         private static readonly int ButtonPadding = 20;
@@ -21,8 +28,11 @@ namespace StratMono.UI
         public static Entity BuildActionMenu(
             BitmapFont font,
             string entityName, 
-            Dictionary<string, Action<Button>> buttonDefinitions)
+            Dictionary<string, Action<Button>> buttonDefinitions,
+            ScreenPosition screenPosition = ScreenPosition.TopLeft)
         {
+            _screenPosition = screenPosition;
+
             var uiCanvas = new UICanvas();
             uiCanvas.RenderLayer = (int)RenderLayer.UI;
 
@@ -40,6 +50,7 @@ namespace StratMono.UI
             }
             table.SetWidth(ButtonWidth + TableWidthPadding);
             table.SetHeight((ButtonHeight * buttons.Count) + (buttons.Count * TableHeightPadding));
+            setTablePosition(table);
 
             stage.SetGamepadFocusElement(buttons[0]);
             
@@ -59,9 +70,6 @@ namespace StratMono.UI
         private static Table createTable(Stage stage)
         {
             var table = stage.AddElement(new Table());
-            table.SetX(TablePosition.X);
-            table.SetY(TablePosition.Y);
-
             PrimitiveDrawable background = new PrimitiveDrawable(Color.White);
             table.SetBackground(background);
 
@@ -103,6 +111,32 @@ namespace StratMono.UI
 
                 table.Row();
             }
+        }
+
+        private static void setTablePosition(Table table)
+        {
+            Point _tablePosition = new Point(50, 50); // Top left is the default
+            switch (_screenPosition)
+            {
+                case ScreenPosition.Center:
+                    _tablePosition = new Point(
+                        (Screen.Width / 2) - ((int)table.GetWidth() / 2),
+                        (Screen.Height / 2) - ((int)table.GetHeight() / 2));
+                    break;
+                case ScreenPosition.TopCenter:
+                    _tablePosition = new Point(
+                        (Screen.Width / 2) - ((int)table.GetWidth() / 2),
+                        (Screen.Height / 4) - ((int)table.GetHeight() / 2));
+                    break;
+                case ScreenPosition.BottomCenter:
+                    _tablePosition = new Point(
+                        (Screen.Width / 2) - ((int)table.GetWidth() / 2),
+                        Screen.Height - (Screen.Height / 4) - ((int)table.GetHeight() / 2));
+                    break;
+            }
+
+            table.SetX(_tablePosition.X);
+            table.SetY(_tablePosition.Y);
         }
     }
 }

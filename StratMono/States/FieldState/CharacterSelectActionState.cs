@@ -47,11 +47,11 @@ namespace StratMono.States.FieldState
             buttonDefinitions.Add("Wait", button => _isWaitClicked = true);
             buttonDefinitions.Add("Cancel", button => _isCancelClicked = true);
 
-            var uiCanvasEntity = MenuBuilder.BuildActionMenu(
+            var menuEntity = MenuBuilder.BuildActionMenu(
                 scene.font,
                 ActionMenuEntityName,
                 buttonDefinitions);
-            scene.AddEntity(uiCanvasEntity);
+            scene.AddEntity(menuEntity);
         }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)

@@ -48,10 +48,26 @@ namespace StratMono.Scenes
 
         public override void Initialize()
         {
-            var screenSpaceRenderer = new ScreenSpaceRenderer(0, new int[] { (int)RenderLayer.UI });
-            var defaultRenderer = new DefaultRenderer(1);
-            this.AddRenderer(screenSpaceRenderer);
-            this.AddRenderer(defaultRenderer);
+            var screenSpaceRenderLayers = new int[]
+            {
+                (int)RenderLayer.UI,
+                (int)RenderLayer.Battle,
+                (int)RenderLayer.BattleLevelSeparator,
+            };
+
+            var worldRenderLayers = new int[]
+            {
+                (int)RenderLayer.Cursor,
+                (int)RenderLayer.Character,
+                (int)RenderLayer.TileHighlightOutline,
+                (int)RenderLayer.TileHighlight,
+                (int)RenderLayer.TileMap,
+            };
+
+            var screenSpaceRenderer = new ScreenSpaceRenderer(0, screenSpaceRenderLayers);
+            var renderLayerRenderer = new RenderLayerRenderer(screenSpaceRenderLayers.Length, worldRenderLayers);
+            AddRenderer(screenSpaceRenderer);
+            AddRenderer(renderLayerRenderer);
 
             //SetDesignResolution(1920, 1080, SceneResolutionPolicy.ShowAllPixelPerfect);
             Screen.SetSize(1920, 1080);
@@ -241,7 +257,7 @@ namespace StratMono.Scenes
                 var characterEntity = new CharacterGridEntity();
                 
                 SpriteAnimator spriteAnimator;
-                int npc = Nez.Random.Range(0, 4);
+                int npc = Random.Range(0, 4);
                 switch (npc)
                 {
                     case 0:
@@ -271,12 +287,12 @@ namespace StratMono.Scenes
                 characterEntity.AddComponent(new CharacterAnimatedMovement());
 
                 // temporary, ugly, just making sure I don't put characters on top of each other for testing
-                int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
-                int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
+                int x = Random.Range(5, tiledMap.WorldWidth / 64 - 5);
+                int y = Random.Range(5, tiledMap.WorldHeight / 64 - 5);
                 bool tileInaccessible = true;
                 while (tileInaccessible) {
-                    x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
-                    y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
+                    x = Random.Range(5, tiledMap.WorldWidth / 64 - 5);
+                    y = Random.Range(5, tiledMap.WorldHeight / 64 - 5);
                     tileInaccessible = !GridSystem.GetGridTileFromCoords(new Point(x, y)).IsAccessible
                         || GetCharacterFromSelectedTile(GridSystem.GetGridTileFromCoords(new Point(x, y))) != null;
                 }

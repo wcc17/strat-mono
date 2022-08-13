@@ -26,6 +26,7 @@ namespace StratMono.States.FieldState
                 bool noSelectedCharacter = selectedCharacter == null;
                 bool userReselectedTile = selectedTile == scene.SelectedTile;
                 bool tileNotInRange = !movementInformation.TilesInRangeOfCharacter.Contains(selectedTile);
+                bool tileIsAccessible = selectedTile.CharacterCanMoveThroughThisTile;
                 bool userSelectedEnemy = selectedCharacter != null && selectedCharacter.GetComponent<EnemyComponent>() != null;
 
                 if (noSelectedCharacter && userReselectedTile)
@@ -55,7 +56,11 @@ namespace StratMono.States.FieldState
                     return goToCharacterSelectedState(scene, selectedTile, selectedCharacter);
                 }
 
-                return goToCharacterMovingState(scene, selectedTile);
+                if (tileIsAccessible)
+                { 
+                    // TODO: if tile is not accessible, could potentially play a noise to signal to the user that they can't move there
+                    return goToCharacterMovingState(scene, selectedTile);
+                }
             }
 
             if (IsACancelButtonPressed())

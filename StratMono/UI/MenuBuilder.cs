@@ -126,12 +126,12 @@ namespace StratMono.UI
                 case ScreenPosition.TopCenter:
                     _tablePosition = new Point(
                         (Screen.Width / 2) - ((int)table.GetWidth() / 2),
-                        (Screen.Height / 4) - ((int)table.GetHeight() / 2));
+                        (Screen.Height / 5) - ((int)table.GetHeight() / 2));
                     break;
                 case ScreenPosition.BottomCenter:
                     _tablePosition = new Point(
                         (Screen.Width / 2) - ((int)table.GetWidth() / 2),
-                        Screen.Height - (Screen.Height / 4) - ((int)table.GetHeight() / 2));
+                        Screen.Height - (Screen.Height / 5) - ((int)table.GetHeight() / 2));
                     break;
             }
 

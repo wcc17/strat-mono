@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Nez;
+using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.States;
@@ -18,14 +19,14 @@ namespace stratMono.States.BattleState
             AttackerMoveBack,
         }
 
-        private readonly int MoveGoal = 200;
-        private readonly int MoveSpeed = 1200;
+        private readonly int MoveSpeed = 9000;
         private readonly float MoveLerp = 0.1f;
        
         private readonly Entity _characterAttacking;
         private readonly Entity _characterBeingAttacked;
         private readonly bool _attackerOnLeft;
-        private float _distanceMoved = 0;
+        private int _originalX;
+        private int _moveGoalX;
         private AttackState _currentAttackState = AttackState.AttackerMoveForward;
 
         public CharacterAttackState(
@@ -37,6 +38,18 @@ namespace stratMono.States.BattleState
             _characterAttacking = scene.FindEntity(entityNameAttacking);
             _characterBeingAttacked = scene.FindEntity(entityNameBeingAttacked);
             _attackerOnLeft = attackerOnLeft;
+
+            var characterAttackingAnimator = _characterAttacking.GetComponent<SpriteAnimator>();
+            var characterWidth = characterAttackingAnimator.Width;
+
+            _originalX = (int)_characterAttacking.Position.X;
+            if (attackerOnLeft)
+            {
+                _moveGoalX = (int)_characterBeingAttacked.Position.X - (int)characterWidth - 50;
+            } else
+            {
+                _moveGoalX = (int)_characterBeingAttacked.Position.X + (int)characterWidth + 50;
+            }
         }
 
         public override void EnterState(LevelScene scene)
@@ -66,40 +79,59 @@ namespace stratMono.States.BattleState
 
         private void handleMoveForward()
         {
-            bool moveLeft = (_attackerOnLeft) ? false : true;
-            handleMove(!_attackerOnLeft, () =>
+            bool shouldMoveLeft = _attackerOnLeft ? false : true;
+            handleMove(shouldMoveLeft);
+
+            if (_attackerOnLeft)
             {
-                _distanceMoved = 0;
-                _currentAttackState = AttackState.AttackerMoveBack;
-            });
+                if (!shouldMoveLeft && _characterAttacking.Position.X >= _moveGoalX)
+                {
+                    _characterAttacking.Position = new Vector2(_moveGoalX, _characterAttacking.Position.Y);
+                    _currentAttackState = AttackState.AttackerMoveBack;
+                }
+            } else
+            {
+                if (shouldMoveLeft && _characterAttacking.Position.X <= _moveGoalX)
+                {
+                    _characterAttacking.Position = new Vector2(_moveGoalX, _characterAttacking.Position.Y);
+                    _currentAttackState = AttackState.AttackerMoveBack;
+                }
+            }
         }
 
         private void handleMoveBack()
         {
-            bool moveLeft = (_attackerOnLeft) ? true : false;
-            handleMove(_attackerOnLeft, () =>
+            bool shouldMoveLeft = _attackerOnLeft ? true : false;
+            handleMove(shouldMoveLeft);
+
+            if (_attackerOnLeft)
             {
-                // TODO temporary
-                _currentAttackState += 1;
-            });
+                if (shouldMoveLeft && _characterAttacking.Position.X <= _originalX)
+                {
+                    _characterAttacking.Position = new Vector2(_originalX, _characterAttacking.Position.Y);
+                    _currentAttackState += 1; //TODO: temporary
+                }
+            }
+            else
+            {
+                if (!shouldMoveLeft && _characterAttacking.Position.X >= _originalX)
+                {
+                    _characterAttacking.Position = new Vector2(_originalX, _characterAttacking.Position.Y);
+                    _currentAttackState += 1; //TODO: temporary
+                }
+            }
         }
 
-        private void handleMove(bool moveLeft, Action onFinished)
+        private void handleMove(bool moveLeft)
         {
             var distanceToMove = (Time.DeltaTime * MoveSpeed);
             var distanceDelta = new Vector2(distanceToMove, 0);
-            _distanceMoved = (_attackerOnLeft) ? _distanceMoved + distanceDelta.X : _distanceMoved - distanceDelta.X;
 
             var newPosition = (moveLeft) 
                 ? _characterAttacking.Position - distanceDelta : _characterAttacking.Position + distanceDelta;
 
             _characterAttacking.Position
                 = Vector2.Lerp(_characterAttacking.Position, newPosition, MoveLerp);
-
-            if (Math.Abs(_distanceMoved) >= MoveGoal)
-            {
-                onFinished();
-            }
         }
     }
 }

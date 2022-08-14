@@ -13,7 +13,6 @@ namespace StratMono.States.BattleState
 {
     class DefaultState : BaseBattleState
     {
-        private static readonly string ActionMenuEntityName = "battleactionmenu";
         private bool _isAttackClicked = false;
 
         public override void EnterState(LevelScene scene)

@@ -20,7 +20,7 @@ namespace stratMono.States.BattleState
         }
 
         private readonly int MoveSpeed = 9000;
-        private readonly float MoveLerp = 0.1f;
+        private readonly float MoveLerp = 0.15f;
        
         private readonly Entity _characterAttacking;
         private readonly Entity _characterBeingAttacked;
@@ -54,6 +54,10 @@ namespace stratMono.States.BattleState
 
         public override void EnterState(LevelScene scene)
         {
+            var menuEntity = scene.FindEntity(ActionMenuEntityName);
+            menuEntity.Enabled = false;
+
+
         }
 
         public override void ExitState(LevelScene scene)
@@ -79,56 +83,43 @@ namespace stratMono.States.BattleState
 
         private void handleMoveForward()
         {
-            bool shouldMoveLeft = _attackerOnLeft ? false : true;
-            handleMove(shouldMoveLeft);
+            handleMove(false);
 
-            if (_attackerOnLeft)
+            bool attackerOnLeftMoveForwardComplete = _attackerOnLeft && _characterAttacking.Position.X >= _moveGoalX;
+            bool attackerOnRightMoveForwardComplete = !_attackerOnLeft && _characterAttacking.Position.X <= _moveGoalX;
+            if (attackerOnLeftMoveForwardComplete || attackerOnRightMoveForwardComplete)
             {
-                if (!shouldMoveLeft && _characterAttacking.Position.X >= _moveGoalX)
-                {
-                    _characterAttacking.Position = new Vector2(_moveGoalX, _characterAttacking.Position.Y);
-                    _currentAttackState = AttackState.AttackerMoveBack;
-                }
-            } else
-            {
-                if (shouldMoveLeft && _characterAttacking.Position.X <= _moveGoalX)
-                {
-                    _characterAttacking.Position = new Vector2(_moveGoalX, _characterAttacking.Position.Y);
-                    _currentAttackState = AttackState.AttackerMoveBack;
-                }
+                _characterAttacking.Position = new Vector2(_moveGoalX, _characterAttacking.Position.Y);
+                _currentAttackState = AttackState.AttackerMoveBack;
             }
         }
 
         private void handleMoveBack()
         {
-            bool shouldMoveLeft = _attackerOnLeft ? true : false;
-            handleMove(shouldMoveLeft);
+            handleMove(true);
 
-            if (_attackerOnLeft)
+            bool attackerOnLeftMoveBackComplete = _attackerOnLeft && _characterAttacking.Position.X <= _originalX;
+            bool attackerOnRightMoveBackComplete = !_attackerOnLeft && _characterAttacking.Position.X >= _originalX;
+            if (attackerOnLeftMoveBackComplete || attackerOnRightMoveBackComplete)
             {
-                if (shouldMoveLeft && _characterAttacking.Position.X <= _originalX)
-                {
-                    _characterAttacking.Position = new Vector2(_originalX, _characterAttacking.Position.Y);
-                    _currentAttackState += 1; //TODO: temporary
-                }
-            }
-            else
-            {
-                if (!shouldMoveLeft && _characterAttacking.Position.X >= _originalX)
-                {
-                    _characterAttacking.Position = new Vector2(_originalX, _characterAttacking.Position.Y);
-                    _currentAttackState += 1; //TODO: temporary
-                }
+                _characterAttacking.Position = new Vector2(_originalX, _characterAttacking.Position.Y);
+                _currentAttackState += 1; //TODO: temporary
             }
         }
 
-        private void handleMove(bool moveLeft)
+        private void handleMove(bool isMovingBack)
         {
             var distanceToMove = (Time.DeltaTime * MoveSpeed);
             var distanceDelta = new Vector2(distanceToMove, 0);
 
-            var newPosition = (moveLeft) 
-                ? _characterAttacking.Position - distanceDelta : _characterAttacking.Position + distanceDelta;
+            Vector2 newPosition;
+            if ((_attackerOnLeft && isMovingBack) || (!_attackerOnLeft && !isMovingBack))
+            {
+                newPosition = _characterAttacking.Position - distanceDelta;
+            } else
+            {
+                newPosition = _characterAttacking.Position + distanceDelta;
+            }
 
             _characterAttacking.Position
                 = Vector2.Lerp(_characterAttacking.Position, newPosition, MoveLerp);

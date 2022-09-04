@@ -61,6 +61,18 @@ namespace StratMono.UI
             return uiCanvasEntity;
         }
 
+        //public static Entity BuildDialogueUi()
+        //{
+        //    var uiCanvas = new UICanvas();
+        //    uiCanvas.RenderLayer = (int)RenderLayer.UI;
+        //    var stage = uiCanvas.Stage;
+        //    stage.GamepadActionButtons = new Buttons[] { Buttons.A, Buttons.RightTrigger };
+
+        //    var skin = Skin.CreateDefaultSkin();
+        //    var table = createTable(stage);
+        //    var button = createButton(skin, "This is the dialogue text", onAdvanced);
+        //}
+
         public static void DestroyMenu(Entity menuEntity)
         {
             menuEntity.RemoveAllComponents();

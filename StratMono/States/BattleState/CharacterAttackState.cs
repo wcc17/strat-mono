@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.States;
 using StratMono.States.BattleState;
+using StratMono.Util;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -56,8 +58,6 @@ namespace stratMono.States.BattleState
         {
             var menuEntity = scene.FindEntity(ActionMenuEntityName);
             menuEntity.Enabled = false;
-
-
         }
 
         public override void ExitState(LevelScene scene)

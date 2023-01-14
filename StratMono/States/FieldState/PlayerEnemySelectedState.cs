@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace StratMono.States.FieldState
 {
-    class EnemySelectedState : BaseFieldState
+    class PlayerEnemySelectedState : BaseFieldState
     {
         private readonly string ActionMenuEntityName = "EnemyActionMenu";
         private bool _isCancelClicked = false;

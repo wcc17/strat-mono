@@ -6,12 +6,12 @@ using System.Collections.Generic;
 
 namespace StratMono.States.FieldState
 {
-    class CharacterSelectAttackState : BaseFieldState
+    class PlayerCharacterSelectAttackState : BaseFieldState
     {
         private readonly Stack<GridTile> _returnPath;
         private readonly List<GridTile> _tilesWithAttackableCharacters;
 
-        public CharacterSelectAttackState(
+        public PlayerCharacterSelectAttackState(
             Stack<GridTile> returnPath,
             List<GridTile> tilesWithAttackableCharacters)
         {

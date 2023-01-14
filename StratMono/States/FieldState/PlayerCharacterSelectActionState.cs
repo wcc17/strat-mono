@@ -91,7 +91,7 @@ namespace StratMono.States.FieldState
 
         private BaseFieldState goToCharacterSelectAttackState(LevelScene scene)
         {
-            var nextState = new CharacterSelectAttackState(_returnPath, _tilesWithAttackableCharacters);
+            var nextState = new PlayerCharacterSelectAttackState(_returnPath, _tilesWithAttackableCharacters);
             return nextState;
         }
 

@@ -108,7 +108,7 @@ namespace StratMono.States.FieldState
             UpdateSceneSelections(scene, selectedTile, selectedCharacter);
             CenterCameraOnPosition(scene, selectedTile.Position);
 
-            var nextState = new EnemySelectedState();
+            var nextState = new PlayerEnemySelectedState();
             return nextState;
         }
 

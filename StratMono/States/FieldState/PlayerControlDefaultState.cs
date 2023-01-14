@@ -32,7 +32,7 @@ namespace StratMono.States.FieldState
 
                 if (selectedCharacter != null && selectedCharacter.GetComponent<EnemyComponent>() != null)
                 {
-                    nextState = new EnemySelectedState();
+                    nextState = new PlayerEnemySelectedState();
                 } else if (selectedCharacter != null)
                 {
                     nextState = new PlayerCharacterSelectedState();

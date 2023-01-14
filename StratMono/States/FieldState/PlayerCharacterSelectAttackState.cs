@@ -6,7 +6,6 @@ using System.Collections.Generic;
 
 namespace StratMono.States.FieldState
 {
-    // TODO: rename to PlayerCharacterSelectAttackState
     class CharacterSelectAttackState : BaseFieldState
     {
         private readonly Stack<GridTile> _returnPath;

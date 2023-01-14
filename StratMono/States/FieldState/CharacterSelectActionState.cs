@@ -1,4 +1,5 @@
-﻿using Nez.UI;
+﻿using Nez;
+using Nez.UI;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
@@ -26,26 +27,7 @@ namespace StratMono.States.FieldState
 
         public override void EnterState(LevelScene scene)
         {
-            CharacterGridEntity selectedCharacter = scene.SelectedCharacter;
-            GridTile selectedCharacterTile = scene.GridSystem.GetNearestTileAtPosition(scene.SelectedCharacter.Position);
-            
-            List<GridTile> neighbors = scene.GridSystem.GetNeighborsOfTile(selectedCharacterTile);
-            foreach(var gridTile in neighbors)
-            {
-                var characterEntity = scene.GetCharacterFromSelectedTile(gridTile);
-                if (characterEntity != null && characterEntity.GetComponent<EnemyComponent>() != null)
-                {
-                    _tilesWithAttackableCharacters.Add(gridTile);
-                }
-            }
-
-            var buttonDefinitions = new Dictionary<string, Action<Button>>();
-            if (_tilesWithAttackableCharacters.Count > 0)
-            {
-                buttonDefinitions.Add("Attack", button => _isAttackClicked = true);
-            }
-            buttonDefinitions.Add("Wait", button => _isWaitClicked = true);
-            buttonDefinitions.Add("Cancel", button => _isCancelClicked = true);
+            var buttonDefinitions = setupButtonDefinitions(scene);
 
             var menuEntity = MenuBuilder.BuildActionMenu(
                 scene.font,
@@ -73,12 +55,18 @@ namespace StratMono.States.FieldState
 
             if (_isWaitClicked)
             {
+                // Character will be done with turn after waiting completes
+                scene.FinishSelectedCharactersTurn();
+
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
                 return goToDefaultState(scene);
             }
 
             if (_isAttackClicked)
             {
+                // Character will be done with turn after attack finishes
+                scene.FinishSelectedCharactersTurn();
+
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
                 return goToCharacterSelectAttackState(scene);
             }
@@ -98,7 +86,7 @@ namespace StratMono.States.FieldState
 
         private BaseFieldState goToDefaultState(LevelScene scene)
         {
-            var nextState = new DefaultState();
+            var nextState = new PlayerControlDefaultState();
             return nextState;
         }
 
@@ -106,6 +94,37 @@ namespace StratMono.States.FieldState
         {
             var nextState = new CharacterSelectAttackState(_returnPath, _tilesWithAttackableCharacters);
             return nextState;
+        }
+
+        private Dictionary<string, Action<Button>> setupButtonDefinitions(LevelScene scene)
+        {
+            var buttonDefinitions = new Dictionary<string, Action<Button>>();
+            
+            if (!scene.SelectedCharacterAlreadyFinishedTurn())
+            {
+                GridTile selectedCharacterTile = scene.GridSystem.GetNearestTileAtPosition(scene.SelectedCharacter.Position);
+                List<GridTile> neighbors = scene.GridSystem.GetNeighborsOfTile(selectedCharacterTile);
+
+                foreach (var gridTile in neighbors)
+                {
+                    var characterEntity = scene.GetCharacterFromSelectedTile(gridTile);
+                    if (characterEntity != null && characterEntity.GetComponent<EnemyComponent>() != null)
+                    {
+                        _tilesWithAttackableCharacters.Add(gridTile);
+                    }
+                }
+
+                if (_tilesWithAttackableCharacters.Count > 0)
+                {
+                    buttonDefinitions.Add("Attack", button => _isAttackClicked = true);
+                }
+
+                buttonDefinitions.Add("Wait", button => _isWaitClicked = true);
+            }
+
+            buttonDefinitions.Add("Cancel", button => _isCancelClicked = true);
+
+            return buttonDefinitions;
         }
     }
 }

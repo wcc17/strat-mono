@@ -10,12 +10,23 @@ namespace StratMono.States.FieldState
     {
         public override void EnterState(LevelScene scene) 
         {
-            scene.SetupMovementTileHighlights();
+            if (!scene.SelectedCharacterAlreadyFinishedTurn())
+            {
+                scene.SetupMovementTileHighlights();
+            }
         }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
             base.Update(scene, cursorEntity);
+
+            if (scene.SelectedCharacterAlreadyFinishedTurn())
+            {
+                return goToCharacterSelectActionState(
+                    scene, 
+                    scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position), 
+                    scene.SelectedCharacter);
+            }
 
             if (DidUserMakeSelection())
             {
@@ -85,7 +96,7 @@ namespace StratMono.States.FieldState
                 CenterCameraOnPosition(scene, selectedTile.Position);
             }
 
-            var nextState = new DefaultState();
+            var nextState = new PlayerControlDefaultState();
             return nextState;
         }
 

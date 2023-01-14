@@ -52,7 +52,7 @@ namespace StratMono.States.BattleState
                     updateZoom(scene);
                     break;
                 case BattleEndState.ReadyToExit:
-                    return new FieldState.DefaultState();
+                    return new FieldState.PlayerControlDefaultState();
             }
 
             return this;

@@ -35,7 +35,7 @@ namespace StratMono.Scenes
         private const string CursorSpriteName = "tile_cursor";
 
         private SpriteAtlas _spriteAtlas;
-        private BaseState _state = new States.FieldState.DefaultState();
+        private BaseState _state = new States.FieldState.PlayerControlDefaultState();
 
         public BitmapFont font;
         public TileCursorSystem SceneTileCursorSystem;
@@ -46,8 +46,9 @@ namespace StratMono.Scenes
         public GridTile SelectedTile = null;
         public CharacterGridEntity CharacterBeingAttacked;
 
-        private List<CharacterGridEntity> teamEntities = new List<CharacterGridEntity>();
-        private List<CharacterGridEntity> enemyEntities = new List<CharacterGridEntity>();
+        public List<CharacterGridEntity> teamEntities = new List<CharacterGridEntity>();
+        public List<CharacterGridEntity> enemyEntities = new List<CharacterGridEntity>();
+        private List<uint> entityIdsAlreadyTakenTurn = new List<uint>();
 
         public override void Initialize()
         {
@@ -81,8 +82,8 @@ namespace StratMono.Scenes
             createTiledMap();
             createCamera();
             createGrid();
-            //createCharacters_fitToInitialCameraView(numberOfTeamCharacters: 6, numberOfEnemies: 15);
-            createCharacters_randomFullMap(numberOfCharacters: 300);
+            createCharacters_fitToInitialCameraView(numberOfTeamCharacters: 6, numberOfEnemies: 15);
+            //createCharacters_randomFullMap(numberOfCharacters: 300);
             createGridCursorEntity();
         }
 
@@ -142,38 +143,27 @@ namespace StratMono.Scenes
             return CreateAndAddTileHighlight(gridTile, YellowOutline, YellowFill);
         }
 
-        private void updateState()
+        public bool SelectedCharacterAlreadyFinishedTurn()
         {
-            var previousState = _state;
-            _state = _state.Update(this, (GridEntity)FindEntity(CursorEntityName));
-            if (previousState != _state)
-            {
-                Console.WriteLine("Previous State: " + previousState.ToString());
-                Console.WriteLine("New State: " + _state.ToString());
-                Console.WriteLine();
-
-                previousState.ExitState(this);
-                _state.EnterState(this);
-            }
+            return entityIdsAlreadyTakenTurn.Contains(SelectedCharacter.Id);
         }
 
-        private GridEntity CreateAndAddTileHighlight(GridTile gridTile, Color outlineColor, Color fillColor)
+        public void FinishSelectedCharactersTurn()
         {
-            GridEntity tileHighlight = new GridTileHighlight("highlight" + gridTile.Id);
+            entityIdsAlreadyTakenTurn.Add(SelectedCharacter.Id);
+        }
 
-            SpriteRenderer outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(
-                64, 64, outlineColor, OutlineWidth);
-            SpriteRenderer shape = PrimitiveShapeUtil.CreateRectangleSprite(
-                64, 64, fillColor);
+        public bool AllTeamFinishedTurn()
+        {
+            for (var i = 0; i < teamEntities.Count; i++)
+            {
+                if (!entityIdsAlreadyTakenTurn.Contains(teamEntities[i].Id))
+                {
+                    return false;
+                }
+            }
 
-            shape.RenderLayer = (int)RenderLayer.TileHighlight;
-            outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
-            tileHighlight.AddComponent(outline);
-            tileHighlight.AddComponent(shape);
-
-            AddToGrid(tileHighlight, gridTile.Coordinates.X, gridTile.Coordinates.Y);
-
-            return tileHighlight;
+            return true;
         }
 
         public void RemoveHighlightsFromGrid()
@@ -219,6 +209,40 @@ namespace StratMono.Scenes
             }
 
             return animator;
+        }
+
+        private void updateState()
+        {
+            var previousState = _state;
+            _state = _state.Update(this, (GridEntity)FindEntity(CursorEntityName));
+            if (previousState != _state)
+            {
+                Console.WriteLine("Previous State: " + previousState.ToString());
+                Console.WriteLine("New State: " + _state.ToString());
+                Console.WriteLine();
+
+                previousState.ExitState(this);
+                _state.EnterState(this);
+            }
+        }
+
+        private GridEntity CreateAndAddTileHighlight(GridTile gridTile, Color outlineColor, Color fillColor)
+        {
+            GridEntity tileHighlight = new GridTileHighlight("highlight" + gridTile.Id);
+
+            SpriteRenderer outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(
+                64, 64, outlineColor, OutlineWidth);
+            SpriteRenderer shape = PrimitiveShapeUtil.CreateRectangleSprite(
+                64, 64, fillColor);
+
+            shape.RenderLayer = (int)RenderLayer.TileHighlight;
+            outline.RenderLayer = (int)RenderLayer.TileHighlightOutline;
+            tileHighlight.AddComponent(outline);
+            tileHighlight.AddComponent(shape);
+
+            AddToGrid(tileHighlight, gridTile.Coordinates.X, gridTile.Coordinates.Y);
+
+            return tileHighlight;
         }
 
         private void createTiledMap()

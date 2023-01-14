@@ -6,7 +6,7 @@ using System;
 
 namespace StratMono.States.FieldState
 {
-    public class DefaultState : BaseFieldState
+    public class NpcControlDefaultState : BaseFieldState
     {
         public override void EnterState(LevelScene scene) { }
 

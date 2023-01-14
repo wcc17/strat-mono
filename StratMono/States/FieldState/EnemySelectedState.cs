@@ -40,7 +40,7 @@ namespace StratMono.States.FieldState
             {
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
 
-                var nextState = new DefaultState();
+                var nextState = new PlayerControlDefaultState();
                 return nextState;
             }
 

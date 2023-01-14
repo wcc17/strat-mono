@@ -51,7 +51,7 @@ namespace StratMono.States.FieldState
 
                     scene.SelectedCharacter = null;
                     scene.SelectedTile = null;
-                    nextState = new DefaultState();
+                    nextState = new PlayerControlDefaultState();
                     return nextState;
                 }
 

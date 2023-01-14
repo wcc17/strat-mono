@@ -67,7 +67,10 @@ namespace StratMono.States.FieldState
 
         private BaseState goToBattleInitialState(LevelScene scene)
         {
-            var nextState = new BattleState.TransitionInState(scene.SelectedCharacter, scene.CharacterBeingAttacked);
+            var nextState = new BattleState.TransitionInState(
+                scene.SelectedCharacter,
+                scene.CharacterBeingAttacked,
+                new FieldState.PlayerControlDefaultState());
             return nextState;
         }
     }

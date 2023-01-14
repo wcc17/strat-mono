@@ -6,8 +6,10 @@ using StratMono.System;
 using System.Collections.Generic;
 using StratMono.Util;
 using Nez;
+using StratMono.States;
+using StratMono.States.FieldState;
 
-namespace StratMono.States.FieldState
+namespace States.Shared
 {
     public class DelayState : BaseFieldState
     {

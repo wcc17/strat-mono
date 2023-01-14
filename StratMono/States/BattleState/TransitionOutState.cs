@@ -23,11 +23,16 @@ namespace StratMono.States.BattleState
         private BattleEndState _battleEndState = BattleEndState.RemoveCharacters;
         private CharacterGridEntity _attackingCharacter;
         private CharacterGridEntity _characterBeingAttacked;
+        private BaseState _stateToReturnTo;
 
-        public TransitionOutState(CharacterGridEntity attackingCharacter, CharacterGridEntity characterBeingAttacked)
+        public TransitionOutState(
+            CharacterGridEntity attackingCharacter, 
+            CharacterGridEntity characterBeingAttacked,
+            BaseState stateToReturnTo)
         {
             _attackingCharacter = attackingCharacter;
             _characterBeingAttacked = characterBeingAttacked;
+            _stateToReturnTo = stateToReturnTo;
         }
 
         public override void EnterState(LevelScene scene)
@@ -56,7 +61,7 @@ namespace StratMono.States.BattleState
                     updateZoom(scene);
                     break;
                 case BattleEndState.ReadyToExit:
-                    return new FieldState.PlayerControlDefaultState();
+                    return _stateToReturnTo;
             }
 
             return this;

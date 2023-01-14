@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
+using States.Shared;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.States;
 using StratMono.States.BattleState;
+using StratMono.States.FieldState;
 
 namespace stratMono.States.BattleState
 {
@@ -29,6 +31,7 @@ namespace stratMono.States.BattleState
         private int _moveGoalX;
         private AttackState _currentAttackState = AttackState.AttackerMoveForward;
         private readonly bool _lastAttack;
+        private BaseState _stateToReturnToAfterBattle;
 
         public CharacterAttackState(
             LevelScene scene, 
@@ -37,12 +40,14 @@ namespace stratMono.States.BattleState
             CharacterGridEntity characterGridEntityAttacking,
             CharacterGridEntity characterGridEntityBeingAttacked,
             bool attackerOnLeft,
+            BaseState stateToReturnToAfterBattle,
             bool lastAttack = true)
         {
             _characterGridEntityAttacking = characterGridEntityAttacking;
             _characterGridEntityBeingAttacked = characterGridEntityBeingAttacked; 
             _attackerOnLeft = attackerOnLeft;
             _lastAttack = lastAttack;
+            _stateToReturnToAfterBattle = stateToReturnToAfterBattle;
 
             _battleEntityCharacterAttacking = scene.FindEntity(entityNameAttacking);
             _battleEntityCharacterBeingAttacked = scene.FindEntity(entityNameBeingAttacked);
@@ -81,17 +86,23 @@ namespace stratMono.States.BattleState
                 case AttackState.AttackerDone:
                     if (_lastAttack)
                     {
-                        return new TransitionOutState(_characterGridEntityAttacking, _characterGridEntityBeingAttacked);
+                        return new TransitionOutState(
+                            _characterGridEntityAttacking,
+                            _characterGridEntityBeingAttacked,
+                            _stateToReturnToAfterBattle);
                     } else
                     {
-                       return new CharacterAttackState(
+                        var nextState = new CharacterAttackState(
                            scene,
                            entityNameAttacking: _battleEntityCharacterBeingAttacked.Name,
                            entityNameBeingAttacked: _battleEntityCharacterAttacking.Name,
                            characterGridEntityAttacking: _characterGridEntityBeingAttacked,
                            characterGridEntityBeingAttacked: _characterGridEntityAttacking,
                            attackerOnLeft: false,
-                           lastAttack: true);
+                           stateToReturnToAfterBattle: _stateToReturnToAfterBattle,
+                           lastAttack: true
+                        );
+                        return new DelayState(nextState, 1.0f);
                     }
             }
 

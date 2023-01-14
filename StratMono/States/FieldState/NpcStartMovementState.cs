@@ -1,12 +1,12 @@
 ﻿using Components.Enemy;
 using Microsoft.Xna.Framework;
+using States.Shared;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
 using StratMono.Util;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace StratMono.States.FieldState
 {

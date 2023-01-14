@@ -1,4 +1,5 @@
 ﻿using Components.Enemy;
+using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
 using System;
@@ -42,12 +43,17 @@ namespace StratMono.States.FieldState
             if (!enemyTurnState.alreadyAttacked)
             {
                 // decide if we can attack, return attack component if so
-                if (scene.GetImmediateTilesWithAttackableCharacters(_enemy.Position, true).Count > 0)
+                var tilesWithAttackableCharacters = scene.GetImmediateTilesWithAttackableCharacters(_enemy.Position, true);
+                if (tilesWithAttackableCharacters.Count > 0)
                 {
-                    // attack and move on
-                    Console.WriteLine("should have attacked");
+                    // TODO: ideally we should check if there are more than one spots to attack. If so, pick the one with the lowest HP/the one least likely to kill us
+                    var tileToAttack = tilesWithAttackableCharacters[0];
+
+                    // NOTE: at this point, only one entity can occupy a tile, but this might change in the future
+                    var characterToAttack = scene.GetCharacterFromSelectedTile(tileToAttack);
+
                     enemyTurnState.alreadyAttacked = true;
-                    return endTurn(scene);
+                    return new BattleState.TransitionInState(_enemy, characterToAttack, this, goStraightToCombat: true);
                 }
             }
             else

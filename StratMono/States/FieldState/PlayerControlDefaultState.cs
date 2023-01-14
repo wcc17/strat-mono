@@ -1,4 +1,5 @@
 ﻿using Components.Enemy;
+using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;

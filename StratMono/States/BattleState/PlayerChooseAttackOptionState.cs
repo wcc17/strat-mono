@@ -11,16 +11,21 @@ using System.Text;
 
 namespace StratMono.States.BattleState
 {
-    class DefaultState : BaseBattleState
+    class PlayerChooseAttackOptionState : BaseBattleState
     {
         private bool _isAttackClicked = false;
         private CharacterGridEntity _characterAttacking;
         private CharacterGridEntity _characterBeingAttacked;
+        private BaseState _stateToReturnToAfterBattle;
 
-        public DefaultState(CharacterGridEntity characterAttacking, CharacterGridEntity characterBeingAttacked)
+        public PlayerChooseAttackOptionState(
+            CharacterGridEntity characterAttacking,
+            CharacterGridEntity characterBeingAttacked,
+            BaseState stateToReturnToAfterBattle)
         {
             _characterAttacking = characterAttacking;
             _characterBeingAttacked = characterBeingAttacked;
+            _stateToReturnToAfterBattle = stateToReturnToAfterBattle;
         }
 
         public override void EnterState(LevelScene scene)
@@ -75,6 +80,7 @@ namespace StratMono.States.BattleState
                     characterGridEntityAttacking: _characterAttacking,
                     characterGridEntityBeingAttacked: _characterBeingAttacked,
                     attackerOnLeft: true,
+                    stateToReturnToAfterBattle: _stateToReturnToAfterBattle,
                     lastAttack: false);
             }
 

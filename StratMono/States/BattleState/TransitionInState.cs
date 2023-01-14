@@ -2,6 +2,7 @@
 using Nez;
 using Nez.Sprites;
 using StartMono.Util;
+using stratMono.States.BattleState;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
@@ -27,11 +28,19 @@ namespace StratMono.States.BattleState
         private BattleStartState _battleStartState = BattleStartState.Zoom;
         private CharacterGridEntity _attackingCharacter;
         private CharacterGridEntity _characterBeingAttacked;
+        private readonly bool _goStraightToCombat;
+        private BaseState _stateToReturnTo;
 
-        public TransitionInState(CharacterGridEntity attackingCharacter, CharacterGridEntity characterBeingAttacked)
+        public TransitionInState(
+            CharacterGridEntity attackingCharacter, 
+            CharacterGridEntity characterBeingAttacked,
+            BaseState stateToReturnTo,
+            bool goStraightToCombat = false)
         {
             _attackingCharacter = attackingCharacter;
             _characterBeingAttacked = characterBeingAttacked;
+            _stateToReturnTo = stateToReturnTo;
+            _goStraightToCombat = goStraightToCombat;
         }
 
         public override void EnterState(LevelScene scene)
@@ -54,7 +63,22 @@ namespace StratMono.States.BattleState
                     placeCharacters(scene);
                     break;
                 case BattleStartState.BattleReady:
-                    return new DefaultState(_attackingCharacter, _characterBeingAttacked);
+                    if (_goStraightToCombat)
+                    {
+                        // TODO: would be cool if enemy was always on the right instead of how it is right now
+                        return new CharacterAttackState(
+                            scene,
+                            entityNameAttacking: BattlePlayerEntityName,
+                            entityNameBeingAttacked: BattleNpcEntityName,
+                            characterGridEntityAttacking: _attackingCharacter,
+                            characterGridEntityBeingAttacked: _characterBeingAttacked,
+                            attackerOnLeft: true,
+                            stateToReturnToAfterBattle: _stateToReturnTo,
+                            lastAttack: false
+                        );
+                    }
+
+                    return new PlayerChooseAttackOptionState(_attackingCharacter, _characterBeingAttacked, _stateToReturnTo);
             }
 
             return this;

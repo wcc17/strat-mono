@@ -5,7 +5,7 @@ using StratMono.Entities;
 using Nez.Tiled;
 using StratMono.Util;
 using Nez;
-using StratMono.Components;
+using Components.Enemy;
 
 namespace StratMono.System
 {

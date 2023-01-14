@@ -1,4 +1,4 @@
-﻿using StratMono.Components;
+﻿using Components.Enemy;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;

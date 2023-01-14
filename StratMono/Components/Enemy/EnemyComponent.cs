@@ -1,6 +1,6 @@
 ﻿using Nez;
 
-namespace StratMono.Components
+namespace Components.Enemy
 {
     class EnemyComponent : Component
     {

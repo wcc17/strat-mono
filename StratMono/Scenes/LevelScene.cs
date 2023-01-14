@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Components.Enemy;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.BitmapFonts;

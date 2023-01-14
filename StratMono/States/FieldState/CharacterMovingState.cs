@@ -68,7 +68,7 @@ namespace StratMono.States.FieldState
                     nextState = new PlayerCharacterSelectActionState(new Stack<GridTile>(_pathToTake));
                 } else
                 {
-                    nextState = new NpcControlDefaultState();
+                    nextState = new NpcControlDefaultState(_characterToMove);
                 }
             }
 

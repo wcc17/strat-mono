@@ -64,9 +64,6 @@ namespace StratMono.States.FieldState
 
             if (_isAttackClicked)
             {
-                // Character will be done with turn after attack finishes
-                scene.FinishSelectedCharactersTurn();
-
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
                 return goToCharacterSelectAttackState(scene);
             }

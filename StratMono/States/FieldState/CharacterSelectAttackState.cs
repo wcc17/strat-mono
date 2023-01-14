@@ -34,10 +34,12 @@ namespace StratMono.States.FieldState
 
             if (DidUserMakeSelection())
             {
+                // Character will be done with turn after attack finishes, but this is a point of no return so its safe to mark as completed here for now
+                scene.FinishSelectedCharactersTurn();
+
                 GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
                 if (_tilesWithAttackableCharacters.Contains(selectedTile))
                 {
-                    // TODO: need to make sure this is reset at some point
                     scene.CharacterBeingAttacked = scene.GetCharacterFromSelectedTile(selectedTile);
                     return goToBattleInitialState();
                 }

@@ -9,7 +9,6 @@ using StartMono.Util;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.States;
-using StratMono.States.FieldState;
 using StratMono.System;
 using StratMono.Util;
 
@@ -36,7 +35,7 @@ namespace StratMono.Scenes
         private const string CursorSpriteName = "tile_cursor";
 
         private SpriteAtlas _spriteAtlas;
-        private BaseState _state = new DefaultState();
+        private BaseState _state = new States.FieldState.DefaultState();
 
         public BitmapFont font;
         public TileCursorSystem SceneTileCursorSystem;
@@ -79,7 +78,8 @@ namespace StratMono.Scenes
             createTiledMap();
             createCamera();
             createGrid();
-            createCharacter();
+            createCharacters_fitToInitialCameraView(numberOfTeamCharacters: 6, numberOfEnemies: 15);
+            //createCharacters_randomFullMap(numberOfCharacters: 300);
             createGridCursorEntity();
         }
 
@@ -251,16 +251,16 @@ namespace StratMono.Scenes
                 tiledMapEntity.GetComponent<TiledMapRenderer>().TiledMap.GetObjectGroup("move_cost"));
         }
 
-        private void createCharacter()
+        private void createCharacters_randomFullMap(int numberOfCharacters)
         {
             var tiledMapEntity = FindEntity(TiledMapEntityName);
             var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
             var tiledMap = tiledMapRenderer.TiledMap;
 
-            for (var i = 0; i < 300; i++)
+            for (var i = 0; i < numberOfCharacters; i++)
             {
                 var characterEntity = new CharacterGridEntity();
-                
+
                 SpriteAnimator spriteAnimator;
                 int npc = Nez.Random.Range(0, 4);
                 switch (npc)
@@ -269,7 +269,7 @@ namespace StratMono.Scenes
                         spriteAnimator = CreateSpriteAnimator(Npc1SpriteName);
                         characterEntity.SpriteName = Npc1SpriteName;
                         characterEntity.AddComponent(new EnemyComponent());
-                        break;  
+                        break;
                     case 1:
                         spriteAnimator = CreateSpriteAnimator(Npc2SpriteName);
                         characterEntity.SpriteName = Npc2SpriteName;
@@ -290,20 +290,80 @@ namespace StratMono.Scenes
                 spriteAnimator.RenderLayer = (int)RenderLayer.Character;
                 characterEntity.AddComponent(spriteAnimator);
                 characterEntity.AddComponent(new CharacterAnimatedMovement());
+                placeCharacterOnRandomTile(5, tiledMap.WorldWidth / 64 - 5, 5, tiledMap.WorldWidth / 64 - 5, characterEntity);
+            }
+        }
 
-                // temporary, ugly, just making sure I don't put characters on top of each other for testing
-                int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
-                int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
-                bool tileInaccessible = true;
-                while (tileInaccessible) {
-                    x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
-                    y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
-                    tileInaccessible = !GridSystem.GetGridTileFromCoords(new Point(x, y)).IsAccessible
-                        || GetCharacterFromSelectedTile(GridSystem.GetGridTileFromCoords(new Point(x, y))) != null;
+        private void createCharacters_fitToInitialCameraView(int numberOfTeamCharacters, int numberOfEnemies)
+        {
+            var tiledMapEntity = FindEntity(TiledMapEntityName);
+            var tiledMapRenderer = tiledMapEntity.GetComponent<TiledMapRenderer>();
+            var tiledMap = tiledMapRenderer.TiledMap;
+
+            for (var i = 0; i < numberOfTeamCharacters; i++)
+            {
+                var characterEntity = new CharacterGridEntity();
+                SpriteAnimator spriteAnimator;
+
+                spriteAnimator = CreateSpriteAnimator(CharacterSpriteName);
+                characterEntity.SpriteName = CharacterSpriteName;
+
+                spriteAnimator.RenderLayer = (int)RenderLayer.Character;
+                characterEntity.AddComponent(spriteAnimator);
+                characterEntity.AddComponent(new CharacterAnimatedMovement());
+
+                placeCharacterOnRandomTile(5, 25, 5, 15, characterEntity);
+            }
+
+            for (var i = 0; i < numberOfEnemies; i++)
+            {
+                var characterEntity = new CharacterGridEntity();
+                SpriteAnimator spriteAnimator;
+
+                int npc = Nez.Random.Range(0, 3);
+                switch (npc)
+                {
+                    case 0:
+                        spriteAnimator = CreateSpriteAnimator(Npc1SpriteName);
+                        characterEntity.SpriteName = Npc1SpriteName;
+                        characterEntity.AddComponent(new EnemyComponent());
+                        break;
+                    case 1:
+                        spriteAnimator = CreateSpriteAnimator(Npc2SpriteName);
+                        characterEntity.SpriteName = Npc2SpriteName;
+                        characterEntity.AddComponent(new EnemyComponent());
+                        break;
+                    case 2:
+                        spriteAnimator = CreateSpriteAnimator(Npc3SpriteName);
+                        characterEntity.SpriteName = Npc3SpriteName;
+                        characterEntity.AddComponent(new EnemyComponent());
+                        break;
+                    default:
+                        spriteAnimator = new SpriteAnimator(); //NOTE: should not happen
+                        break;
                 }
 
-                AddToGrid(characterEntity, x, y);
+                spriteAnimator.RenderLayer = (int)RenderLayer.Character;
+                characterEntity.AddComponent(spriteAnimator);
+                characterEntity.AddComponent(new CharacterAnimatedMovement());
+                placeCharacterOnRandomTile(5, 25, 5, 15, characterEntity);
             }
+        }
+
+        private void placeCharacterOnRandomTile(int xMin, int xMax, int yMin, int yMax, GridEntity characterEntity)
+        {
+            int x = Nez.Random.Range(xMin, xMax);
+            int y = Nez.Random.Range(yMin, yMax);
+            bool tileInaccessible = true;
+            while (tileInaccessible)
+            {
+                x = Nez.Random.Range(xMin, xMax);
+                y = Nez.Random.Range(yMin, yMax);
+                tileInaccessible = !GridSystem.GetGridTileFromCoords(new Point(x, y)).IsAccessible
+                    || GetCharacterFromSelectedTile(GridSystem.GetGridTileFromCoords(new Point(x, y))) != null;
+            }
+
+            AddToGrid(characterEntity, x, y);
         }
 
         private void createGridCursorEntity()

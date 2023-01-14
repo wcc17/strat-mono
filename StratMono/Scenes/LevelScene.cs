@@ -46,6 +46,9 @@ namespace StratMono.Scenes
         public GridTile SelectedTile = null;
         public CharacterGridEntity CharacterBeingAttacked;
 
+        private List<CharacterGridEntity> teamEntities = new List<CharacterGridEntity>();
+        private List<CharacterGridEntity> enemyEntities = new List<CharacterGridEntity>();
+
         public override void Initialize()
         {
             var screenSpaceRenderLayers = new int[]
@@ -78,8 +81,8 @@ namespace StratMono.Scenes
             createTiledMap();
             createCamera();
             createGrid();
-            createCharacters_fitToInitialCameraView(numberOfTeamCharacters: 6, numberOfEnemies: 15);
-            //createCharacters_randomFullMap(numberOfCharacters: 300);
+            //createCharacters_fitToInitialCameraView(numberOfTeamCharacters: 6, numberOfEnemies: 15);
+            createCharacters_randomFullMap(numberOfCharacters: 300);
             createGridCursorEntity();
         }
 
@@ -259,37 +262,24 @@ namespace StratMono.Scenes
 
             for (var i = 0; i < numberOfCharacters; i++)
             {
-                var characterEntity = new CharacterGridEntity();
-
-                SpriteAnimator spriteAnimator;
+                CharacterGridEntity characterEntity;
                 int npc = Nez.Random.Range(0, 4);
                 switch (npc)
                 {
                     case 0:
-                        spriteAnimator = CreateSpriteAnimator(Npc1SpriteName);
-                        characterEntity.SpriteName = Npc1SpriteName;
-                        characterEntity.AddComponent(new EnemyComponent());
+                        characterEntity = createEnemyCharacter(Npc1SpriteName);
                         break;
                     case 1:
-                        spriteAnimator = CreateSpriteAnimator(Npc2SpriteName);
-                        characterEntity.SpriteName = Npc2SpriteName;
-                        characterEntity.AddComponent(new EnemyComponent());
+                        characterEntity = createEnemyCharacter(Npc2SpriteName);
                         break;
                     case 2:
-                        spriteAnimator = CreateSpriteAnimator(Npc3SpriteName);
-                        characterEntity.SpriteName = Npc3SpriteName;
-                        characterEntity.AddComponent(new EnemyComponent());
+                        characterEntity = createEnemyCharacter(Npc3SpriteName);
                         break;
                     default:
-                        spriteAnimator = CreateSpriteAnimator(CharacterSpriteName);
-                        characterEntity.SpriteName = CharacterSpriteName;
+                        characterEntity = createTeamCharacter(CharacterSpriteName);
                         break;
                 }
 
-
-                spriteAnimator.RenderLayer = (int)RenderLayer.Character;
-                characterEntity.AddComponent(spriteAnimator);
-                characterEntity.AddComponent(new CharacterAnimatedMovement());
                 placeCharacterOnRandomTile(5, tiledMap.WorldWidth / 64 - 5, 5, tiledMap.WorldWidth / 64 - 5, characterEntity);
             }
         }
@@ -302,52 +292,61 @@ namespace StratMono.Scenes
 
             for (var i = 0; i < numberOfTeamCharacters; i++)
             {
-                var characterEntity = new CharacterGridEntity();
-                SpriteAnimator spriteAnimator;
-
-                spriteAnimator = CreateSpriteAnimator(CharacterSpriteName);
-                characterEntity.SpriteName = CharacterSpriteName;
-
-                spriteAnimator.RenderLayer = (int)RenderLayer.Character;
-                characterEntity.AddComponent(spriteAnimator);
-                characterEntity.AddComponent(new CharacterAnimatedMovement());
-
+                var characterEntity = createTeamCharacter(CharacterSpriteName);
                 placeCharacterOnRandomTile(5, 25, 5, 15, characterEntity);
             }
 
             for (var i = 0; i < numberOfEnemies; i++)
             {
-                var characterEntity = new CharacterGridEntity();
-                SpriteAnimator spriteAnimator;
 
                 int npc = Nez.Random.Range(0, 3);
+                string spriteName = Npc1SpriteName;
                 switch (npc)
                 {
                     case 0:
-                        spriteAnimator = CreateSpriteAnimator(Npc1SpriteName);
-                        characterEntity.SpriteName = Npc1SpriteName;
-                        characterEntity.AddComponent(new EnemyComponent());
+                        spriteName = Npc1SpriteName;
                         break;
                     case 1:
-                        spriteAnimator = CreateSpriteAnimator(Npc2SpriteName);
-                        characterEntity.SpriteName = Npc2SpriteName;
-                        characterEntity.AddComponent(new EnemyComponent());
+                        spriteName = Npc2SpriteName;
                         break;
                     case 2:
-                        spriteAnimator = CreateSpriteAnimator(Npc3SpriteName);
-                        characterEntity.SpriteName = Npc3SpriteName;
-                        characterEntity.AddComponent(new EnemyComponent());
-                        break;
-                    default:
-                        spriteAnimator = new SpriteAnimator(); //NOTE: should not happen
+                        spriteName = Npc3SpriteName;
                         break;
                 }
 
-                spriteAnimator.RenderLayer = (int)RenderLayer.Character;
-                characterEntity.AddComponent(spriteAnimator);
-                characterEntity.AddComponent(new CharacterAnimatedMovement());
+                CharacterGridEntity characterEntity = createEnemyCharacter(spriteName);
                 placeCharacterOnRandomTile(5, 25, 5, 15, characterEntity);
             }
+        }
+
+        private CharacterGridEntity createTeamCharacter(string spriteName)
+        {
+            CharacterGridEntity characterEntity = createCharacter(spriteName);
+            this.teamEntities.Add(characterEntity);
+            return characterEntity;
+        }
+
+        private CharacterGridEntity createEnemyCharacter(string spriteName)
+        {
+            CharacterGridEntity characterEntity = createCharacter(spriteName);
+            characterEntity.AddComponent(new EnemyComponent());
+            enemyEntities.Add(characterEntity);
+            return characterEntity;
+        }
+
+        private CharacterGridEntity createCharacter(string spriteName)
+        {
+            SpriteAnimator spriteAnimator;
+            CharacterGridEntity characterEntity = new CharacterGridEntity();
+
+            spriteAnimator = CreateSpriteAnimator(spriteName);
+            characterEntity.SpriteName = spriteName;
+
+            spriteAnimator.RenderLayer = (int)RenderLayer.Character;
+            characterEntity.AddComponent(spriteAnimator);
+            characterEntity.AddComponent(new CharacterAnimatedMovement());
+
+            return characterEntity;
         }
 
         private void placeCharacterOnRandomTile(int xMin, int xMax, int yMin, int yMax, GridEntity characterEntity)

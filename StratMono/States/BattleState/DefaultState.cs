@@ -14,6 +14,14 @@ namespace StratMono.States.BattleState
     class DefaultState : BaseBattleState
     {
         private bool _isAttackClicked = false;
+        private CharacterGridEntity _characterAttacking;
+        private CharacterGridEntity _characterBeingAttacked;
+
+        public DefaultState(CharacterGridEntity characterAttacking, CharacterGridEntity characterBeingAttacked)
+        {
+            _characterAttacking = characterAttacking;
+            _characterBeingAttacked = characterBeingAttacked;
+        }
 
         public override void EnterState(LevelScene scene)
         {
@@ -64,6 +72,8 @@ namespace StratMono.States.BattleState
                     scene,
                     entityNameAttacking: BattlePlayerEntityName,
                     entityNameBeingAttacked: BattleNpcEntityName,
+                    characterGridEntityAttacking: _characterAttacking,
+                    characterGridEntityBeingAttacked: _characterBeingAttacked,
                     attackerOnLeft: true,
                     lastAttack: false);
             }

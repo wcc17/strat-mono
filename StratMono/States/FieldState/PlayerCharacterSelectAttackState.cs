@@ -41,7 +41,7 @@ namespace StratMono.States.FieldState
                 if (_tilesWithAttackableCharacters.Contains(selectedTile))
                 {
                     scene.CharacterBeingAttacked = scene.GetCharacterFromSelectedTile(selectedTile);
-                    return goToBattleInitialState();
+                    return goToBattleInitialState(scene);
                 }
             }
 
@@ -65,9 +65,9 @@ namespace StratMono.States.FieldState
             return nextState;
         }
 
-        private BaseState goToBattleInitialState()
+        private BaseState goToBattleInitialState(LevelScene scene)
         {
-            var nextState = new BattleState.TransitionInState();
+            var nextState = new BattleState.TransitionInState(scene.SelectedCharacter, scene.CharacterBeingAttacked);
             return nextState;
         }
     }

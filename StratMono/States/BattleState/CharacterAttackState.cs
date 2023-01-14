@@ -20,8 +20,10 @@ namespace stratMono.States.BattleState
         private readonly int MoveSpeed = 9000;
         private readonly float MoveLerp = 0.15f;
        
-        private readonly Entity _characterAttacking;
-        private readonly Entity _characterBeingAttacked;
+        private readonly Entity _battleEntityCharacterAttacking; // These are the larger battle entities, not the actual entity that we got from the map
+        private readonly Entity _battleEntityCharacterBeingAttacked;
+        private readonly CharacterGridEntity _characterGridEntityAttacking; // These are the entities from the field
+        private readonly CharacterGridEntity _characterGridEntityBeingAttacked;
         private readonly bool _attackerOnLeft;
         private int _originalX;
         private int _moveGoalX;
@@ -32,24 +34,29 @@ namespace stratMono.States.BattleState
             LevelScene scene, 
             string entityNameAttacking, 
             string entityNameBeingAttacked,
+            CharacterGridEntity characterGridEntityAttacking,
+            CharacterGridEntity characterGridEntityBeingAttacked,
             bool attackerOnLeft,
             bool lastAttack = true)
         {
-            _characterAttacking = scene.FindEntity(entityNameAttacking);
-            _characterBeingAttacked = scene.FindEntity(entityNameBeingAttacked);
+            _characterGridEntityAttacking = characterGridEntityAttacking;
+            _characterGridEntityBeingAttacked = characterGridEntityBeingAttacked; 
             _attackerOnLeft = attackerOnLeft;
             _lastAttack = lastAttack;
 
-            var characterAttackingAnimator = _characterAttacking.GetComponent<SpriteAnimator>();
+            _battleEntityCharacterAttacking = scene.FindEntity(entityNameAttacking);
+            _battleEntityCharacterBeingAttacked = scene.FindEntity(entityNameBeingAttacked);
+
+            var characterAttackingAnimator = _battleEntityCharacterBeingAttacked.GetComponent<SpriteAnimator>();
             var characterWidth = characterAttackingAnimator.Width;
 
-            _originalX = (int)_characterAttacking.Position.X;
+            _originalX = (int)_battleEntityCharacterAttacking.Position.X;
             if (attackerOnLeft)
             {
-                _moveGoalX = (int)_characterBeingAttacked.Position.X - (int)characterWidth - 50;
+                _moveGoalX = (int)_battleEntityCharacterBeingAttacked.Position.X - (int)characterWidth - 50;
             } else
             {
-                _moveGoalX = (int)_characterBeingAttacked.Position.X + (int)characterWidth + 50;
+                _moveGoalX = (int)_battleEntityCharacterBeingAttacked.Position.X + (int)characterWidth + 50;
             }
         }
 
@@ -74,14 +81,15 @@ namespace stratMono.States.BattleState
                 case AttackState.AttackerDone:
                     if (_lastAttack)
                     {
-                        // TODO: return an exit state
-                        return new TransitionOutState();
+                        return new TransitionOutState(_characterGridEntityAttacking, _characterGridEntityBeingAttacked);
                     } else
                     {
                        return new CharacterAttackState(
                            scene,
-                           entityNameAttacking: _characterBeingAttacked.Name,
-                           entityNameBeingAttacked: _characterAttacking.Name,
+                           entityNameAttacking: _battleEntityCharacterBeingAttacked.Name,
+                           entityNameBeingAttacked: _battleEntityCharacterAttacking.Name,
+                           characterGridEntityAttacking: _characterGridEntityBeingAttacked,
+                           characterGridEntityBeingAttacked: _characterGridEntityAttacking,
                            attackerOnLeft: false,
                            lastAttack: true);
                     }
@@ -94,11 +102,11 @@ namespace stratMono.States.BattleState
         {
             handleMove(false);
 
-            bool attackerOnLeftMoveForwardComplete = _attackerOnLeft && _characterAttacking.Position.X >= _moveGoalX;
-            bool attackerOnRightMoveForwardComplete = !_attackerOnLeft && _characterAttacking.Position.X <= _moveGoalX;
+            bool attackerOnLeftMoveForwardComplete = _attackerOnLeft && _battleEntityCharacterAttacking.Position.X >= _moveGoalX;
+            bool attackerOnRightMoveForwardComplete = !_attackerOnLeft && _battleEntityCharacterAttacking.Position.X <= _moveGoalX;
             if (attackerOnLeftMoveForwardComplete || attackerOnRightMoveForwardComplete)
             {
-                _characterAttacking.Position = new Vector2(_moveGoalX, _characterAttacking.Position.Y);
+                _battleEntityCharacterAttacking.Position = new Vector2(_moveGoalX, _battleEntityCharacterAttacking.Position.Y);
                 _currentAttackState = AttackState.AttackerMoveBack;
             }
         }
@@ -107,11 +115,11 @@ namespace stratMono.States.BattleState
         {
             handleMove(true);
 
-            bool attackerOnLeftMoveBackComplete = _attackerOnLeft && _characterAttacking.Position.X <= _originalX;
-            bool attackerOnRightMoveBackComplete = !_attackerOnLeft && _characterAttacking.Position.X >= _originalX;
+            bool attackerOnLeftMoveBackComplete = _attackerOnLeft && _battleEntityCharacterAttacking.Position.X <= _originalX;
+            bool attackerOnRightMoveBackComplete = !_attackerOnLeft && _battleEntityCharacterAttacking.Position.X >= _originalX;
             if (attackerOnLeftMoveBackComplete || attackerOnRightMoveBackComplete)
             {
-                _characterAttacking.Position = new Vector2(_originalX, _characterAttacking.Position.Y);
+                _battleEntityCharacterAttacking.Position = new Vector2(_originalX, _battleEntityCharacterAttacking.Position.Y);
                 _currentAttackState = AttackState.AttackerDone;
             }
         }
@@ -124,14 +132,15 @@ namespace stratMono.States.BattleState
             Vector2 newPosition;
             if ((_attackerOnLeft && isMovingBack) || (!_attackerOnLeft && !isMovingBack))
             {
-                newPosition = _characterAttacking.Position - distanceDelta;
-            } else
+                newPosition = _battleEntityCharacterAttacking.Position - distanceDelta;
+            }
+            else
             {
-                newPosition = _characterAttacking.Position + distanceDelta;
+                newPosition = _battleEntityCharacterAttacking.Position + distanceDelta;
             }
 
-            _characterAttacking.Position
-                = Vector2.Lerp(_characterAttacking.Position, newPosition, MoveLerp);
+            _battleEntityCharacterAttacking.Position
+                = Vector2.Lerp(_battleEntityCharacterAttacking.Position, newPosition, MoveLerp);
         }
     }
 }

@@ -26,12 +26,18 @@ namespace StratMono.States.FieldState
                 return new PlayerControlDefaultState();
             }
 
+            EnemyTurnStateComponent enemyTurnState;
             if (_enemy == null)
             {
                 _enemy = scene.GetNextEnemy();
+                
+                enemyTurnState = _enemy.GetComponent<EnemyTurnStateComponent>();
+                enemyTurnState.reset();
+            } else
+            {
+                enemyTurnState = _enemy.GetComponent<EnemyTurnStateComponent>();
             }
 
-            EnemyTurnStateComponent enemyTurnState = getEnemyTurnState();
 
             if (!enemyTurnState.alreadyAttacked)
             {
@@ -63,22 +69,6 @@ namespace StratMono.States.FieldState
                 return new NpcStartMovementState(_enemy);
             }
 
-        }
-
-        private EnemyTurnStateComponent getEnemyTurnState()
-        {
-            EnemyTurnStateComponent enemyTurnState = _enemy.GetComponent<EnemyTurnStateComponent>();
-            if (enemyTurnState == null)
-            {
-                enemyTurnState = new EnemyTurnStateComponent();
-                _enemy.AddComponent(enemyTurnState);
-            }
-            else
-            {
-                enemyTurnState.reset();
-            }
-
-            return enemyTurnState;
         }
 
         private BaseState endTurn(LevelScene scene)

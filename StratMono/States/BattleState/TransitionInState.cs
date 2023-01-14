@@ -25,6 +25,14 @@ namespace StratMono.States.BattleState
         private float _screenFadeOpacity = 0f;
         private float _characterFadeOpacity = 1f;
         private BattleStartState _battleStartState = BattleStartState.Zoom;
+        private CharacterGridEntity _attackingCharacter;
+        private CharacterGridEntity _characterBeingAttacked;
+
+        public TransitionInState(CharacterGridEntity attackingCharacter, CharacterGridEntity characterBeingAttacked)
+        {
+            _attackingCharacter = attackingCharacter;
+            _characterBeingAttacked = characterBeingAttacked;
+        }
 
         public override void EnterState(LevelScene scene)
         {
@@ -46,7 +54,7 @@ namespace StratMono.States.BattleState
                     placeCharacters(scene);
                     break;
                 case BattleStartState.BattleReady:
-                    return new DefaultState();
+                    return new DefaultState(_attackingCharacter, _characterBeingAttacked);
             }
 
             return this;
@@ -63,10 +71,10 @@ namespace StratMono.States.BattleState
 
         private void centerCamera(LevelScene scene)
         {
-            var positionXDiff = scene.SelectedCharacter.Position.X - scene.CharacterBeingAttacked.Position.X;
-            var positionYDiff = scene.SelectedCharacter.Position.Y - scene.CharacterBeingAttacked.Position.Y;
+            var positionXDiff = _attackingCharacter.Position.X - _characterBeingAttacked.Position.X;
+            var positionYDiff = _attackingCharacter.Position.Y - _characterBeingAttacked.Position.Y;
 
-            var spriteAnimatorBeingAttacked = scene.CharacterBeingAttacked.GetComponent<SpriteAnimator>();
+            var spriteAnimatorBeingAttacked = _characterBeingAttacked.GetComponent<SpriteAnimator>();
             if (positionXDiff > 0)
             {
                 var modifier = (positionXDiff > 0) ?
@@ -74,7 +82,7 @@ namespace StratMono.States.BattleState
 
                 CenterCameraOnPosition(
                     scene,
-                    new Vector2(scene.SelectedCharacter.Position.X + modifier, scene.SelectedCharacter.Position.Y));
+                    new Vector2(_attackingCharacter.Position.X + modifier, _attackingCharacter.Position.Y));
             }
             else
             {
@@ -83,7 +91,7 @@ namespace StratMono.States.BattleState
 
                 CenterCameraOnPosition(
                     scene,
-                    new Vector2(scene.SelectedCharacter.Position.X, scene.SelectedCharacter.Position.Y + modifier));
+                    new Vector2(_attackingCharacter.Position.X, _attackingCharacter.Position.Y + modifier));
             }
 
         }
@@ -139,7 +147,7 @@ namespace StratMono.States.BattleState
         private void placeCharacters(LevelScene scene)
         {
             Entity battlePlayerCharacter = new Entity(BattlePlayerEntityName);
-            SpriteAnimator battlePlayerCharacterAnimator = scene.CreateSpriteAnimator(scene.SelectedCharacter.SpriteName);
+            SpriteAnimator battlePlayerCharacterAnimator = scene.CreateSpriteAnimator(_attackingCharacter.SpriteName);
             battlePlayerCharacterAnimator.Play("walk_right", SpriteAnimator.LoopMode.PingPong);
             battlePlayerCharacterAnimator.RenderLayer = (int)RenderLayer.Battle;
             battlePlayerCharacter.AddComponent(battlePlayerCharacterAnimator);
@@ -154,7 +162,7 @@ namespace StratMono.States.BattleState
 
             
             Entity battleNpcCharacter = new Entity(BattleNpcEntityName);
-            SpriteAnimator battleNpcCharacterAnimator = scene.CreateSpriteAnimator(scene.CharacterBeingAttacked.SpriteName);
+            SpriteAnimator battleNpcCharacterAnimator = scene.CreateSpriteAnimator(_characterBeingAttacked.SpriteName);
             battleNpcCharacterAnimator.Play("walk_left", SpriteAnimator.LoopMode.PingPong);
             battleNpcCharacterAnimator.RenderLayer = (int)RenderLayer.Battle;
             battleNpcCharacter.AddComponent(battleNpcCharacterAnimator);

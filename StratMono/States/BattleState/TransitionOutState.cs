@@ -1,15 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
-using StartMono.Util;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
-using StratMono.States.FieldState;
-using StratMono.Util;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace StratMono.States.BattleState
 {
@@ -26,6 +21,14 @@ namespace StratMono.States.BattleState
         private float _screenFadeOpacity = 0.5f;
         private float _characterFadeOpacity = 0f;
         private BattleEndState _battleEndState = BattleEndState.RemoveCharacters;
+        private CharacterGridEntity _attackingCharacter;
+        private CharacterGridEntity _characterBeingAttacked;
+
+        public TransitionOutState(CharacterGridEntity attackingCharacter, CharacterGridEntity characterBeingAttacked)
+        {
+            _attackingCharacter = attackingCharacter;
+            _characterBeingAttacked = characterBeingAttacked;
+        }
 
         public override void EnterState(LevelScene scene)
         {
@@ -36,6 +39,7 @@ namespace StratMono.States.BattleState
             // TODO: can we take the camera zoom back to where the user had it rather than the default zoom?
             teardownScreenOverlay(scene);
 
+            // Tried to avoid directly referring to the scene properties, but unavoidable here for now
             scene.CharacterBeingAttacked = null;
             scene.SelectedCharacter = null;
             scene.SelectedTile = null;
@@ -100,10 +104,10 @@ namespace StratMono.States.BattleState
 
         private void centerCamera(LevelScene scene)
         {
-            var positionXDiff = scene.SelectedCharacter.Position.X - scene.CharacterBeingAttacked.Position.X;
-            var positionYDiff = scene.SelectedCharacter.Position.Y - scene.CharacterBeingAttacked.Position.Y;
+            var positionXDiff = _attackingCharacter.Position.X - _characterBeingAttacked.Position.X;
+            var positionYDiff = _attackingCharacter.Position.Y - _characterBeingAttacked.Position.Y;
 
-            var spriteAnimatorBeingAttacked = scene.CharacterBeingAttacked.GetComponent<SpriteAnimator>();
+            var spriteAnimatorBeingAttacked = _characterBeingAttacked.GetComponent<SpriteAnimator>();
             if (positionXDiff > 0)
             {
                 var modifier = (positionXDiff > 0) ?
@@ -111,7 +115,7 @@ namespace StratMono.States.BattleState
 
                 CenterCameraOnPosition(
                     scene,
-                    new Vector2(scene.SelectedCharacter.Position.X + modifier, scene.SelectedCharacter.Position.Y));
+                    new Vector2(_attackingCharacter.Position.X + modifier, _attackingCharacter.Position.Y));
             }
             else
             {
@@ -120,7 +124,7 @@ namespace StratMono.States.BattleState
 
                 CenterCameraOnPosition(
                     scene,
-                    new Vector2(scene.SelectedCharacter.Position.X, scene.SelectedCharacter.Position.Y + modifier));
+                    new Vector2(_attackingCharacter.Position.X, _attackingCharacter.Position.Y + modifier));
             }
 
         }

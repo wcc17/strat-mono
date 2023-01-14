@@ -418,6 +418,7 @@ namespace StratMono.Scenes
         {
             CharacterGridEntity characterEntity = createCharacter(spriteName);
             characterEntity.AddComponent(new EnemyComponent());
+            characterEntity.AddComponent(new EnemyTurnStateComponent());
             enemyEntities.Add(characterEntity);
             return characterEntity;
         }

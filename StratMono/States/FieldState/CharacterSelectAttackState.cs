@@ -6,6 +6,7 @@ using System.Collections.Generic;
 
 namespace StratMono.States.FieldState
 {
+    // TODO: rename to PlayerCharacterSelectAttackState
     class CharacterSelectAttackState : BaseFieldState
     {
         private readonly Stack<GridTile> _returnPath;
@@ -35,7 +36,7 @@ namespace StratMono.States.FieldState
             if (DidUserMakeSelection())
             {
                 // Character will be done with turn after attack finishes, but this is a point of no return so its safe to mark as completed here for now
-                scene.FinishSelectedCharactersTurn();
+                scene.FinishCharactersTurn(scene.SelectedCharacter.Id);
 
                 GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
                 if (_tilesWithAttackableCharacters.Contains(selectedTile))
@@ -61,7 +62,7 @@ namespace StratMono.States.FieldState
         private BaseState goToCharacterSelectActionState(LevelScene scene, GridEntity cursorEntity)
         {
             cursorEntity.Position = scene.SelectedCharacter.Position;
-            var nextState = new CharacterSelectActionState(_returnPath);
+            var nextState = new PlayerCharacterSelectActionState(_returnPath);
             return nextState;
         }
 

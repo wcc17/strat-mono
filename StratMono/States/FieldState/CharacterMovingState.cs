@@ -11,33 +11,39 @@ namespace StratMono.States.FieldState
     public class CharacterMovingState : BaseFieldState
     {
         private readonly Stack<GridTile> _pathToTake;
+        private readonly CharacterGridEntity _characterToMove;
         private readonly bool _returnedToOriginalPosition;
+        private readonly bool _isPlayerCharacter;
 
         public CharacterMovingState(
             Stack<GridTile> pathToTake,
-            bool returnedToOriginalPosition = false) : base()
+            CharacterGridEntity characterToMove,
+            bool returnedToOriginalPosition = false,
+            bool isPlayerCharacter = true) : base()
         {
             _pathToTake = pathToTake;
+            _characterToMove = characterToMove;
             _returnedToOriginalPosition = returnedToOriginalPosition;
+            _isPlayerCharacter = isPlayerCharacter;
         }
 
         public override void EnterState(LevelScene scene) 
         {
             // to create the initial new stack, it pops off all of the elements. So we have to do it twice to put it back in the right order
             var stackClone = new Stack<GridTile>(new Stack<GridTile>(_pathToTake));
-            scene.SelectedCharacter.AddComponent(new GridEntityMoveToGoal(stackClone));
+            _characterToMove.AddComponent(new GridEntityMoveToGoal(stackClone));
         }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
             BaseFieldState nextState = this;
 
-            CenterCameraOnPosition(scene, scene.SelectedCharacter.Position);
+            CenterCameraOnPosition(scene, _characterToMove.Position);
             (scene.Camera as BoundedMovingCamera).Update();
 
-            if (!scene.SelectedCharacter.GetComponent<GridEntityMoveToGoal>().Enabled)
+            if (!_characterToMove.GetComponent<GridEntityMoveToGoal>().Enabled)
             {
-                scene.SelectedCharacter.RemoveComponent<GridEntityMoveToGoal>();
+                _characterToMove.RemoveComponent<GridEntityMoveToGoal>();
 
                 // This will be set to true if character moved, then the user cancelled the action
                 if (_returnedToOriginalPosition)
@@ -49,13 +55,18 @@ namespace StratMono.States.FieldState
                         cursorEntity.Position = new Vector2(originalTilePosition.X, originalTilePosition.Y);
                     }
 
-                    scene.SelectedCharacter = null;
                     scene.SelectedTile = null;
                     nextState = new PlayerControlDefaultState();
                     return nextState;
                 }
 
-                nextState = new CharacterSelectActionState(new Stack<GridTile>(_pathToTake));
+                if (_isPlayerCharacter)
+                {
+                    nextState = new PlayerCharacterSelectActionState(new Stack<GridTile>(_pathToTake));
+                } else
+                {
+                    nextState = new NpcControlDefaultState();
+                }
             }
 
             return nextState;

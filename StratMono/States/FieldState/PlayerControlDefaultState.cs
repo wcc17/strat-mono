@@ -8,21 +8,19 @@ namespace StratMono.States.FieldState
 {
     public class PlayerControlDefaultState : BaseFieldState
     {
-        public override void EnterState(LevelScene scene) 
-        {
-            if (scene.AllTeamFinishedTurn())
-            {
-                // TODO: can now go to the NPC turn and let them attack or move one by one 
-                Console.WriteLine();
-            }
-        }
+        public override void EnterState(LevelScene scene) { }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
             base.Update(scene, cursorEntity);
-            
-            BaseFieldState nextState = this;
 
+            if (scene.AllTeamFinishedTurn())
+            {
+                scene.ResetFinishedTurns();
+                return new NpcControlDefaultState();
+            }
+
+            BaseFieldState nextState = this;
             if (DidUserMakeSelection())
             {
                 // default state doesn't care if selected tile or character changed
@@ -37,7 +35,7 @@ namespace StratMono.States.FieldState
                     nextState = new EnemySelectedState();
                 } else if (selectedCharacter != null)
                 {
-                    nextState = new CharacterSelectedState();
+                    nextState = new PlayerCharacterSelectedState();
                 }
             }
             return nextState;

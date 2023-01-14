@@ -35,7 +35,9 @@ namespace StratMono.Scenes
         private const string CursorSpriteName = "tile_cursor";
 
         private SpriteAtlas _spriteAtlas;
-        private BaseState _state = new States.FieldState.PlayerControlDefaultState();
+
+        //private BaseState _state = new States.FieldState.PlayerControlDefaultState();
+        private BaseState _state = new States.FieldState.NpcControlDefaultState();
 
         public BitmapFont font;
         public TileCursorSystem SceneTileCursorSystem;
@@ -82,7 +84,7 @@ namespace StratMono.Scenes
             createTiledMap();
             createCamera();
             createGrid();
-            createCharacters_fitToInitialCameraView(numberOfTeamCharacters: 6, numberOfEnemies: 15);
+            createCharacters_fitToInitialCameraView(numberOfTeamCharacters: 6, numberOfEnemies: 6);
             //createCharacters_randomFullMap(numberOfCharacters: 300);
             createGridCursorEntity();
         }
@@ -110,7 +112,8 @@ namespace StratMono.Scenes
         public void SetupMovementTileHighlights()
         {
             // TODO: should actually store how far a character can travel somewhere (maxMovementCost)
-            CharacterGridMovementInfo = GridSystem.IdentifyPossibleTilesToMoveToTile(SelectedTile, 5);
+            // TODO: I don't think I need to save this info in CharacterGridMovementInfo. I can just get it again when I need it again
+            CharacterGridMovementInfo = GetPossibleTilesToMoveTo(SelectedTile, 5);
             foreach (GridTile tile in CharacterGridMovementInfo.TilesInRangeOfCharacter)
             {
                 if (tile.CharacterCanMoveThroughThisTile)
@@ -128,6 +131,38 @@ namespace StratMono.Scenes
             }
         }
 
+        public CharacterGridMovementInformation GetPossibleTilesToMoveTo(GridTile tile, int maxMovementCost)
+        {
+            return GridSystem.IdentifyPossibleTilesToMoveToTile(tile, maxMovementCost);
+        }
+
+        // TODO: This should probably just be in GridSystem?
+        public List<GridTile> GetImmediateTilesWithAttackableCharacters(Vector2 position, bool attackerIsEnemy)
+        {
+            GridTile selectedCharacterTile = GridSystem.GetNearestTileAtPosition(position);
+            List<GridTile> neighbors = GridSystem.GetNeighborsOfTile(selectedCharacterTile);
+            List<GridTile> tilesWithAttackableCharacters = new List<GridTile>();
+
+            foreach (var gridTile in neighbors)
+            {
+                var characterEntity = GetCharacterFromSelectedTile(gridTile);
+
+                if (characterEntity != null)
+                {
+                    var teamCharacterCanAttackEnemyCharacter = !attackerIsEnemy && characterEntity.GetComponent<EnemyComponent>() != null;
+                    var enemyCharacterCanAttackTeamCharacter = attackerIsEnemy && characterEntity.GetComponent<EnemyComponent>() == null;
+                    var canAttackCharacter = characterEntity != null && (teamCharacterCanAttackEnemyCharacter || enemyCharacterCanAttackTeamCharacter);
+
+                    if (canAttackCharacter)
+                    {
+                        tilesWithAttackableCharacters.Add(gridTile);
+                    }
+                }
+            }
+
+            return tilesWithAttackableCharacters;
+        }
+
         public GridEntity CreateAndAddPositiveTileHighlight(GridTile gridTile)
         {
             return CreateAndAddTileHighlight(gridTile, BlueOutline, BlueFill);
@@ -143,27 +178,55 @@ namespace StratMono.Scenes
             return CreateAndAddTileHighlight(gridTile, YellowOutline, YellowFill);
         }
 
-        public bool SelectedCharacterAlreadyFinishedTurn()
+        public bool CharacterAlreadyFinishedTurn(uint characterId)
         {
-            return entityIdsAlreadyTakenTurn.Contains(SelectedCharacter.Id);
+            return entityIdsAlreadyTakenTurn.Contains(characterId);
         }
 
-        public void FinishSelectedCharactersTurn()
+        public void FinishCharactersTurn(uint characterId)
         {
-            entityIdsAlreadyTakenTurn.Add(SelectedCharacter.Id);
+            entityIdsAlreadyTakenTurn.Add(characterId);
+        }
+
+        public void ResetFinishedTurns()
+        {
+            entityIdsAlreadyTakenTurn.Clear();
         }
 
         public bool AllTeamFinishedTurn()
         {
-            for (var i = 0; i < teamEntities.Count; i++)
+            return AllEntitiesFinishedTurn(teamEntities);
+        }
+
+        public bool AllEnemiesFinishedTurn()
+        {
+            return AllEntitiesFinishedTurn(enemyEntities);
+        }
+
+        public bool AllEntitiesFinishedTurn(List<CharacterGridEntity> entities)
+        {
+            for (var i = 0; i < entities.Count; i++)
             {
-                if (!entityIdsAlreadyTakenTurn.Contains(teamEntities[i].Id))
+                if (!entityIdsAlreadyTakenTurn.Contains(entities[i].Id))
                 {
                     return false;
                 }
             }
 
             return true;
+        }
+
+        public CharacterGridEntity GetNextEnemy()
+        {
+            for (var i = 0; i < enemyEntities.Count; i++)
+            {
+                if (!entityIdsAlreadyTakenTurn.Contains(enemyEntities[i].Id))
+                {
+                    return enemyEntities[i];
+                }
+            }
+
+            return null;
         }
 
         public void RemoveHighlightsFromGrid()

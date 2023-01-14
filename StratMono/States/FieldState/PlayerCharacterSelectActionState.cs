@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace StratMono.States.FieldState
 {
-    class CharacterSelectActionState : BaseFieldState
+    class PlayerCharacterSelectActionState : BaseFieldState
     {
         private readonly string ActionMenuEntityName = "ActionMenu";
 
@@ -20,7 +20,7 @@ namespace StratMono.States.FieldState
         private bool _isCancelClicked = false;
         private List<GridTile> _tilesWithAttackableCharacters = new List<GridTile>();
 
-        public CharacterSelectActionState(Stack<GridTile> returnPath) : base()
+        public PlayerCharacterSelectActionState(Stack<GridTile> returnPath) : base()
         {
             _returnPath = returnPath;
         }
@@ -56,7 +56,7 @@ namespace StratMono.States.FieldState
             if (_isWaitClicked)
             {
                 // Character will be done with turn after waiting completes
-                scene.FinishSelectedCharactersTurn();
+                scene.FinishCharactersTurn(scene.SelectedCharacter.Id);
 
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
                 return goToDefaultState(scene);
@@ -77,6 +77,7 @@ namespace StratMono.States.FieldState
         {
             var nextState = new CharacterMovingState(
                         _returnPath,
+                        scene.SelectedCharacter,
                         returnedToOriginalPosition: true);
             return nextState;
         }
@@ -97,19 +98,9 @@ namespace StratMono.States.FieldState
         {
             var buttonDefinitions = new Dictionary<string, Action<Button>>();
             
-            if (!scene.SelectedCharacterAlreadyFinishedTurn())
+            if (!scene.CharacterAlreadyFinishedTurn(scene.SelectedCharacter.Id))
             {
-                GridTile selectedCharacterTile = scene.GridSystem.GetNearestTileAtPosition(scene.SelectedCharacter.Position);
-                List<GridTile> neighbors = scene.GridSystem.GetNeighborsOfTile(selectedCharacterTile);
-
-                foreach (var gridTile in neighbors)
-                {
-                    var characterEntity = scene.GetCharacterFromSelectedTile(gridTile);
-                    if (characterEntity != null && characterEntity.GetComponent<EnemyComponent>() != null)
-                    {
-                        _tilesWithAttackableCharacters.Add(gridTile);
-                    }
-                }
+                _tilesWithAttackableCharacters = scene.GetImmediateTilesWithAttackableCharacters(scene.SelectedCharacter.Position, false);
 
                 if (_tilesWithAttackableCharacters.Count > 0)
                 {

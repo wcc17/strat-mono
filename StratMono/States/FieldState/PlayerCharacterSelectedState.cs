@@ -6,11 +6,11 @@ using System.Collections.Generic;
 
 namespace StratMono.States.FieldState
 {
-    public class CharacterSelectedState : BaseFieldState
+    public class PlayerCharacterSelectedState : BaseFieldState
     {
         public override void EnterState(LevelScene scene) 
         {
-            if (!scene.SelectedCharacterAlreadyFinishedTurn())
+            if (!scene.CharacterAlreadyFinishedTurn(scene.SelectedCharacter.Id))
             {
                 scene.SetupMovementTileHighlights();
             }
@@ -20,7 +20,7 @@ namespace StratMono.States.FieldState
         {
             base.Update(scene, cursorEntity);
 
-            if (scene.SelectedCharacterAlreadyFinishedTurn())
+            if (scene.CharacterAlreadyFinishedTurn(scene.SelectedCharacter.Id))
             {
                 return goToCharacterSelectActionState(
                     scene, 
@@ -120,7 +120,7 @@ namespace StratMono.States.FieldState
             UpdateSceneSelections(scene, selectedTile, selectedCharacter);
             CenterCameraOnPosition(scene, selectedTile.Position);
 
-            var nextState = new CharacterSelectedState();
+            var nextState = new PlayerCharacterSelectedState();
             return nextState;
         }
 
@@ -137,7 +137,7 @@ namespace StratMono.States.FieldState
                 allPathsFromCharacter.TryGetValue(nextTile, out nextTile);
             }
 
-            var nextState = new CharacterMovingState(pathToTake);
+            var nextState = new CharacterMovingState(pathToTake, scene.SelectedCharacter);
             return nextState;
         }
 
@@ -147,7 +147,7 @@ namespace StratMono.States.FieldState
             CharacterGridEntity selectedCharacter)
         {
             UpdateSceneSelections(scene, selectedTile, selectedCharacter);
-            var nextState = new CharacterSelectActionState(null);
+            var nextState = new PlayerCharacterSelectActionState(null);
             return nextState;
         }
     }

@@ -137,8 +137,10 @@ namespace StratMono.States.FieldState
                 allPathsFromCharacter.TryGetValue(nextTile, out nextTile);
             }
 
-            var nextState = new CharacterMovingState(pathToTake, scene.SelectedCharacter);
-            return nextState;
+            return new CharacterMovingState(
+                pathToTake,
+                scene.SelectedCharacter,
+                1000f); //TODO: should load this with entity from tiled or whatever
         }
 
         private BaseFieldState goToCharacterSelectActionState(

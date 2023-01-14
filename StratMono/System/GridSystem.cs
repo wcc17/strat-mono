@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework;
 using StratMono.Entities;
 using Nez.Tiled;
 using StratMono.Util;
+using Nez;
+using StratMono.Components;
 
 namespace StratMono.System
 {
@@ -55,6 +57,52 @@ namespace StratMono.System
                 _entityToGridTileMap.Remove(name);
                 _gridTiles[oldGridTileCoords.X, oldGridTileCoords.Y].RemoveFromTile(name);
             }
+        }
+
+        public GridTile GetTileForNextClosestEntity(Point coordinates, bool isClosestEntityEnemy)
+        {
+            var minDistance = float.MaxValue;
+            GridTile minDistanceTile = null;
+
+            for (var x = 0; x < _mapWidthInGridTiles; x++)
+            {
+                for (var y = 0; y < _mapHeightInGridTiles; y++)
+                {
+                    GridTile tile = _gridTiles[x, y];
+                    if (tile.OccupyingEntities.Count > 0)
+                    {
+                        foreach (Entity entity in tile.OccupyingEntities)
+                        {
+                            var occupyingEntityIsEnemyForPlayer = isClosestEntityEnemy && entity.GetComponent<EnemyComponent>() != null;
+                            var occupyingEntityIsPlayerForEnemy = !isClosestEntityEnemy && entity.GetComponent<EnemyComponent>() == null;
+
+                            if (occupyingEntityIsEnemyForPlayer || occupyingEntityIsPlayerForEnemy)
+                            {
+                                var distance = Vector2.Distance(coordinates.ToVector2(), tile.Coordinates.ToVector2());
+                                if (distance < minDistance)
+                                {
+                                    minDistance = distance;
+                                    minDistanceTile = tile;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return minDistanceTile;
+        }
+
+        public GridTile GetPointClosestToAnotherPointWithinRange(Point point, Point anotherPoint, int range)
+        {
+            var distance = Vector2.Distance(point.ToVector2(), anotherPoint.ToVector2());
+            var t = range / distance;
+            var nextClosestPoint = new Vector2(
+                ((1 - t) * point.X) + (t * anotherPoint.X),
+                ((1 - t) * point.Y) + (t * anotherPoint.Y)
+            );
+
+            return GetGridTileFromCoords(new Point((int)nextClosestPoint.X, (int)nextClosestPoint.Y));
         }
 
         public CharacterGridMovementInformation IdentifyPossibleTilesToMoveToTile(GridTile tile, int maxMovementCost)

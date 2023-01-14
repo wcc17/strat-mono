@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Nez;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
@@ -11,6 +12,8 @@ namespace StratMono.States.FieldState
 {
     public class NpcControlDefaultState : BaseFieldState
     {
+        readonly int _maxMovementCost = 5; // TODO: should actually store how far a character can travel somewhere 
+
         public override void EnterState(LevelScene scene) { }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
@@ -31,29 +34,64 @@ namespace StratMono.States.FieldState
                 Console.WriteLine("should have attacked");
             }
 
-            // Gather all places that this character could possibly move to
+            // Gather all places that this character could possibly move to in order to attack a character
             GridTile nextEnemyTile = scene.GridSystem.GetNearestTileAtPosition(nextEnemy.Position);
-            CharacterGridMovementInformation movementInformation = scene.GetPossibleTilesToMoveTo(nextEnemyTile, 5); // TODO: should actually store how far a character can travel somewhere (maxMovementCost)
-            Dictionary<GridTile, int> gridTileScores = new Dictionary<GridTile, int>();
+            CharacterGridMovementInformation movementInformation = scene.GetPossibleTilesToMoveTo(nextEnemyTile, _maxMovementCost);
+            Dictionary<GridTile, int> attackableScores = new Dictionary<GridTile, int>();
+            Dictionary<GridTile, float> distanceScores = new Dictionary<GridTile, float>();
             foreach (var tile in movementInformation.TilesInRangeOfCharacter)
             {
                 if (tile.CharacterCanMoveThroughThisTile)
                 {
-                    List<GridTile> neighborTilesWithAttackable = scene.GetImmediateTilesWithAttackableCharacters(new Vector2(tile.Position.X, tile.Position.Y), true);
-                    gridTileScores.Add(tile, neighborTilesWithAttackable.Count);
+                    List<GridTile> neighborTilesWithAttackable = scene.GetImmediateTilesWithAttackableCharacters(tile.Position.ToVector2(), true);
+                    attackableScores.Add(tile, neighborTilesWithAttackable.Count);
+                } else
+                {
+                    foreach(var entity in tile.OccupyingEntities)
+                    {
+                        if (entity.GetComponent<EnemyComponent>() == null) // if the other entity is not an enemy
+                        {
+                            var distance = Vector2.Distance(tile.Coordinates.ToVector2(), nextEnemyTile.Coordinates.ToVector2());
+                            distanceScores.Add(tile, distance);
+                        }
+                    }
                 }
             }
 
             // Determine the best place for this character to move to
             GridTile bestTile = null;
             int bestTileScore = -1;
-            foreach (KeyValuePair<GridTile, int> entry in gridTileScores)
+            foreach (KeyValuePair<GridTile, int> entry in attackableScores)
             {
                 if (entry.Value > bestTileScore)
                 {
                     bestTileScore = entry.Value;
                     bestTile = entry.Key;
                 }
+            }
+
+            // If there wasn't a single tile to move to that would put this enemy in range of a character to attack, then find the nearest character and move towards it
+            // TODO: a better move would be to find out how to place the enemy closest to the largest group of characters. starting with simplest first though
+            float bestDistance = float.MaxValue;
+            if (bestTileScore == 0)
+            {
+                foreach (KeyValuePair<GridTile, float> entry in distanceScores)
+                {
+                    if (entry.Value < bestDistance)
+                    {
+                        bestDistance = entry.Value;
+                        bestTile = entry.Key;
+                    }
+                }
+            }
+
+            // if there isn't a single character in range to move to, we have to explore outside of the movable range
+            // TODO: ask the grid system for the closest character regardless of the current characters range
+            // determine the spot within our range that would put us closest to that character
+            if (bestTileScore == 0 && (bestDistance > _maxMovementCost))
+            {
+                GridTile nextClosestEntityTile = scene.GridSystem.GetTileForNextClosestEntity(nextEnemyTile.Coordinates, false);
+                bestTile = scene.GridSystem.GetPointClosestToAnotherPointWithinRange(nextEnemyTile.Coordinates, nextClosestEntityTile.Coordinates, _maxMovementCost);
             }
 
             // TODO: this will need to be set after actually attacking when that is implemented. for now, is safe to set before moving, turn will be done directly after moving
@@ -85,29 +123,6 @@ namespace StratMono.States.FieldState
              *          
              *      once moved, decide whether to attack (if theres a team character in range) or just wait until next turn 
              */
-
-            //return this;
-
-            //BaseFieldState nextState = this;
-            //if (DidUserMakeSelection())
-            //{
-            //    // default state doesn't care if selected tile or character changed
-            //    GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
-            //    CharacterGridEntity selectedCharacter = scene.GetCharacterFromSelectedTile(selectedTile);
-
-            //    UpdateSceneSelections(scene, selectedTile, selectedCharacter);
-            //    CenterCameraOnPosition(scene, selectedTile.Position);
-
-            //    if (selectedCharacter != null && selectedCharacter.GetComponent<EnemyComponent>() != null)
-            //    {
-            //        nextState = new EnemySelectedState();
-            //    }
-            //    else if (selectedCharacter != null)
-            //    {
-            //        nextState = new CharacterSelectedState();
-            //    }
-            //}
-            //return nextState;
         }
 
         private BaseFieldState goToCharacterMovingState(LevelScene scene, GridTile selectedTile, Dictionary<GridTile, GridTile> allPathsFromCharacter, CharacterGridEntity enemyToMove)
@@ -120,8 +135,11 @@ namespace StratMono.States.FieldState
                 allPathsFromCharacter.TryGetValue(nextTile, out nextTile);
             }
 
-            var nextState = new CharacterMovingState(pathToTake, enemyToMove, isPlayerCharacter: false);
-            return nextState;
+            return new DelayState(
+                nextState: new CharacterMovingState(pathToTake, enemyToMove, 800f, isPlayerCharacter: false), //TODO: should load moveSpeed with entity from tiled or whatever)
+                timeToDelay: 1f
+            );
+
         }
 
         public override void ExitState(LevelScene scene) { }

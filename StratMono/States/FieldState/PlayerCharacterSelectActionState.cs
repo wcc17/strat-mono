@@ -78,6 +78,7 @@ namespace StratMono.States.FieldState
             var nextState = new CharacterMovingState(
                         _returnPath,
                         scene.SelectedCharacter,
+                        1000f, //TODO: should load this with entity from tiled or whatever
                         returnedToOriginalPosition: true);
             return nextState;
         }

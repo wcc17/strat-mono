@@ -12,17 +12,20 @@ namespace StratMono.States.FieldState
     {
         private readonly Stack<GridTile> _pathToTake;
         private readonly CharacterGridEntity _characterToMove;
+        private readonly float _moveSpeed;
         private readonly bool _returnedToOriginalPosition;
         private readonly bool _isPlayerCharacter;
 
         public CharacterMovingState(
             Stack<GridTile> pathToTake,
             CharacterGridEntity characterToMove,
+            float moveSpeed,
             bool returnedToOriginalPosition = false,
             bool isPlayerCharacter = true) : base()
         {
             _pathToTake = pathToTake;
             _characterToMove = characterToMove;
+            _moveSpeed = moveSpeed;
             _returnedToOriginalPosition = returnedToOriginalPosition;
             _isPlayerCharacter = isPlayerCharacter;
         }
@@ -31,7 +34,7 @@ namespace StratMono.States.FieldState
         {
             // to create the initial new stack, it pops off all of the elements. So we have to do it twice to put it back in the right order
             var stackClone = new Stack<GridTile>(new Stack<GridTile>(_pathToTake));
-            _characterToMove.AddComponent(new GridEntityMoveToGoal(stackClone));
+            _characterToMove.AddComponent(new GridEntityMoveToGoal(stackClone, _moveSpeed));
         }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)

@@ -7,7 +7,6 @@ namespace StratMono.States.FieldState
 {
     public abstract class BaseFieldState : BaseState
     {
-
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
             (scene.Camera as BoundedMovingCamera).Update();

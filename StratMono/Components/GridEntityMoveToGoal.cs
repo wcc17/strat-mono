@@ -8,12 +8,13 @@ namespace StratMono.Components
 {
     public class GridEntityMoveToGoal : Component, IUpdatable
     {
-        private readonly int _moveSpeed = 1000;
         private Stack<GridTile> _pathToTake;
+        private float _moveSpeed;
 
-        public GridEntityMoveToGoal(Stack<GridTile> pathToTake)
+        public GridEntityMoveToGoal(Stack<GridTile> pathToTake, float moveSpeed)
         {
             _pathToTake = pathToTake;
+            _moveSpeed = moveSpeed;
         }
 
         public void Update()

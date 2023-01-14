@@ -1,8 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StratMono", "StratMono\StratMono.csproj", "{D84A132D-6835-4C9B-BEBD-17D51B5D06B7}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StratMono", "StratMono\StratMono.csproj", "{D84A132D-6835-4C9B-BEBD-17D51B5D06B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nez", "..\Nez\Nez.Portable\Nez.csproj", "{B96AF874-0C96-40BE-8F1A-204EBF9FE3F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nez.MG38", "..\Nez\Nez.Portable\Nez.MG38.csproj", "{1132A600-1C72-449A-9126-2038A8116D2A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,9 +17,15 @@ Global
 		{D84A132D-6835-4C9B-BEBD-17D51B5D06B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D84A132D-6835-4C9B-BEBD-17D51B5D06B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D84A132D-6835-4C9B-BEBD-17D51B5D06B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B96AF874-0C96-40BE-8F1A-204EBF9FE3F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B96AF874-0C96-40BE-8F1A-204EBF9FE3F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B96AF874-0C96-40BE-8F1A-204EBF9FE3F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B96AF874-0C96-40BE-8F1A-204EBF9FE3F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1132A600-1C72-449A-9126-2038A8116D2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1132A600-1C72-449A-9126-2038A8116D2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1132A600-1C72-449A-9126-2038A8116D2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1132A600-1C72-449A-9126-2038A8116D2A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {96219B08-5245-4040-A579-561682D1FAE5}
 	EndGlobalSection
 EndGlobal

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Xna.Framework;
 using Nez;
@@ -144,6 +145,10 @@ namespace StratMono.Scenes
             _state = _state.Update(this, (GridEntity)FindEntity(CursorEntityName));
             if (previousState != _state)
             {
+                Console.WriteLine("Previous State: " + previousState.ToString());
+                Console.WriteLine("New State: " + _state.ToString());
+                Console.WriteLine();
+
                 previousState.ExitState(this);
                 _state.EnterState(this);
             }
@@ -257,7 +262,7 @@ namespace StratMono.Scenes
                 var characterEntity = new CharacterGridEntity();
                 
                 SpriteAnimator spriteAnimator;
-                int npc = Random.Range(0, 4);
+                int npc = Nez.Random.Range(0, 4);
                 switch (npc)
                 {
                     case 0:
@@ -287,12 +292,12 @@ namespace StratMono.Scenes
                 characterEntity.AddComponent(new CharacterAnimatedMovement());
 
                 // temporary, ugly, just making sure I don't put characters on top of each other for testing
-                int x = Random.Range(5, tiledMap.WorldWidth / 64 - 5);
-                int y = Random.Range(5, tiledMap.WorldHeight / 64 - 5);
+                int x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
+                int y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
                 bool tileInaccessible = true;
                 while (tileInaccessible) {
-                    x = Random.Range(5, tiledMap.WorldWidth / 64 - 5);
-                    y = Random.Range(5, tiledMap.WorldHeight / 64 - 5);
+                    x = Nez.Random.Range(5, tiledMap.WorldWidth / 64 - 5);
+                    y = Nez.Random.Range(5, tiledMap.WorldHeight / 64 - 5);
                     tileInaccessible = !GridSystem.GetGridTileFromCoords(new Point(x, y)).IsAccessible
                         || GetCharacterFromSelectedTile(GridSystem.GetGridTileFromCoords(new Point(x, y))) != null;
                 }

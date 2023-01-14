@@ -12,7 +12,7 @@ using System.Text;
 
 namespace StratMono.States.BattleState
 {
-    class InitialState : BaseBattleState
+    class TransitionInState : BaseBattleState
     {
         private enum BattleStartState : int
         {
@@ -33,21 +33,10 @@ namespace StratMono.States.BattleState
 
         public override void ExitState(LevelScene scene)
         {
-            // TODO: things to reset:
-            // the zoom of the entire map needs to reset to where the user had it before the battle
-            // every character entity opacity is changed 
-            // the new sprites created need to be removed
-            // the screen overlay needs to be removed
         }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
-            if (_battleStartState < BattleStartState.PlaceCharacters)
-            {
-                centerCamera(scene); // Just keep setting moveGoal for camera so that the bounds correction doesnt mess it up
-                (scene.Camera as BoundedMovingCamera).Update();
-            }
-
             switch (_battleStartState)
             {
                 case BattleStartState.Zoom:
@@ -101,6 +90,9 @@ namespace StratMono.States.BattleState
 
         private void updateZoom(LevelScene scene)
         {
+            centerCamera(scene); // Just keep setting moveGoal for camera so that the bounds correction doesnt mess it up
+            (scene.Camera as BoundedMovingCamera).Update();
+
             handleZoom(scene);
             handleHalfFade(scene);
             hideMapCharacters(scene);

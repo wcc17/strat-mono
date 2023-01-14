@@ -2,6 +2,7 @@
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
+using System;
 
 namespace StratMono.States.FieldState
 {

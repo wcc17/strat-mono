@@ -1,15 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Input;
 using Nez;
 using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.States;
 using StratMono.States.BattleState;
-using StratMono.Util;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace stratMono.States.BattleState
 {
@@ -19,6 +14,7 @@ namespace stratMono.States.BattleState
         {
             AttackerMoveForward,
             AttackerMoveBack,
+            AttackerDone
         }
 
         private readonly int MoveSpeed = 9000;
@@ -30,16 +26,19 @@ namespace stratMono.States.BattleState
         private int _originalX;
         private int _moveGoalX;
         private AttackState _currentAttackState = AttackState.AttackerMoveForward;
+        private readonly bool _lastAttack;
 
         public CharacterAttackState(
             LevelScene scene, 
             string entityNameAttacking, 
             string entityNameBeingAttacked,
-            bool attackerOnLeft)
+            bool attackerOnLeft,
+            bool lastAttack = true)
         {
             _characterAttacking = scene.FindEntity(entityNameAttacking);
             _characterBeingAttacked = scene.FindEntity(entityNameBeingAttacked);
             _attackerOnLeft = attackerOnLeft;
+            _lastAttack = lastAttack;
 
             var characterAttackingAnimator = _characterAttacking.GetComponent<SpriteAnimator>();
             var characterWidth = characterAttackingAnimator.Width;
@@ -56,8 +55,6 @@ namespace stratMono.States.BattleState
 
         public override void EnterState(LevelScene scene)
         {
-            var menuEntity = scene.FindEntity(ActionMenuEntityName);
-            menuEntity.Enabled = false;
         }
 
         public override void ExitState(LevelScene scene)
@@ -74,8 +71,20 @@ namespace stratMono.States.BattleState
                 case AttackState.AttackerMoveBack:
                     handleMoveBack();
                     break;
-                default:
-                    break;
+                case AttackState.AttackerDone:
+                    if (_lastAttack)
+                    {
+                        // TODO: return an exit state
+                        return new TransitionOutState();
+                    } else
+                    {
+                       return new CharacterAttackState(
+                           scene,
+                           entityNameAttacking: _characterBeingAttacked.Name,
+                           entityNameBeingAttacked: _characterAttacking.Name,
+                           attackerOnLeft: false,
+                           lastAttack: true);
+                    }
             }
 
             return this;
@@ -103,7 +112,7 @@ namespace stratMono.States.BattleState
             if (attackerOnLeftMoveBackComplete || attackerOnRightMoveBackComplete)
             {
                 _characterAttacking.Position = new Vector2(_originalX, _characterAttacking.Position.Y);
-                _currentAttackState += 1; //TODO: temporary
+                _currentAttackState = AttackState.AttackerDone;
             }
         }
 

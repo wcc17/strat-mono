@@ -65,7 +65,7 @@ namespace StratMono.States.FieldState
 
         private BaseState goToBattleInitialState()
         {
-            var nextState = new BattleState.InitialState();
+            var nextState = new BattleState.TransitionInState();
             return nextState;
         }
     }

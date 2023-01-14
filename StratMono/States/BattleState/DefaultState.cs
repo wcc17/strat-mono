@@ -17,11 +17,13 @@ namespace StratMono.States.BattleState
 
         public override void EnterState(LevelScene scene)
         {
-            var buttonDefinitions = new Dictionary<string, Action<Button>>();
-            buttonDefinitions.Add("Attack", button => _isAttackClicked = true);
-            buttonDefinitions.Add("asdf", button => _isAttackClicked = true);
-            buttonDefinitions.Add("fdsa", button => _isAttackClicked = true);
-            buttonDefinitions.Add("asd", button => _isAttackClicked = true);
+            var buttonDefinitions = new Dictionary<string, Action<Button>>
+            {
+                { "Attack", button => _isAttackClicked = true },
+                { "asdf", button => _isAttackClicked = true },
+                { "fdsa", button => _isAttackClicked = true },
+                { "asd", button => _isAttackClicked = true }
+            };
 
             var menuEntity = MenuBuilder.BuildActionMenu(
                 scene.font,
@@ -41,6 +43,10 @@ namespace StratMono.States.BattleState
 
         public override void ExitState(LevelScene scene)
         {
+            var menuEntity = scene.FindEntity(ActionMenuEntityName);
+            menuEntity.RemoveAllComponents();
+            menuEntity.DetachFromScene();
+            menuEntity.Destroy();
         }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
@@ -56,9 +62,10 @@ namespace StratMono.States.BattleState
             {
                 return new CharacterAttackState(
                     scene,
-                    BattlePlayerEntityName,
-                    BattleNpcEntityName,
-                    attackerOnLeft: true);
+                    entityNameAttacking: BattlePlayerEntityName,
+                    entityNameBeingAttacked: BattleNpcEntityName,
+                    attackerOnLeft: true,
+                    lastAttack: false);
             }
 
             return this;

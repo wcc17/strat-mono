@@ -1,4 +1,5 @@
-﻿using Components.Enemy;
+﻿using Components;
+using Components.Enemy;
 using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
@@ -17,7 +18,11 @@ namespace StratMono.States.FieldState
 
             if (scene.AllTeamFinishedTurn())
             {
-                scene.ResetFinishedTurns();
+                for (var i = 0; i < scene.teamEntities.Count; i++)
+                {
+                    scene.teamEntities[i].GetComponent<TurnStateComponent>().reset();
+                }
+
                 return new NpcControlDefaultState();
             }
 

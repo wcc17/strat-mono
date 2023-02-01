@@ -1,4 +1,5 @@
-﻿using Components.Enemy;
+﻿using Components;
+using Components.Enemy;
 using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
@@ -23,24 +24,22 @@ namespace StratMono.States.FieldState
 
             if (scene.AllEnemiesFinishedTurn())
             {
-                scene.ResetFinishedTurns();
+                for (var i = 0; i < scene.enemyEntities.Count; i++)
+                {
+                    scene.enemyEntities[i].GetComponent<TurnStateComponent>().reset();
+                }
+
                 return new PlayerControlDefaultState();
             }
 
-            EnemyTurnStateComponent enemyTurnState;
             if (_enemy == null)
             {
                 _enemy = scene.GetNextEnemy();
-                
-                enemyTurnState = _enemy.GetComponent<EnemyTurnStateComponent>();
-                enemyTurnState.reset();
-            } else
-            {
-                enemyTurnState = _enemy.GetComponent<EnemyTurnStateComponent>();
+                _enemy.GetComponent<TurnStateComponent>().reset();
             }
 
 
-            if (!enemyTurnState.alreadyAttacked)
+            if (!_enemy.GetComponent<TurnStateComponent>().alreadyAttacked)
             {
                 // decide if we can attack, return attack component if so
                 var tilesWithAttackableCharacters = scene.GetImmediateTilesWithAttackableCharacters(_enemy.Position, true);
@@ -52,7 +51,7 @@ namespace StratMono.States.FieldState
                     // NOTE: at this point, only one entity can occupy a tile, but this might change in the future
                     var characterToAttack = scene.GetCharacterFromSelectedTile(tileToAttack);
 
-                    enemyTurnState.alreadyAttacked = true;
+                    _enemy.GetComponent<TurnStateComponent>().alreadyAttacked = true;
                     return new BattleState.TransitionInState(_enemy, characterToAttack, this, goStraightToCombat: true);
                 }
             }
@@ -62,7 +61,7 @@ namespace StratMono.States.FieldState
                 return endTurn(scene);
             }
 
-            if (enemyTurnState.alreadyMoved)
+            if (_enemy.GetComponent<TurnStateComponent>().alreadyMoved)
             {
                 // end turn, we've already decided we can't attack
                 return endTurn(scene);
@@ -71,7 +70,7 @@ namespace StratMono.States.FieldState
             {
                 // go ahead and move
                 // TODO: in later difficulties, it would probably be best to determine if a movement and attacking another character would be better)
-                enemyTurnState.alreadyMoved = true;
+                _enemy.GetComponent<TurnStateComponent>().alreadyMoved = true;
                 return new NpcStartMovementState(_enemy);
             }
 
@@ -80,7 +79,7 @@ namespace StratMono.States.FieldState
         private BaseState endTurn(LevelScene scene)
         {
             // end turn, we've already decided we can't attack
-            scene.FinishCharactersTurn(_enemy.Id);
+            _enemy.GetComponent<EnemyTurnStateComponent>().finishedTurn = true;
             _enemy = null;
             return this;
         }

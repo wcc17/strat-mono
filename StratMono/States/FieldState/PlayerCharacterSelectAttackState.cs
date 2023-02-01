@@ -1,4 +1,6 @@
-﻿using StratMono.Entities;
+﻿using Components;
+using Components.Player;
+using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
 using System;
@@ -35,7 +37,7 @@ namespace StratMono.States.FieldState
             if (DidUserMakeSelection())
             {
                 // Character will be done with turn after attack finishes, but this is a point of no return so its safe to mark as completed here for now
-                scene.FinishCharactersTurn(scene.SelectedCharacter.Id);
+                scene.SelectedCharacter.GetComponent<TurnStateComponent>().finishedTurn = true;
 
                 GridTile selectedTile = scene.GridSystem.GetNearestTileAtPosition(cursorEntity.Position);
                 if (_tilesWithAttackableCharacters.Contains(selectedTile))

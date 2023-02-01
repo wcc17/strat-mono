@@ -1,4 +1,5 @@
-﻿using Components.Enemy;
+﻿using Components;
+using Components.Enemy;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
@@ -10,7 +11,7 @@ namespace StratMono.States.FieldState
     {
         public override void EnterState(LevelScene scene) 
         {
-            if (!scene.CharacterAlreadyFinishedTurn(scene.SelectedCharacter.Id))
+            if (!scene.SelectedCharacter.GetComponent<TurnStateComponent>().finishedTurn)
             {
                 scene.SetupMovementTileHighlights();
             }
@@ -20,7 +21,7 @@ namespace StratMono.States.FieldState
         {
             base.Update(scene, cursorEntity);
 
-            if (scene.CharacterAlreadyFinishedTurn(scene.SelectedCharacter.Id))
+            if (scene.SelectedCharacter.GetComponent<TurnStateComponent>().finishedTurn)
             {
                 return goToCharacterSelectActionState(
                     scene, 

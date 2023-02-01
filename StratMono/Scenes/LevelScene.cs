@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Components;
 using Components.Enemy;
+using Components.Player;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.BitmapFonts;
@@ -51,7 +53,6 @@ namespace StratMono.Scenes
 
         public List<CharacterGridEntity> teamEntities = new List<CharacterGridEntity>();
         public List<CharacterGridEntity> enemyEntities = new List<CharacterGridEntity>();
-        private List<uint> entityIdsAlreadyTakenTurn = new List<uint>();
 
         public override void Initialize()
         {
@@ -179,21 +180,6 @@ namespace StratMono.Scenes
             return CreateAndAddTileHighlight(gridTile, YellowOutline, YellowFill);
         }
 
-        public bool CharacterAlreadyFinishedTurn(uint characterId)
-        {
-            return entityIdsAlreadyTakenTurn.Contains(characterId);
-        }
-
-        public void FinishCharactersTurn(uint characterId)
-        {
-            entityIdsAlreadyTakenTurn.Add(characterId);
-        }
-
-        public void ResetFinishedTurns()
-        {
-            entityIdsAlreadyTakenTurn.Clear();
-        }
-
         public bool AllTeamFinishedTurn()
         {
             return AllEntitiesFinishedTurn(teamEntities);
@@ -208,7 +194,7 @@ namespace StratMono.Scenes
         {
             for (var i = 0; i < entities.Count; i++)
             {
-                if (!entityIdsAlreadyTakenTurn.Contains(entities[i].Id))
+                if (entities[i].GetComponent<TurnStateComponent>().finishedTurn == false)
                 {
                     return false;
                 }
@@ -221,8 +207,7 @@ namespace StratMono.Scenes
         {
             for (var i = 0; i < enemyEntities.Count; i++)
             {
-                if (!entityIdsAlreadyTakenTurn.Contains(enemyEntities[i].Id))
-                {
+                if (!enemyEntities[i].GetComponent<TurnStateComponent>().finishedTurn) {
                     return enemyEntities[i];
                 }
             }
@@ -410,6 +395,7 @@ namespace StratMono.Scenes
         private CharacterGridEntity createTeamCharacter(string spriteName)
         {
             CharacterGridEntity characterEntity = createCharacter(spriteName);
+            characterEntity.AddComponent(new PlayerCharacterTurnStateComponent());
             this.teamEntities.Add(characterEntity);
             return characterEntity;
         }

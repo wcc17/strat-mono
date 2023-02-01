@@ -41,8 +41,8 @@ namespace StratMono.Scenes
 
         private SpriteAtlas _spriteAtlas;
 
-        private BaseState _state = new States.FieldState.PlayerControlDefaultState();
-        //private BaseState _state = new States.FieldState.NpcControlDefaultState();
+        //private BaseState _state = new States.FieldState.PlayerControlDefaultState();
+        private BaseState _state = new States.FieldState.NpcControlDefaultState();
 
         public BitmapFont font;
         public TileCursorSystem SceneTileCursorSystem;

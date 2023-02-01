@@ -6,6 +6,7 @@ using Nez.Tiled;
 using StratMono.Util;
 using Nez;
 using Components.Character.Enemy;
+using StratMono.Components.Character.Player;
 
 namespace StratMono.System
 {
@@ -74,7 +75,7 @@ namespace StratMono.System
                         foreach (Entity entity in tile.OccupyingEntities)
                         {
                             var occupyingEntityIsEnemyForPlayer = isClosestEntityEnemy && entity.GetComponent<EnemyComponent>() != null;
-                            var occupyingEntityIsPlayerForEnemy = !isClosestEntityEnemy && entity.GetComponent<EnemyComponent>() == null;
+                            var occupyingEntityIsPlayerForEnemy = !isClosestEntityEnemy && entity.GetComponent<PlayerTeamComponent>() != null;
 
                             if (occupyingEntityIsEnemyForPlayer || occupyingEntityIsPlayerForEnemy)
                             {

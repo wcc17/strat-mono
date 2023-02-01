@@ -12,6 +12,7 @@ namespace StratMono.System
         public List<GridEntity> OccupyingEntities = new List<GridEntity>();
         public int MoveCost;
 
+        // If a tile can never be accessible. Bounds tiles should be isAccessible = false
         private bool _isAccessible;
         public bool IsAccessible
         {
@@ -30,6 +31,7 @@ namespace StratMono.System
             }
         }
 
+        // If a tile can normally be accessible, but another entity is standing on it, this can be set to false 
         private bool _characterCanMoveThroughThisTile;
         public bool CharacterCanMoveThroughThisTile
         {

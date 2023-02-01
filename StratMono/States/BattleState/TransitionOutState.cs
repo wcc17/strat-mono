@@ -24,15 +24,18 @@ namespace StratMono.States.BattleState
         private CharacterGridEntity _attackingCharacter;
         private CharacterGridEntity _characterBeingAttacked;
         private BaseState _stateToReturnTo;
+        private bool _isCharacterBeingAttackedDead;
 
         public TransitionOutState(
             CharacterGridEntity attackingCharacter, 
             CharacterGridEntity characterBeingAttacked,
-            BaseState stateToReturnTo)
+            BaseState stateToReturnTo,
+            bool isCharacterBeingAttackedDead)
         {
             _attackingCharacter = attackingCharacter;
             _characterBeingAttacked = characterBeingAttacked;
             _stateToReturnTo = stateToReturnTo;
+            _isCharacterBeingAttackedDead = isCharacterBeingAttackedDead;
         }
 
         public override void EnterState(LevelScene scene)
@@ -43,6 +46,11 @@ namespace StratMono.States.BattleState
         {
             // TODO: can we take the camera zoom back to where the user had it rather than the default zoom?
             teardownScreenOverlay(scene);
+
+            if (_isCharacterBeingAttackedDead)
+            {
+                scene.RemoveFromGrid(_characterBeingAttacked);
+            }
 
             // Tried to avoid directly referring to the scene properties, but unavoidable here for now
             scene.CharacterBeingAttacked = null;

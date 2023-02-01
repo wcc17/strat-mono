@@ -42,6 +42,7 @@ namespace stratMono.States.BattleState
         private Vector2 _deathFallMoveGoal;
         private AttackState _currentAttackState = AttackState.AttackerMoveForward;
         private bool _lastAttack;
+        private bool _isCharacterBeingAttackedDead;
         private BaseState _stateToReturnToAfterBattle;
         private Entity _deathAnimationRotationEntity;
 
@@ -109,7 +110,7 @@ namespace stratMono.States.BattleState
                     handleAttackAnimationDone(scene);
                     break;
                 case AttackState.AttackedDeathAnimation:
-                    handleAttackedDeathAnimation();
+                    handleAttackedDeathAnimation(scene);
                     break;
                 case AttackState.AttackDone:
                     return handleAttackDone(scene);
@@ -195,7 +196,7 @@ namespace stratMono.States.BattleState
             _battleEntityCharacterBeingAttacked.GetComponent<SpriteAnimator>().Stop();
         }
 
-        private void handleAttackedDeathAnimation()
+        private void handleAttackedDeathAnimation(LevelScene scene)
         {
 
             var distanceToRotate = (Time.DeltaTime * RotationSpeed);
@@ -227,7 +228,8 @@ namespace stratMono.States.BattleState
 
             bool deathAnimationFinished = doneRotating && doneMovingDown && doneMovingRight;
             if (deathAnimationFinished) 
-                {
+            {
+                _isCharacterBeingAttackedDead = true;
                 _currentAttackState = AttackState.AttackDone;
                 _lastAttack = true;
                 return;
@@ -241,7 +243,8 @@ namespace stratMono.States.BattleState
                 return new TransitionOutState(
                     _characterGridEntityAttacking,
                     _characterGridEntityBeingAttacked,
-                    _stateToReturnToAfterBattle);
+                    _stateToReturnToAfterBattle,
+                    _isCharacterBeingAttackedDead);
             }
             else
             {

@@ -109,6 +109,24 @@ namespace StratMono.Scenes
         public void RemoveFromGrid(GridEntity entity)
         {
             GridSystem.RemoveFromGridTile(entity.Name);
+
+            for (var i = 0; i < enemyEntities.Count; i++)
+            {
+                if (entity.Name == enemyEntities[i].Name)
+                {
+                    enemyEntities.RemoveAt(i);
+                    break;
+                }
+            }
+            for (var i = 0; i < teamEntities.Count; i++)
+            {
+                if (entity.Name == teamEntities[i].Name)
+                {
+                    teamEntities.RemoveAt(i);
+                    break;
+                }
+            }
+
             entity.Destroy();
         }
 

@@ -36,6 +36,11 @@ namespace StratMono.States.FieldState
 
         private GridTile determineBestTileToMoveTo(LevelScene scene, HashSet<GridTile> tilesInRangeOfEnemy, Point enemyTileCoordinates)
         {
+            // TODO: three major problems here:
+            // on the distance scores, it's possible for the character to end up on a tile that a player is standing on, rather than the one next to it
+            // on the next closest entity tile, we don't consider the "tilesInRangeOfEnemy" variable at all. We need to include this
+            // in the Gridsystem, when we add or remove from tile, we use the "CharacterCanMoveThroughThisTile". But this is only set for characters stepping through enemies, not the other way around 
+
             // Gather all places that this character could possibly move to in order to attack a character
             Dictionary<GridTile, int> attackableScores = new Dictionary<GridTile, int>();
             Dictionary<GridTile, float> distanceScores = new Dictionary<GridTile, float>();

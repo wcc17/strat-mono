@@ -11,6 +11,7 @@ using Nez.Sprites;
 using StartMono.Util;
 using StratMono.Components;
 using StratMono.Components.Character;
+using StratMono.Components.Character.Player;
 using StratMono.Entities;
 using StratMono.States;
 using StratMono.System;
@@ -414,6 +415,7 @@ namespace StratMono.Scenes
         private CharacterGridEntity createTeamCharacter(string spriteName)
         {
             CharacterGridEntity characterEntity = createCharacter(spriteName);
+            characterEntity.AddComponent(new PlayerTeamComponent());
             characterEntity.AddComponent(new PlayerCharacterTurnState());
             characterEntity.AddComponent(new Health(100));
             this.teamEntities.Add(characterEntity);

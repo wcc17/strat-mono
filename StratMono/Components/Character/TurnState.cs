@@ -1,8 +1,8 @@
 ﻿using Nez;
 
-namespace Components
+namespace Components.Character
 {
-    class TurnStateComponent : Component
+    class TurnState : Component
     {
         public bool alreadyMoved = false;
         public bool alreadyAttacked = false;

@@ -3,7 +3,7 @@ using Nez;
 using Nez.Sprites;
 using StratMono.Util;
 
-namespace StratMono.Components
+namespace Components.Character
 {
     public class CharacterAnimatedMovement : Component, IUpdatable
     {

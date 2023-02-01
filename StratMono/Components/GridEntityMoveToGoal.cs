@@ -3,6 +3,7 @@ using Nez;
 using StratMono.System;
 using System.Collections.Generic;
 using StratMono.Util;
+using Components.Character;
 
 namespace StratMono.Components
 {

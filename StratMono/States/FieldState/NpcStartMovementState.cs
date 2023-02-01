@@ -1,4 +1,4 @@
-﻿using Components.Enemy;
+﻿using Components.Character.Enemy;
 using Microsoft.Xna.Framework;
 using States.Shared;
 using StratMono.Entities;

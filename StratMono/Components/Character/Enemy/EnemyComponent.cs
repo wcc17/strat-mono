@@ -1,6 +1,6 @@
 ﻿using Nez;
 
-namespace Components.Enemy
+namespace Components.Character.Enemy
 {
     class EnemyComponent : Component
     {

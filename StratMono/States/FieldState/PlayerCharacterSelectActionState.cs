@@ -1,4 +1,4 @@
-﻿using Components;
+﻿using Components.Character;
 using Nez;
 using Nez.UI;
 using StratMono.Components;
@@ -57,7 +57,7 @@ namespace StratMono.States.FieldState
             if (_isWaitClicked)
             {
                 // Character will be done with turn after waiting completes
-                scene.SelectedCharacter.GetComponent<TurnStateComponent>().finishedTurn = true;
+                scene.SelectedCharacter.GetComponent<TurnState>().finishedTurn = true;
 
                 MenuBuilder.DestroyMenu(scene.FindEntity(ActionMenuEntityName));
                 return goToDefaultState(scene);
@@ -100,7 +100,7 @@ namespace StratMono.States.FieldState
         {
             var buttonDefinitions = new Dictionary<string, Action<Button>>();
             
-            if (!scene.SelectedCharacter.GetComponent<TurnStateComponent>().finishedTurn)
+            if (!scene.SelectedCharacter.GetComponent<TurnState>().finishedTurn)
             {
                 _tilesWithAttackableCharacters = scene.GetImmediateTilesWithAttackableCharacters(scene.SelectedCharacter.Position, false);
 

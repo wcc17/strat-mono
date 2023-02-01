@@ -8,7 +8,7 @@ namespace StartMono.Util
 {
     public static class PrimitiveShapeUtil
     {
-        public static SpriteRenderer CreateRectangleOutlineSprite(int width, int height, Color color, int lineWidth)
+        public static SpriteRenderer CreateRectangleOutlineSprite(int width, int height, Color color, int lineWidth, Vector2 origin)
         {
             Texture2D texture = new Texture2D(Core.GraphicsDevice, width, height);
             Color[] colors = new Color[width * height];
@@ -36,9 +36,14 @@ namespace StartMono.Util
             texture.SetData(colors);
 
             Sprite sprite = new Sprite(texture, 0, 0, width, height);
-            sprite.Origin = new Vector2(0, 0);
+            sprite.Origin = origin;
             SpriteRenderer shape = new SpriteRenderer(sprite);
             return shape;
+        }
+
+        public static SpriteRenderer CreateRectangleOutlineSprite(int width, int height, Color color, int lineWidth)
+        {
+            return CreateRectangleOutlineSprite(width, height, color, lineWidth, new Vector2(0, 0));
         }
 
         public static SpriteRenderer CreateRectangleSprite(int width, int height, Color color)

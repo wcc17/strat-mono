@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Components;
-using Components.Enemy;
-using Components.Player;
+using Components.Character;
+using Components.Character.Enemy;
+using Components.Character.Player;
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.BitmapFonts;
 using Nez.Sprites;
 using StartMono.Util;
 using StratMono.Components;
+using StratMono.Components.Character;
 using StratMono.Entities;
 using StratMono.States;
 using StratMono.System;
@@ -194,7 +195,7 @@ namespace StratMono.Scenes
         {
             for (var i = 0; i < entities.Count; i++)
             {
-                if (entities[i].GetComponent<TurnStateComponent>().finishedTurn == false)
+                if (entities[i].GetComponent<TurnState>().finishedTurn == false)
                 {
                     return false;
                 }
@@ -207,7 +208,7 @@ namespace StratMono.Scenes
         {
             for (var i = 0; i < enemyEntities.Count; i++)
             {
-                if (!enemyEntities[i].GetComponent<TurnStateComponent>().finishedTurn) {
+                if (!enemyEntities[i].GetComponent<TurnState>().finishedTurn) {
                     return enemyEntities[i];
                 }
             }
@@ -395,7 +396,8 @@ namespace StratMono.Scenes
         private CharacterGridEntity createTeamCharacter(string spriteName)
         {
             CharacterGridEntity characterEntity = createCharacter(spriteName);
-            characterEntity.AddComponent(new PlayerCharacterTurnStateComponent());
+            characterEntity.AddComponent(new PlayerCharacterTurnState());
+            characterEntity.AddComponent(new Health(100));
             this.teamEntities.Add(characterEntity);
             return characterEntity;
         }
@@ -404,7 +406,8 @@ namespace StratMono.Scenes
         {
             CharacterGridEntity characterEntity = createCharacter(spriteName);
             characterEntity.AddComponent(new EnemyComponent());
-            characterEntity.AddComponent(new EnemyTurnStateComponent());
+            characterEntity.AddComponent(new EnemyTurnState());
+            characterEntity.AddComponent(new Health(100));
             enemyEntities.Add(characterEntity);
             return characterEntity;
         }

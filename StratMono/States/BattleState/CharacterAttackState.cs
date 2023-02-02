@@ -2,17 +2,13 @@
 using Microsoft.Xna.Framework;
 using Nez;
 using Nez.Sprites;
-using StartMono.Util;
 using States.Shared;
 using StratMono.Components.Character;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.States;
 using StratMono.States.BattleState;
-using StratMono.States.FieldState;
-using StratMono.System;
 using StratMono.Util;
-using System;
 
 namespace stratMono.States.BattleState
 {
@@ -28,7 +24,7 @@ namespace stratMono.States.BattleState
         }
 
         private readonly int MoveSpeed = 9000;
-        private readonly int RotationSpeed = 500;
+        private readonly int RotationSpeed = 700;
         private readonly float MoveLerp = 0.15f;
        
         private readonly Entity _battleEntityCharacterAttacking; // These are the larger battle entities, not the actual entity that we got from the map
@@ -44,6 +40,7 @@ namespace stratMono.States.BattleState
         private bool _lastAttack;
         private bool _isCharacterBeingAttackedDead;
         private BaseState _stateToReturnToAfterBattle;
+
         private Entity _deathAnimationRotationEntity;
 
         public CharacterAttackState(
@@ -163,45 +160,19 @@ namespace stratMono.States.BattleState
 
         private void prepareDeathAnimation(LevelScene scene)
         {
-            // NOTE: can use this to debug the relationship between the parent rotationEntity and the child attacked entity
-            //SpriteRenderer outline = PrimitiveShapeUtil.CreateRectangleOutlineSprite(
-            //    64, 64, Color.Red, 3);
-            //outline.RenderLayer = (int)RenderLayer.UI;
-            //rotationEntity.AddComponent(outline);
-
             var spriteAnimator = _battleEntityCharacterBeingAttacked.GetComponent<SpriteAnimator>();
-            float offset = (spriteAnimator.Width / spriteAnimator.Animations.Count) / 2;
-            float scale = _battleEntityCharacterBeingAttacked.Scale.X;
-
-            _deathAnimationRotationEntity = new Entity();
-
-            // Set the parent entity's position so that when offsetting the child entity, it appears to not change its position
-            // The offset is half of the child entity's width, which is the center of the child entity
-            _deathAnimationRotationEntity.Position = new Vector2(
-                _battleEntityCharacterBeingAttacked.Position.X + (offset * scale), 
-                _battleEntityCharacterAttacking.Position.Y + (offset * scale));
-
-            // Set the parent entity's scale to match the child and reset the child's scale so that it doesn't double
-            _deathAnimationRotationEntity.Scale = new Vector2(scale);
-            _battleEntityCharacterBeingAttacked.Scale = new Vector2(1f);
-
-            scene.AddEntity(_deathAnimationRotationEntity);
-
-            // Set the child entity's local position so that it is centered over the parent's origin (should be (0, 0) if not this next line won't work
-            _battleEntityCharacterBeingAttacked.LocalPosition = new Vector2(-offset, -offset);
-
-            // Set the child entity's transform parent to the rotationEntity so that it rotates with the parent
-            _battleEntityCharacterBeingAttacked.Parent = _deathAnimationRotationEntity.Transform;
-
-            _battleEntityCharacterBeingAttacked.GetComponent<SpriteAnimator>().Stop();
+            spriteAnimator.Stop();
+            _deathAnimationRotationEntity = RotationEntityUtil.CreateRotationEntity(_battleEntityCharacterBeingAttacked);
         }
 
         private void handleAttackedDeathAnimation(LevelScene scene)
         {
-
             var distanceToRotate = (Time.DeltaTime * RotationSpeed);
             var newRotation = _deathAnimationRotationEntity.RotationDegrees + distanceToRotate;
-            _deathAnimationRotationEntity.RotationDegrees = MathHelper.Lerp(_deathAnimationRotationEntity.RotationDegrees, newRotation, MoveLerp);
+            _deathAnimationRotationEntity.RotationDegrees = MathHelper.Lerp(
+                _deathAnimationRotationEntity.RotationDegrees, 
+                newRotation, 
+                MoveLerp);
 
             var distanceToMove = (Time.DeltaTime * RotationSpeed);
             var distanceDelta = new Vector2(distanceToMove, distanceToMove);
@@ -229,6 +200,8 @@ namespace stratMono.States.BattleState
             bool deathAnimationFinished = doneRotating && doneMovingDown && doneMovingRight;
             if (deathAnimationFinished) 
             {
+                RotationEntityUtil.ResetRotationEntity(_battleEntityCharacterBeingAttacked);
+
                 _isCharacterBeingAttackedDead = true;
                 _currentAttackState = AttackState.AttackDone;
                 _lastAttack = true;

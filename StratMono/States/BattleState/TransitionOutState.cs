@@ -47,11 +47,6 @@ namespace StratMono.States.BattleState
             // TODO: can we take the camera zoom back to where the user had it rather than the default zoom?
             teardownScreenOverlay(scene);
 
-            if (_isCharacterBeingAttackedDead)
-            {
-                scene.RemoveFromGrid(_characterBeingAttacked);
-            }
-
             // Tried to avoid directly referring to the scene properties, but unavoidable here for now
             scene.CharacterBeingAttacked = null;
             scene.SelectedCharacter = null;
@@ -69,6 +64,10 @@ namespace StratMono.States.BattleState
                     updateZoom(scene);
                     break;
                 case BattleEndState.ReadyToExit:
+                    if (_isCharacterBeingAttackedDead)
+                    {
+                        return new FieldCleanupState(_characterBeingAttacked, _stateToReturnTo);
+                    }
                     return _stateToReturnTo;
             }
 

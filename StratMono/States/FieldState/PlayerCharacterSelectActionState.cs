@@ -33,7 +33,8 @@ namespace StratMono.States.FieldState
             var menuEntity = MenuBuilder.BuildActionMenu(
                 scene.font,
                 ActionMenuEntityName,
-                buttonDefinitions);
+                buttonDefinitions,
+                MenuBuilder.ScreenPosition.TopLeft);
             scene.AddEntity(menuEntity);
         }
 

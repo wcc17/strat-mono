@@ -44,14 +44,6 @@ namespace StratMono.States.BattleState
                 buttonDefinitions,
                 MenuBuilder.ScreenPosition.BottomCenter);
             scene.AddEntity(menuEntity);
-
-            var menuWidth = (int)menuEntity.GetComponent<UICanvas>().Width;
-            var menuHeight = (int)menuEntity.GetComponent<UICanvas>().Height;
-            var menuPosition = new Vector2(
-                Screen.Width / 2 - menuWidth / 2,
-                Screen.Height / 2 - menuHeight / 2
-            );
-            menuEntity.Position = menuPosition;
         }
 
         public override void ExitState(LevelScene scene)

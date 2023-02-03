@@ -1,16 +1,26 @@
 ﻿using Components.Character;
 using Components.Character.Enemy;
-using Nez.Sprites;
+using Microsoft.Xna.Framework;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
-using System;
+using StratMono.UI;
 
 namespace StratMono.States.FieldState
 {
     public class PlayerControlDefaultState : BaseFieldState
     {
-        public override void EnterState(LevelScene scene) { }
+        public override void EnterState(LevelScene scene) 
+        {
+            var existingTurnIndicator = scene.FindEntity("turnindicator");
+            if (existingTurnIndicator != null)
+            {
+                MenuBuilder.DestroyMenu(scene.FindEntity("turnindicator"));
+            }
+
+            var menuEntity = MenuBuilder.BuildStaticTextBox("turnindicator", "Player's turn", MenuBuilder.ScreenPosition.TopRight, Color.White, Color.Black);
+            scene.AddEntity(menuEntity);
+        }
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {

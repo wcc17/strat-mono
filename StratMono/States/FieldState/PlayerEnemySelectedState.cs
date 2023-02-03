@@ -5,6 +5,7 @@ using StratMono.Scenes;
 using StratMono.UI;
 using System;
 using System.Collections.Generic;
+using static StratMono.UI.MenuBuilder;
 
 namespace StratMono.States.FieldState
 {
@@ -21,7 +22,8 @@ namespace StratMono.States.FieldState
             var uiCanvasEntity = MenuBuilder.BuildActionMenu(
                 scene.font,
                 ActionMenuEntityName, 
-                buttonDefinitions);
+                buttonDefinitions,
+                ScreenPosition.TopLeft);
             scene.AddEntity(uiCanvasEntity);
         }
 

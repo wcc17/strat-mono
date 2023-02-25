@@ -8,7 +8,9 @@ using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.States;
 using StratMono.States.BattleState;
+using StratMono.States.BattleState.Context;
 using StratMono.Util;
+using System;
 
 namespace stratMono.States.BattleState
 {
@@ -19,6 +21,7 @@ namespace stratMono.States.BattleState
             AttackerMoveForward,
             AttackerMoveBack,
             AttackAnimationDone,
+            AttackedHealthLoss,
             AttackedDeathAnimation,
             AttackDone
         }
@@ -29,9 +32,6 @@ namespace stratMono.States.BattleState
        
         private readonly Entity _battleEntityCharacterAttacking; // These are the larger battle entities, not the actual entity that we got from the map
         private readonly Entity _battleEntityCharacterBeingAttacked;
-        private readonly CharacterGridEntity _characterGridEntityAttacking; // These are the entities from the field
-        private readonly CharacterGridEntity _characterGridEntityBeingAttacked;
-        private readonly bool _attackerOnLeft;
         private Vector2 originalAttackingCharacterPosition;
         private Vector2 originalAttackedCharacterPosition;
         private int _forwardAttackMoveGoalX;
@@ -41,21 +41,18 @@ namespace stratMono.States.BattleState
         private bool _isCharacterBeingAttackedDead;
         private BaseState _stateToReturnToAfterBattle;
 
+        private int _healthLossGoal;
+
         private Entity _deathAnimationRotationEntity;
 
         public CharacterAttackState(
             LevelScene scene, 
             string entityNameAttacking, 
             string entityNameBeingAttacked,
-            CharacterGridEntity characterGridEntityAttacking,
-            CharacterGridEntity characterGridEntityBeingAttacked,
-            bool attackerOnLeft,
+            BattleContext battleContext,
             BaseState stateToReturnToAfterBattle,
-            bool lastAttack = true)
+            bool lastAttack = true) : base(battleContext)
         {
-            _characterGridEntityAttacking = characterGridEntityAttacking;
-            _characterGridEntityBeingAttacked = characterGridEntityBeingAttacked; 
-            _attackerOnLeft = attackerOnLeft;
             _lastAttack = lastAttack;
             _stateToReturnToAfterBattle = stateToReturnToAfterBattle;
 
@@ -76,7 +73,7 @@ namespace stratMono.States.BattleState
                 originalAttackedCharacterPosition.X + 100f,
                 originalAttackedCharacterPosition.Y + 200f);
 
-            if (attackerOnLeft)
+            if (CurrentBattleContext.AttackerOnLeft)
             {
                 _forwardAttackMoveGoalX = (int)_battleEntityCharacterBeingAttacked.Position.X - (int)characterWidth - 50;
             } else
@@ -95,6 +92,8 @@ namespace stratMono.States.BattleState
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
+            base.Update(scene, cursorEntity);
+
             switch (_currentAttackState)
             {
                 case AttackState.AttackerMoveForward:
@@ -105,6 +104,9 @@ namespace stratMono.States.BattleState
                     break;
                 case AttackState.AttackAnimationDone:
                     handleAttackAnimationDone(scene);
+                    break;
+                case AttackState.AttackedHealthLoss:
+                    handleAttackedHealthLoss(scene);
                     break;
                 case AttackState.AttackedDeathAnimation:
                     handleAttackedDeathAnimation(scene);
@@ -121,8 +123,8 @@ namespace stratMono.States.BattleState
         {
             handleMoveForwardOrBack(false);
 
-            bool attackerOnLeftMoveForwardComplete = _attackerOnLeft && _battleEntityCharacterAttacking.Position.X >= _forwardAttackMoveGoalX;
-            bool attackerOnRightMoveForwardComplete = !_attackerOnLeft && _battleEntityCharacterAttacking.Position.X <= _forwardAttackMoveGoalX;
+            bool attackerOnLeftMoveForwardComplete = CurrentBattleContext.AttackerOnLeft && _battleEntityCharacterAttacking.Position.X >= _forwardAttackMoveGoalX;
+            bool attackerOnRightMoveForwardComplete = !CurrentBattleContext.AttackerOnLeft && _battleEntityCharacterAttacking.Position.X <= _forwardAttackMoveGoalX;
             if (attackerOnLeftMoveForwardComplete || attackerOnRightMoveForwardComplete)
             {
                 _battleEntityCharacterAttacking.Position = new Vector2(_forwardAttackMoveGoalX, _battleEntityCharacterAttacking.Position.Y);
@@ -134,8 +136,8 @@ namespace stratMono.States.BattleState
         {
             handleMoveForwardOrBack(true);
 
-            bool attackerOnLeftMoveBackComplete = _attackerOnLeft && _battleEntityCharacterAttacking.Position.X <= originalAttackingCharacterPosition.X;
-            bool attackerOnRightMoveBackComplete = !_attackerOnLeft && _battleEntityCharacterAttacking.Position.X >= originalAttackingCharacterPosition.X;
+            bool attackerOnLeftMoveBackComplete = CurrentBattleContext.AttackerOnLeft && _battleEntityCharacterAttacking.Position.X <= originalAttackingCharacterPosition.X;
+            bool attackerOnRightMoveBackComplete = !CurrentBattleContext.AttackerOnLeft && _battleEntityCharacterAttacking.Position.X >= originalAttackingCharacterPosition.X;
             if (attackerOnLeftMoveBackComplete || attackerOnRightMoveBackComplete)
             {
                 _battleEntityCharacterAttacking.Position = new Vector2(originalAttackingCharacterPosition.X, _battleEntityCharacterAttacking.Position.Y);
@@ -145,17 +147,33 @@ namespace stratMono.States.BattleState
 
         private void handleAttackAnimationDone(LevelScene scene)
         {
-            var attackedCharacterHealth = _characterGridEntityBeingAttacked.GetComponent<Health>();
-            attackedCharacterHealth.changeHealth(-1000000);
+            var attackedCharacterHealth = CurrentBattleContext.CharacterGridEntityBeingAttacked.GetComponent<Health>();
+            _healthLossGoal = (int)attackedCharacterHealth.currentHealth - 50; // TODO: hardcoded damage amount
+            _currentAttackState = AttackState.AttackedHealthLoss;
+        }
 
-            if (attackedCharacterHealth.currentHealth < 0)
+        private void handleAttackedHealthLoss(LevelScene scene)
+        {
+            var attackedCharacterHealth = CurrentBattleContext.CharacterGridEntityBeingAttacked.GetComponent<Health>();
+
+            var healthToRemove = -(Time.DeltaTime * 50);
+            attackedCharacterHealth.changeHealth(healthToRemove);
+
+            if (attackedCharacterHealth.currentHealth <= _healthLossGoal)
             {
-                _currentAttackState = AttackState.AttackedDeathAnimation;
-                this.prepareDeathAnimation(scene);
-            } else
-            {
-                _currentAttackState = AttackState.AttackDone;
+                attackedCharacterHealth.currentHealth = _healthLossGoal;
+
+                if (attackedCharacterHealth.currentHealth < 1)
+                {
+                    _currentAttackState = AttackState.AttackedDeathAnimation;
+                    this.prepareDeathAnimation(scene);
+                }
+                else
+                {
+                    _currentAttackState = AttackState.AttackDone;
+                }
             }
+
         }
 
         private void prepareDeathAnimation(LevelScene scene)
@@ -211,11 +229,11 @@ namespace stratMono.States.BattleState
 
         private BaseState handleAttackDone(LevelScene scene)
         {
+
             if (_lastAttack)
             {
                 return new TransitionOutState(
-                    _characterGridEntityAttacking,
-                    _characterGridEntityBeingAttacked,
+                    CurrentBattleContext,
                     _stateToReturnToAfterBattle,
                     _isCharacterBeingAttackedDead);
             }
@@ -225,9 +243,7 @@ namespace stratMono.States.BattleState
                    scene,
                    entityNameAttacking: _battleEntityCharacterBeingAttacked.Name,
                    entityNameBeingAttacked: _battleEntityCharacterAttacking.Name,
-                   characterGridEntityAttacking: _characterGridEntityBeingAttacked,
-                   characterGridEntityBeingAttacked: _characterGridEntityAttacking,
-                   attackerOnLeft: false,
+                   new BattleContext(CurrentBattleContext.CharacterGridEntityBeingAttacked, CurrentBattleContext.CharacterGridEntityAttacking, false),
                    stateToReturnToAfterBattle: _stateToReturnToAfterBattle,
                    lastAttack: true
                 );
@@ -241,7 +257,7 @@ namespace stratMono.States.BattleState
             var distanceDelta = new Vector2(distanceToMove, 0);
 
             Vector2 newPosition;
-            if ((_attackerOnLeft && isMovingBack) || (!_attackerOnLeft && !isMovingBack))
+            if ((CurrentBattleContext.AttackerOnLeft && isMovingBack) || (!CurrentBattleContext.AttackerOnLeft && !isMovingBack))
             {
                 newPosition = _battleEntityCharacterAttacking.Position - distanceDelta;
             }

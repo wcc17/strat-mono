@@ -16,6 +16,10 @@ namespace StratMono.UI
             TopLeft,
             TopCenter,
             Center,
+            BottomRight,
+            BottomRightCenter,
+            BottomLeft,
+            BottomLeftCenter,
             BottomCenter,
         }
 
@@ -78,7 +82,9 @@ namespace StratMono.UI
             string textToDisplay,
             ScreenPosition screenPosition,
             Color backgroundColor,
-            Color textColor)
+            Color textColor,
+            int width,
+            int height)
         {
             var uiCanvas = new UICanvas();
             uiCanvas.RenderLayer = (int)RenderLayer.UI;
@@ -91,15 +97,34 @@ namespace StratMono.UI
 
             var label = new Label(textToDisplay, Graphics.Instance.BitmapFont, textColor, 5);
             table.Add(label);
-            table.SetWidth(325);
-            table.SetHeight(75);
+            table.SetWidth(width);
+            table.SetHeight(height);
 
             setTablePosition(table, screenPosition);
 
             var uiCanvasEntity = new Entity(entityName);
             uiCanvasEntity.AddComponent(uiCanvas);
+
             return uiCanvasEntity;
         } 
+
+        public static Entity BuildProgressBar(string entityName)
+        {
+            var uiCanvas = new UICanvas();
+            uiCanvas.RenderLayer = (int)RenderLayer.UI;
+            var stage = uiCanvas.Stage;
+
+            var progressBar = new ProgressBar(0, 100, 0.1f, false, ProgressBarStyle.Create(Color.Red, Color.White));
+            progressBar.SetValue(50);
+            var table = stage.AddElement(new Table());
+            table.Add(progressBar);
+            MenuBuilder.setTablePosition(table, MenuBuilder.ScreenPosition.TopCenter);
+
+            var uiCanvasEntity = new Entity(entityName);
+            uiCanvasEntity.AddComponent(uiCanvas);
+
+            return uiCanvasEntity;
+        }
 
         public static void DestroyMenu(Entity menuEntity)
         {
@@ -177,6 +202,26 @@ namespace StratMono.UI
                     _tablePosition = new Point(
                         (Screen.Width / 2) - ((int)table.GetWidth() / 2),
                         Screen.Height - (Screen.Height / 5) - ((int)table.GetHeight() / 2));
+                    break;
+                case ScreenPosition.BottomRight:
+                    _tablePosition = new Point(
+                        Screen.Width - ((int)table.GetWidth()) - 50,
+                        Screen.Height - (Screen.Height / 5) - ((int)table.GetHeight() / 2));
+                    break;
+                case ScreenPosition.BottomRightCenter:
+                    _tablePosition = new Point(
+                        Screen.Width - ((int)table.GetWidth() / 4) - (Screen.Width / 4),
+                        Screen.Height - (Screen.Height / 5) - ((int)table.GetHeight() / 2));
+                    break;
+                case ScreenPosition.BottomLeft:
+                    _tablePosition = new Point(
+                        50,
+                        Screen.Height - (Screen.Height / 5) - ((int)table.GetHeight() / 2));
+                    break;
+                case ScreenPosition.BottomLeftCenter:
+                    _tablePosition = new Point(
+                       (Screen.Width / 8),
+                       Screen.Height - (Screen.Height / 5) - ((int)table.GetHeight() / 2));
                     break;
             }
 

@@ -2,8 +2,10 @@
 using Components.Character.Enemy;
 using Microsoft.Xna.Framework;
 using Nez.Sprites;
+using Nez.UI;
 using StratMono.Entities;
 using StratMono.Scenes;
+using StratMono.States.BattleState.Context;
 using StratMono.UI;
 using System;
 
@@ -26,7 +28,7 @@ namespace StratMono.States.FieldState
                 MenuBuilder.DestroyMenu(scene.FindEntity("turnindicator"));
             }
 
-            var menuEntity = MenuBuilder.BuildStaticTextBox("turnindicator", "Npc's turn", MenuBuilder.ScreenPosition.TopRight, Color.Black, Color.White);
+            var menuEntity = MenuBuilder.BuildStaticTextBox("turnindicator", "Npc's turn", MenuBuilder.ScreenPosition.TopRight, Color.Black, Color.White, 325, 75);  // TODO: constants for width and height
             scene.AddEntity(menuEntity);
         }
 
@@ -64,7 +66,7 @@ namespace StratMono.States.FieldState
                     var characterToAttack = scene.GetCharacterFromSelectedTile(tileToAttack);
 
                     _enemy.GetComponent<TurnState>().alreadyAttacked = true;
-                    return new BattleState.TransitionInState(_enemy, characterToAttack, this, goStraightToCombat: true);
+                    return new BattleState.TransitionInState(new BattleContext(_enemy, characterToAttack, true), this, goStraightToCombat: true);
                 }
             }
             else

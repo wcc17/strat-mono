@@ -5,7 +5,7 @@ namespace StratMono.Components.Character
     class Health : Component
     {
         public int maxHealth;
-        public int currentHealth;
+        public float currentHealth;
 
         public Health(int maxHealth)
         {
@@ -13,7 +13,7 @@ namespace StratMono.Components.Character
             currentHealth = maxHealth;
         }
 
-        public int changeHealth(int delta)
+        public float changeHealth(float delta)
         {
             currentHealth += delta;
             return currentHealth;

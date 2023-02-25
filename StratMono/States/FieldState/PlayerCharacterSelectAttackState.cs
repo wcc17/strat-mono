@@ -1,6 +1,7 @@
 ﻿using Components.Character;
 using StratMono.Entities;
 using StratMono.Scenes;
+using StratMono.States.BattleState.Context;
 using StratMono.System;
 using System;
 using System.Collections.Generic;
@@ -69,8 +70,7 @@ namespace StratMono.States.FieldState
         private BaseState goToBattleInitialState(LevelScene scene)
         {
             var nextState = new BattleState.TransitionInState(
-                scene.SelectedCharacter,
-                scene.CharacterBeingAttacked,
+                new BattleContext(scene.SelectedCharacter, scene.CharacterBeingAttacked, true),
                 new FieldState.PlayerControlDefaultState());
             return nextState;
         }

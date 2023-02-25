@@ -3,6 +3,7 @@ using Nez;
 using Nez.Sprites;
 using StratMono.Entities;
 using StratMono.Scenes;
+using StratMono.States.BattleState.Context;
 using StratMono.Util;
 
 namespace StratMono.States.BattleState
@@ -19,9 +20,12 @@ namespace StratMono.States.BattleState
         private float _characterFadeOpacity = 1f;
 
         public FieldCleanupState(
+            BattleContext battleContext,
             CharacterGridEntity characterToCleanup, 
-            BaseState stateToReturnTo)
+            BaseState stateToReturnTo) : base(battleContext)
         {
+            ShouldShowBattleStats = false;
+
             _characterToCleanup = characterToCleanup;
             _stateToReturnTo = stateToReturnTo;
 
@@ -38,6 +42,8 @@ namespace StratMono.States.BattleState
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
+            base.Update(scene, cursorEntity);
+
             bool isFadeDone = handleFade();
             bool isRotateDone = handleRotate();
             

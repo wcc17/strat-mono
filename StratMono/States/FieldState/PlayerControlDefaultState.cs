@@ -1,10 +1,13 @@
 ﻿using Components.Character;
 using Components.Character.Enemy;
 using Microsoft.Xna.Framework;
+using Nez;
+using Nez.UI;
 using StratMono.Entities;
 using StratMono.Scenes;
 using StratMono.System;
 using StratMono.UI;
+using StratMono.Util;
 
 namespace StratMono.States.FieldState
 {
@@ -18,7 +21,7 @@ namespace StratMono.States.FieldState
                 MenuBuilder.DestroyMenu(scene.FindEntity("turnindicator"));
             }
 
-            var menuEntity = MenuBuilder.BuildStaticTextBox("turnindicator", "Player's turn", MenuBuilder.ScreenPosition.TopRight, Color.White, Color.Black);
+            var menuEntity = MenuBuilder.BuildStaticTextBox("turnindicator", "Player's turn", MenuBuilder.ScreenPosition.TopRight, Color.White, Color.Black, 325, 75); // TODO: constants for width and height
             scene.AddEntity(menuEntity);
         }
 

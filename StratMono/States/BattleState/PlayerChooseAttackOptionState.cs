@@ -4,6 +4,7 @@ using Nez.UI;
 using stratMono.States.BattleState;
 using StratMono.Entities;
 using StratMono.Scenes;
+using StratMono.States.BattleState.Context;
 using StratMono.UI;
 using System;
 using System.Collections.Generic;
@@ -14,17 +15,12 @@ namespace StratMono.States.BattleState
     class PlayerChooseAttackOptionState : BaseBattleState
     {
         private bool _isAttackClicked = false;
-        private CharacterGridEntity _characterAttacking;
-        private CharacterGridEntity _characterBeingAttacked;
         private BaseState _stateToReturnToAfterBattle;
 
         public PlayerChooseAttackOptionState(
-            CharacterGridEntity characterAttacking,
-            CharacterGridEntity characterBeingAttacked,
-            BaseState stateToReturnToAfterBattle)
+            BattleContext battleContext,
+            BaseState stateToReturnToAfterBattle) : base(battleContext)
         {
-            _characterAttacking = characterAttacking;
-            _characterBeingAttacked = characterBeingAttacked;
             _stateToReturnToAfterBattle = stateToReturnToAfterBattle;
         }
 
@@ -56,6 +52,8 @@ namespace StratMono.States.BattleState
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
+            base.Update(scene, cursorEntity);
+
             HandleReadyForInput();
             if (!ReadyForInput)
             {
@@ -69,9 +67,7 @@ namespace StratMono.States.BattleState
                     scene,
                     entityNameAttacking: BattlePlayerEntityName,
                     entityNameBeingAttacked: BattleNpcEntityName,
-                    characterGridEntityAttacking: _characterAttacking,
-                    characterGridEntityBeingAttacked: _characterBeingAttacked,
-                    attackerOnLeft: true,
+                    battleContext: CurrentBattleContext,
                     stateToReturnToAfterBattle: _stateToReturnToAfterBattle,
                     lastAttack: false);
             }

@@ -4,6 +4,7 @@ using Nez.Sprites;
 using StratMono.Components;
 using StratMono.Entities;
 using StratMono.Scenes;
+using StratMono.States.BattleState.Context;
 using System.Collections.Generic;
 
 namespace StratMono.States.BattleState
@@ -21,19 +22,16 @@ namespace StratMono.States.BattleState
         private float _screenFadeOpacity = 0.5f;
         private float _characterFadeOpacity = 0f;
         private BattleEndState _battleEndState = BattleEndState.RemoveCharacters;
-        private CharacterGridEntity _attackingCharacter;
-        private CharacterGridEntity _characterBeingAttacked;
         private BaseState _stateToReturnTo;
         private bool _isCharacterBeingAttackedDead;
 
         public TransitionOutState(
-            CharacterGridEntity attackingCharacter, 
-            CharacterGridEntity characterBeingAttacked,
+            BattleContext battleContext,
             BaseState stateToReturnTo,
-            bool isCharacterBeingAttackedDead)
+            bool isCharacterBeingAttackedDead) : base(battleContext)
         {
-            _attackingCharacter = attackingCharacter;
-            _characterBeingAttacked = characterBeingAttacked;
+            ShouldShowBattleStats = false;
+
             _stateToReturnTo = stateToReturnTo;
             _isCharacterBeingAttackedDead = isCharacterBeingAttackedDead;
         }
@@ -55,6 +53,8 @@ namespace StratMono.States.BattleState
 
         public override BaseState Update(LevelScene scene, GridEntity cursorEntity)
         {
+            base.Update(scene, cursorEntity);
+
             switch (_battleEndState)
             {
                 case BattleEndState.RemoveCharacters:
@@ -66,7 +66,7 @@ namespace StratMono.States.BattleState
                 case BattleEndState.ReadyToExit:
                     if (_isCharacterBeingAttackedDead)
                     {
-                        return new FieldCleanupState(_characterBeingAttacked, _stateToReturnTo);
+                        return new FieldCleanupState(CurrentBattleContext, CurrentBattleContext.CharacterGridEntityBeingAttacked, _stateToReturnTo);
                     }
                     return _stateToReturnTo;
             }
@@ -116,10 +116,10 @@ namespace StratMono.States.BattleState
 
         private void centerCamera(LevelScene scene)
         {
-            var positionXDiff = _attackingCharacter.Position.X - _characterBeingAttacked.Position.X;
-            var positionYDiff = _attackingCharacter.Position.Y - _characterBeingAttacked.Position.Y;
+            var positionXDiff = CurrentBattleContext.CharacterGridEntityAttacking.Position.X - CurrentBattleContext.CharacterGridEntityBeingAttacked.Position.X;
+            var positionYDiff = CurrentBattleContext.CharacterGridEntityAttacking.Position.Y - CurrentBattleContext.CharacterGridEntityBeingAttacked.Position.Y;
 
-            var spriteAnimatorBeingAttacked = _characterBeingAttacked.GetComponent<SpriteAnimator>();
+            var spriteAnimatorBeingAttacked = CurrentBattleContext.CharacterGridEntityBeingAttacked.GetComponent<SpriteAnimator>();
             if (positionXDiff > 0)
             {
                 var modifier = (positionXDiff > 0) ?
@@ -127,7 +127,7 @@ namespace StratMono.States.BattleState
 
                 CenterCameraOnPosition(
                     scene,
-                    new Vector2(_attackingCharacter.Position.X + modifier, _attackingCharacter.Position.Y));
+                    new Vector2(CurrentBattleContext.CharacterGridEntityAttacking.Position.X + modifier, CurrentBattleContext.CharacterGridEntityAttacking.Position.Y));
             }
             else
             {
@@ -136,7 +136,7 @@ namespace StratMono.States.BattleState
 
                 CenterCameraOnPosition(
                     scene,
-                    new Vector2(_attackingCharacter.Position.X, _attackingCharacter.Position.Y + modifier));
+                    new Vector2(CurrentBattleContext.CharacterGridEntityAttacking.Position.X, CurrentBattleContext.CharacterGridEntityAttacking.Position.Y + modifier));
             }
 
         }
